@@ -11,5 +11,6 @@ http-security.test.js: 主 HTTP Host/Origin 防护、请求体上限与隔离预
 http-file-workflow.test.js: 随机本机端口上的完整文件和配置 HTTP 工作流测试，系统废纸篓以注入命令替身隔离
 path-service.test.js: 路径规整、文件类型、JavaScript 模块 MIME 和项目类型推断测试
 codex-sessions.test.js: Codex 新旧会话元数据、项目聚合和快照保护测试
+developer-tools.test.js: 发版向导版本校验、package/package-lock 同步与 CHANGELOG 升格测试
 
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md

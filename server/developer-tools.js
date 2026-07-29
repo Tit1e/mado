@@ -9,6 +9,7 @@
 const fsp = require('fs/promises');
 const path = require('path');
 const os = require('os');
+const { randomUUID } = require('crypto');
 const { execFile } = require('child_process');
 
 function createDeveloperTools({ configDir, resolvePath, shellQuote }) {
@@ -26,6 +27,18 @@ const DEFAULT_ORGANIZE_STRATEGY = `- 默认归档：过时/低频的文件移入
 - 最近 7 天内有动静的文件视为正在进行的工作，不要动
 - 文件夹一律不动，只整理松散文件
 - 拿不准的单独列出来问，宁可少动不要乱动`;
+
+async function replaceRegularFile(file, content) {
+  const stat = await fsp.lstat(file);
+  if (!stat.isFile()) throw new Error(`${path.basename(file)} 不是普通文件`);
+  const temp = path.join(path.dirname(file), `.${path.basename(file)}.${randomUUID()}.tmp`);
+  try {
+    await fsp.writeFile(temp, content, { mode: stat.mode });
+    await fsp.rename(temp, file);
+  } finally {
+    await fsp.rm(temp, { force: true }).catch(() => {});
+  }
+}
 
 // codex 各版本旗标常变（0.139 移除了 --full-auto）：按 --help 实测有什么用什么，
 // 全不认识就裸跑——退化成多几次审批确认，但不会因 unexpected argument 拉不起来
@@ -136,14 +149,34 @@ async function releaseInspect(p) {
 async function releasePrepare(b) {
   const dir = resolvePath(b.path);
   const version = String(b.version || '').trim();
-  if (!/^\d+\.\d+\.\d+/.test(version)) return { ok: false, error: '版本号格式不对（要 x.y.z）' };
+  if (!/^\d+\.\d+\.\d+$/.test(version)) return { ok: false, error: '版本号格式不对（要 x.y.z）' };
   const notes = String(b.notes || '').trim();
-  // 1) package.json 版本号
+  // 1) package.json 和 package-lock.json 版本号必须同步，否则发布包与锁文件会表达两个版本
   const pkgFile = path.join(dir, 'package.json');
   let pkgRaw;
-  try { pkgRaw = await fsp.readFile(pkgFile, 'utf8'); } catch { return { ok: false, error: '读不到 package.json' }; }
+  try {
+    const stat = await fsp.lstat(pkgFile);
+    if (!stat.isFile()) return { ok: false, error: 'package.json 不是普通文件' };
+    pkgRaw = await fsp.readFile(pkgFile, 'utf8');
+  } catch { return { ok: false, error: '读不到 package.json' }; }
   if (!/"version"\s*:\s*"[^"]*"/.test(pkgRaw)) return { ok: false, error: 'package.json 里没有 version 字段' };
-  await fsp.writeFile(pkgFile, pkgRaw.replace(/"version"\s*:\s*"[^"]*"/, `"version": "${version}"`), 'utf8');
+  const lockFile = path.join(dir, 'package-lock.json');
+  let lock = null;
+  try {
+    const stat = await fsp.lstat(lockFile);
+    if (!stat.isFile()) return { ok: false, error: 'package-lock.json 不是普通文件' };
+    lock = JSON.parse(await fsp.readFile(lockFile, 'utf8'));
+    lock.version = version;
+    if (lock.packages?.['']) lock.packages[''].version = version;
+  } catch (error) {
+    if (error.code !== 'ENOENT') return { ok: false, error: 'package-lock.json 格式不对' };
+  }
+  try {
+    await replaceRegularFile(pkgFile, pkgRaw.replace(/"version"\s*:\s*"[^"]*"/, `"version": "${version}"`));
+    if (lock) await replaceRegularFile(lockFile, JSON.stringify(lock, null, 2) + '\n');
+  } catch (error) {
+    return { ok: false, error: error.message || '发版元数据写入失败' };
+  }
   // 2) CHANGELOG：Unreleased 段落升格为新版本，开新的空 Unreleased
   const clFile = path.join(dir, 'CHANGELOG.md');
   try {

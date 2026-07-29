@@ -28,7 +28,7 @@
 
   async function submit() {
     const nextVersion = version.trim();
-    if (!/^\d+\.\d+\.\d+/.test(nextVersion)) { notify('版本号要 x.y.z 格式', true); return; }
+    if (!/^\d+\.\d+\.\d+$/.test(nextVersion)) { notify('版本号要 x.y.z 格式', true); return; }
     busy = true;
     const result = await prepare({ path: directory, version: nextVersion, notes, doDist, doPush, doRelease });
     if (!result.ok) { notify(result.error || '准备失败', true); busy = false; return; }
