@@ -1,6 +1,6 @@
 {
   "name": "codexbox",
-  "version": "2.8.1",
+  "version": "2.8.2",
   "description": "CodexBox — the local desktop cockpit for Codex. Run Codex, watch every file and line it changes, and take over anytime.",
   "bin": {
     "codexbox": "server.js"
