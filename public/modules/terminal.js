@@ -661,13 +661,23 @@ const term = {
     if (i < 0) return;
     const s = this.sessions[i];
     if (s.kind === 'service') { this.hideProjectRun(id); return; }
+    const visibleIndex = this.tabSessions().findIndex((session) => session.id === id);
     try { window.codexboxPty.kill(id); } catch { /* */ }
     try { s.xterm.dispose(); } catch { /* */ }
     s.host.remove();
     this.sessions.splice(i, 1);
     updateWatches(); // 该终端的项目目录不再需要监听
-    if (!this.sessions.length) { this.close(); return; }
-    if (this.active === id) this.activate(this.sessions[Math.max(0, i - 1)].id);
+    const tabs = this.tabSessions();
+    if (!tabs.length) {
+      this.active = null;
+      this.renderTabs();
+      this.close();
+      return;
+    }
+    if (this.active === id) {
+      const nextIndex = Math.max(0, Math.min(visibleIndex - 1, tabs.length - 1));
+      this.activate(tabs[nextIndex].id);
+    }
     else this.renderTabs();
   },
   fitActive() {

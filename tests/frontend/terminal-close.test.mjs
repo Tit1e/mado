@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 依赖 happy-dom 测试环境与 public/modules/terminal.js 终端控制器
- * [OUTPUT]: 验证桌面快捷键新建终端、新建无参数 Codex 会话、重启当前命令及关闭活动终端行为
- * [POS]: tests/frontend 的终端快捷键回归测试，保证 Cmd/Ctrl+T、Shift+N、Shift+R、W 复用终端控制器并保护运行中任务
+ * [OUTPUT]: 验证桌面快捷键新建终端、新建无参数 Codex 会话、重启当前命令、关闭活动终端及隐藏服务相邻标签行为
+ * [POS]: tests/frontend 的终端快捷键与关闭回归测试，保证 Cmd/Ctrl+T、Shift+N、Shift+R、W 复用终端控制器并保护运行中任务
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 import assert from 'node:assert/strict';
@@ -256,6 +256,33 @@ test('隐藏的项目服务不占终端标签，查看输出后才显示', () =>
     term.sessions[0].revealed = true;
     term.renderTabs();
     assert.equal(document.querySelectorAll('.term-tab').length, 1);
+  } finally { dom.cleanup(); }
+});
+
+test('关闭隐藏服务旁边的活动终端后立即移除标签并切换到可见终端', () => {
+  const dom = installDom('<div id="term-tabs"></div>');
+  try {
+    const { term } = createController({ query: (selector) => document.querySelector(selector) });
+    const hiddenService = {
+      ...session('service_1'), kind: 'service', revealed: false, title: 'web', cwd: '/repo', host: document.createElement('div'),
+    };
+    const first = { ...session('t1'), title: 'repo', cwd: '/repo', host: document.createElement('div') };
+    const second = { ...session('t2'), title: 'repo', cwd: '/repo', host: document.createElement('div') };
+    first.xterm.focus = () => {};
+    second.xterm.focus = () => {};
+    term.sessions = [hiddenService, first, second];
+    term.active = 't1';
+    term.refreshCwd = () => {};
+
+    term.renderTabs();
+    assert.equal(document.querySelectorAll('.term-tab').length, 2);
+
+    term.closeTab('t1');
+
+    assert.deepEqual(term.sessions.map((item) => item.id), ['service_1', 't2']);
+    assert.equal(term.active, 't2');
+    assert.equal(document.querySelectorAll('.term-tab').length, 1);
+    assert.equal(document.querySelector('.term-tab').classList.contains('active'), true);
   } finally { dom.cleanup(); }
 });
 
