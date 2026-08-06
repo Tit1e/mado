@@ -57,7 +57,7 @@
             <img class="thumb-sm" loading="lazy" decoding="async" src={`/api/thumb?path=${encodeURIComponent(entry.path)}&w=96&v=${entry.mtime || 0}`} alt="" onerror={(event) => removeBrokenThumb(event, entry)} />
           {:else}<span class="svg-icon">{@html iconSvg(entry, 18)}</span>{/if}
         </div>
-        <div class="fname">{entry.name}{#if sizeText(entry)}{' · '}{sizeText(entry)}{/if}{#if project(entry)}<span class={`proj-tag proj-${entry.project}`}>{project(entry)}</span>{/if}</div>
+        <div class="fname">{entry.name}{#if sizeText(entry)}<span class="fname-size">{' · '}{sizeText(entry)}</span>{/if}{#if project(entry)}<span class={`proj-tag proj-${entry.project}`}>{project(entry)}</span>{/if}</div>
         <div class="meta">{formatTime(entry.mtime)}</div>
         <span class:on={isFavorite(entry.path)} class="fav-btn" title="收藏" role="button" tabindex="0" onclick={(event) => { event.stopPropagation(); actions.favorite(entry); }} onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); actions.favorite(entry); } }}>{@html favoriteIcon(isFavorite(entry.path))}</span>
       </div>

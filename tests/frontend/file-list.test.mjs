@@ -67,6 +67,8 @@ test('文件列表始终渲染列表并转发选择、收藏和菜单动作', as
     assert.equal(document.querySelector('[data-path="/repo/photo.png"] .fname').textContent, 'photo.png · 20B');
     assert.equal(document.querySelector('[data-path="/repo/src"] .fname').textContent, 'srcnode');
     assert.equal(document.querySelectorAll('.list .row[data-idx] .meta').length, 3); // 只剩修改时间一列 meta
+    const workspaceCss = await readFile(new URL('../../public/styles/workspace.css', import.meta.url), 'utf8');
+    assert.match(workspaceCss, /\.fname-size \{ font-size: 11px; color: var\(--text-dim\); vertical-align: middle; \}/); // 大小文字小一号、灰色、垂直居中
     const note = document.querySelector('[data-path="/repo/note.md"]');
     assert.equal(note.classList.contains('selected'), true);
     assert.equal(note.classList.contains('cursor'), true);
