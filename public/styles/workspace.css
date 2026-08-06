@@ -105,7 +105,7 @@
 #btn-terminal:hover, #btn-terminal.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 
 #content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-#file-area { padding: 12px 16px 40px; flex: 1; } /* 撑满 #content 高度：文件下方空白也算文件夹内，拖拽存盘不再"下半截无效" */
+#file-area { padding: 12px 8px 40px; flex: 1; } /* 撑满 #content 高度：文件下方空白也算文件夹内，拖拽存盘不再"下半截无效" */
 
 /* 项目类型徽章 */
 .proj-tag { font-family: var(--font-mono); font-size: 9px; font-weight: 700; line-height: 1; letter-spacing: 0.02em; padding: 2px 4px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); text-transform: lowercase; }
