@@ -32,7 +32,7 @@ Electron 和 Node 的系统 API 在两种 Mac 架构上基本一致，关键差�
 
 ### 1. 服务端命令仍带 POSIX 假设
 
-- `server/developer-tools.js` 与 `server/file-service.js` 的命令探测仍带 POSIX shell 假设，另有 `du` 调用；这些需要统一的平台适配层。
+- `server/file-service.js` 的系统文件操作仍带平台分支；这些能力需要统一的平台适配层并做真机验证。
 - 打开终端、移到废纸篓等流程已有 Windows 分支，但需要真机验证 PowerShell 参数、带空格路径和中文路径。
 - macOS Keychain、`scutil --proxy` 与系统代理读取不能直接复用到 Windows，凭据和代理必须采用 Windows 原生来源。
 
@@ -66,7 +66,7 @@ Codex 在 Windows 的安装、凭据和会话行为由上游决定。应先用�
 ## 四、Windows 移植清单
 
 1. 先验证目标版本的 Codex 与 node-pty/ConPTY 基础链路。
-2. 为 `server/developer-tools.js`、`server/file-service.js` 收敛命令探测的平台适配层。
+2. 为 `server/file-service.js` 收敛系统文件操作的平台适配层。
 3. 补齐打开、废纸篓、剪贴板、截图和电源管理的 Windows 实现或明确降级。
 4. 覆盖中文路径、空格路径、IME、resize、长输出和进程退出。
 5. 建立 Windows 打包、安装、升级与回归验收流程，再声明正式支持。

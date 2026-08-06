@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖临时目录、真实 app-server/path/browser/file/config 服务与随机本机端口
- * [OUTPUT]: 验证创建、写入、读取、重命名、移动、列表、废纸篓及配置重载的完整 HTTP 工作流
+ * [OUTPUT]: 验证文件操作、手动项目添加移除、废纸篓及配置重载的完整 HTTP 工作流
  * [POS]: tests/server 的端到端 HTTP 文件工作流测试，不触碰用户主目录或系统废纸篓
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -17,6 +17,7 @@ const { createAppServer } = require('../../server/app-server');
 const { createBrowserService } = require('../../server/browser-service');
 const { createConfigStore } = require('../../server/config-store');
 const { createFileService } = require('../../server/file-service');
+const { createProjectService } = require('../../server/project-service');
 const { hostAllowed, originAllowed, readBody, sendJSON } = require('../../server/http-security');
 const { createPathService, IGNORE_DIRS, TEXT_EXT, ext, kindOf, projectOf } = require('../../server/path-service');
 
@@ -56,11 +57,13 @@ function workflowServer(home, trashCommands) {
     searchFiles: browser.searchFiles, mdfind: async () => [],
     execCommand: (command, callback) => { trashCommands.push(command); callback(null); },
   });
+  const projects = createProjectService({ resolvePath, readConfig: config.readConfig, updateConfig: config.updateConfig });
   const unavailable = async () => ({});
   const services = new Proxy({
     defaultRoots: files.defaultRoots, listDir: browser.listDir, readFile: browser.readFile,
     createEntry: files.createEntry, writeTextFile: files.writeTextFile, renamePath: files.renamePath,
     movePath: files.movePath, trashPath: files.trashPath,
+    listProjects: projects.listProjects, addProject: projects.addProject, removeProject: projects.removeProject,
     readConfig: config.readConfig, updateConfig: config.updateConfig,
     serveStatic: (_req, res) => { res.writeHead(404); res.end('{}'); },
   }, { get(target, key) { return key in target ? target[key] : unavailable; } });
@@ -95,10 +98,18 @@ test('HTTP 文件工作流从创建到废纸篓保持数据和配置一致', asy
     await request(port, '/api/lang', { method: 'POST', body: { lang: 'en' } });
     await request(port, '/api/favorites', { method: 'POST', body: { path: targetDir, name: '归档', isDir: true } });
     await request(port, '/api/recent-open', { method: 'POST', body: { path: moved.data.path } });
+    const addedProject = await request(port, '/api/projects/add', { method: 'POST', body: { path: targetDir } });
+    assert.equal(addedProject.data.added, true);
+    assert.equal((await request(port, '/api/projects')).data.projects[0].path, targetDir);
     const reloaded = await createConfigStore(configFile).readConfig();
     assert.equal(reloaded.lang, 'en');
     assert.equal(reloaded.favorites[0].path, targetDir);
     assert.equal(reloaded.recentOpened[0], moved.data.path);
+    assert.equal(reloaded.projects[0].path, targetDir);
+    const removedProject = await request(port, '/api/projects/remove', { method: 'POST', body: { path: targetDir } });
+    assert.equal(removedProject.data.removed, true);
+    assert.equal((await fsp.stat(targetDir)).isDirectory(), true);
+    assert.equal((await request(port, '/api/codex-projects')).status, 404);
 
     assert.equal((await request(port, '/api/trash', { method: 'POST', body: { path: moved.data.path } })).data.ok, true);
     assert.equal(trashCommands.length, 1);

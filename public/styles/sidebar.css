@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 依赖 index.html 的 DOM 结构与 base.css 定义的主题变量
- * [OUTPUT]: 对外提供侧边栏、1px 高亮分割线、目录树与 Codex 项目列表样式
- * [POS]: public/styles 的侧边栏、目录树与 Codex 项目列表样式分片，按 index.html 声明顺序参与级联
+ * [OUTPUT]: 对外提供侧边栏、1px 高亮分割线、目录树与手动项目列表样式
+ * [POS]: public/styles 的侧边栏、目录树与项目列表样式分片，按 index.html 声明顺序参与级联
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 /* ---------- 侧边栏 ---------- */
@@ -41,8 +41,15 @@ kbd {
 }
 
 .nav-section { margin-bottom: 18px; }
-.nav-title { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1px; padding: 0 8px 6px; display: flex; align-items: center; gap: 5px; }
+.nav-title { min-height: 20px; font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1px; padding: 0 8px 6px; display: flex; align-items: center; gap: 5px; }
 .nav-title svg { flex-shrink: 0; }
+#project-add {
+  width: 20px; height: 20px; margin: 0 0 0 auto; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--text-faint); cursor: pointer;
+  font: 16px/1 var(--font-ui); letter-spacing: 0; text-transform: none;
+}
+#project-add:hover { color: var(--accent); border-color: var(--border); background: var(--bg-3); }
+#project-add:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .brand .logo { display: inline-flex; }
 .ct-label { display: inline-flex; align-items: center; gap: 7px; }
 .nav-list { list-style: none; }
@@ -53,6 +60,8 @@ kbd {
 }
 .nav-list li:hover { background: var(--bg-3); color: var(--text); }
 .nav-list li.active { background: var(--accent-soft); color: var(--accent); }
+.nav-list li.unavailable { opacity: 0.55; }
+.nav-list li.unavailable .label { text-decoration: line-through; text-decoration-thickness: 1px; }
 .nav-list li .ico { flex-shrink: 0; }
 .nav-list li .label { overflow: hidden; text-overflow: ellipsis; }
 .nav-list li .project-run-indicator { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 17%, transparent); }
@@ -63,8 +72,6 @@ kbd {
 .nav-list li .twirl { flex-shrink: 0; width: 13px; margin-right: -4px; text-align: center; font-size: 9px; color: var(--text-faint); border-radius: 3px; }
 .nav-list li .twirl:hover { color: var(--accent); background: var(--bg-3); }
 .nav-sub { padding-left: 15px; }
-/* Codex 项目：右侧活跃时间 */
-.nav-list li .when { margin-left: auto; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--text-faint); font-variant-numeric: tabular-nums; }
 .brand .logo { color: var(--accent); }
 .theme-switch { margin-top: auto; padding: 12px 8px 6px; border-top: 1px solid var(--border); }
 .theme-switch-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 7px; }

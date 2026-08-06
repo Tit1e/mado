@@ -20,7 +20,7 @@ tests/ - Node 内置自动化测试，覆盖服务端高风险逻辑与渲染层
 package.json - Mado 桌面入口、依赖版本、二进制依赖安装许可、测试检查和构建发布脚本
 package-lock.json - npm 依赖锁文件
 port-config.js - 正式/开发端口常量、合法范围及 MADO_PORT/MADO_DEV_PORT 环境隔离的唯一真源
-server.js - 本地 HTTP 文件服务、带快照确认与运行态保护的 Codex 项目会话归档/删除、mado CLI 入口，按 --dev 选择端口模式
+server.js - 本地 HTTP 文件服务、配置驱动的手动项目 API、mado CLI 入口，按 --dev 选择端口模式
 build/entitlements.mac.plist - macOS 签名和 hardened runtime 权限
 </config>
 

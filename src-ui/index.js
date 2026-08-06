@@ -7,7 +7,7 @@
 export { createGitPanel } from './git-panel.js';
 export { createDialogService } from './dialog-service.js';
 export { createContextMenuService } from './context-menu-service.js';
-export { createCodexProjectsService } from './codex-projects-service.js';
+export { createProjectsService } from './projects-service.js';
 export { createFavoritesService } from './favorites-service.js';
 export { createRootsService } from './roots-service.js';
 export { createFileListService } from './file-list-service.js';

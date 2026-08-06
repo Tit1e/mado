@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 依赖 happy-dom 与侧边栏控制器
- * [OUTPUT]: 验证 Codex 项目菜单的归档、删除、确认与运行态保护调用链
- * [POS]: tests/frontend 的 Codex 会话危险操作回归测试
+ * [OUTPUT]: 验证手动项目读取、目录选择、添加、取消、浏览器降级和仅配置移除调用链
+ * [POS]: tests/frontend 的用户项目侧边栏业务测试
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 import assert from 'node:assert/strict';
@@ -9,95 +9,89 @@ import test from 'node:test';
 import { installDom, loadRendererModule } from './dom-environment.mjs';
 
 const { createSidebarController } = await loadRendererModule('sidebar');
-
-const PROJECT = { name: 'Demo', path: '/workspace/demo', lastActive: Date.now() };
+const PROJECT = { name: 'Demo', path: '/workspace/demo', available: true };
 
 function createHarness(responses = {}) {
   const calls = [];
   let menuItems = [];
-  const state = { cwd: '/workspace/demo', favorites: [], entries: [] };
+  const state = { cwd: '/workspace', favorites: [], entries: [] };
   const controller = createSidebarController({
-    $: (selector) => document.querySelector(selector),
-    api: async (path) => {
-      calls.push(['api', path]);
-      return { projects: [PROJECT] };
+    api: async (route) => {
+      calls.push(['api', route]);
+      return responses.list || { ok: true, projects: [PROJECT] };
     },
-    apiPost: async (path, body) => {
-      calls.push(['post', path, body]);
-      if (path.endsWith('/inspect')) return responses.inspect || { ok: true, total: 2, running: 0, snapshot: 'snap-1' };
-      return responses.mutate || { ok: true, succeeded: 2 };
+    apiPost: async (route, body) => {
+      calls.push(['post', route, body]);
+      if (route.endsWith('/add')) return responses.add || { ok: true, added: true, projects: [PROJECT] };
+      return responses.remove || { ok: true, removed: true, projects: [] };
     },
     state,
-    svgWrap: () => '<svg></svg>',
-    SVG: { folder: '', file: '' },
-    escapeHtml: (value) => String(value),
     dirOf: () => '/workspace',
-    navigate: () => {},
-    makeDraggablePath: () => {},
-    openPreview: () => {},
-    renderFiles: () => {},
-    toggleFav: () => {},
+    navigate: async (path) => calls.push(['navigate', path]),
+    openPreview: () => {}, renderFiles: () => {},
     toast: (message, error) => calls.push(['toast', message, !!error]),
-    confirmDialog: async (message) => {
-      calls.push(['confirm', message]);
-      return responses.confirm !== false;
-    },
     popupMenu: (_event, items) => { menuItems = items; },
-    codexProjects: { render: () => {}, setActive: () => {} },
+    projects: {
+      render: (items, active) => calls.push(['render', items, active]),
+      setActive: (path) => calls.push(['active', path]),
+    },
     favorites: { render: () => {}, setActive: () => {} },
     roots: { render: () => {}, setActive: () => {} },
   });
   return { controller, calls, getMenuItems: () => menuItems };
 }
 
-async function openProjectMenu(harness) {
-  await harness.controller.loadCodexProjects();
-  harness.controller.showCodexProjectMenu(new window.MouseEvent('contextmenu', { cancelable: true }), PROJECT);
-  return harness.getMenuItems();
-}
-
-test('归档项目会话先检查快照、请求确认，再提交归档', async () => {
-  const dom = installDom('<ul id="roots-list"></ul><ul id="favs-list"></ul><ul id="codex-projects-list"></ul>');
+test('启动时从配置项目 API 加载列表', async () => {
+  const dom = installDom('');
   try {
     const harness = createHarness();
-    const items = await openProjectMenu(harness);
-    assert.deepEqual(items.map((item) => item.label), ['归档', '删除']);
-    await items[0].fn();
-    assert.deepEqual(harness.calls.filter((call) => call[0] === 'post'), [
-      ['post', '/api/codex-projects/inspect', { path: PROJECT.path, action: 'archive' }],
-      ['post', '/api/codex-projects/archive', { path: PROJECT.path, snapshot: 'snap-1' }],
-    ]);
-    assert.match(harness.calls.find((call) => call[0] === 'confirm')[1], /归档.*2 条会话/);
-  } finally {
-    dom.cleanup();
-  }
+    await harness.controller.loadProjects();
+    assert.deepEqual(harness.calls[0], ['api', '/api/projects']);
+    assert.deepEqual(harness.calls.find((call) => call[0] === 'render'), ['render', [PROJECT], '/workspace']);
+  } finally { dom.cleanup(); }
 });
 
-test('删除项目会话使用删除端点并保留快照', async () => {
-  const dom = installDom('<ul id="roots-list"></ul><ul id="favs-list"></ul><ul id="codex-projects-list"></ul>');
+test('原生目录选择成功后添加项目并导航，取消时不调用 API', async () => {
+  const dom = installDom('');
   try {
     const harness = createHarness();
-    const items = await openProjectMenu(harness);
-    await items[1].fn();
-    assert.deepEqual(harness.calls.filter((call) => call[0] === 'post').at(-1), [
-      'post', '/api/codex-projects/delete', { path: PROJECT.path, snapshot: 'snap-1' },
-    ]);
-    assert.match(harness.calls.find((call) => call[0] === 'confirm')[1], /永久删除.*不可恢复/);
-  } finally {
-    dom.cleanup();
-  }
+    window.madoProjects = { chooseDirectory: async () => '/workspace/demo' };
+    await harness.controller.addProject();
+    assert.deepEqual(harness.calls.find((call) => call[0] === 'post'), ['post', '/api/projects/add', { path: '/workspace/demo' }]);
+    assert.deepEqual(harness.calls.find((call) => call[0] === 'navigate'), ['navigate', '/workspace/demo']);
+
+    const duplicate = createHarness({ add: { ok: true, added: false, projects: [PROJECT] } });
+    window.madoProjects = { chooseDirectory: async () => '/workspace/demo' };
+    await duplicate.controller.addProject();
+    assert.deepEqual(duplicate.calls.find((call) => call[0] === 'toast'), ['toast', '项目已存在', false]);
+
+    const canceled = createHarness();
+    window.madoProjects = { chooseDirectory: async () => null };
+    await canceled.controller.addProject();
+    assert.equal(canceled.calls.some((call) => call[0] === 'post'), false);
+  } finally { dom.cleanup(); }
 });
 
-test('运行中的 Codex 会话阻止归档且不弹确认', async () => {
-  const dom = installDom('<ul id="roots-list"></ul><ul id="favs-list"></ul><ul id="codex-projects-list"></ul>');
+test('浏览器模式明确提示必须使用桌面版', async () => {
+  const dom = installDom('');
   try {
-    const harness = createHarness({ inspect: { ok: true, total: 2, running: 1, snapshot: 'snap-1' } });
-    const items = await openProjectMenu(harness);
+    const harness = createHarness();
+    delete window.madoProjects;
+    await harness.controller.addProject();
+    assert.deepEqual(harness.calls.find((call) => call[0] === 'toast'), ['toast', '请在 Mado 桌面版添加项目', true]);
+    assert.equal(harness.calls.some((call) => call[0] === 'post'), false);
+  } finally { dom.cleanup(); }
+});
+
+test('右键移除只调用项目配置端点', async () => {
+  const dom = installDom('');
+  try {
+    const harness = createHarness();
+    harness.controller.showProjectMenu(new window.MouseEvent('contextmenu', { cancelable: true }), PROJECT);
+    const items = harness.getMenuItems();
+    assert.deepEqual(items.map((item) => item.label), ['移除项目']);
     await items[0].fn();
+    assert.deepEqual(harness.calls.find((call) => call[0] === 'post'), ['post', '/api/projects/remove', { path: PROJECT.path }]);
     assert.equal(harness.calls.some((call) => call[0] === 'confirm'), false);
-    assert.equal(harness.calls.filter((call) => call[0] === 'post').length, 1);
-    assert.match(harness.calls.find((call) => call[0] === 'toast')[1], /正在运行/);
-  } finally {
-    dom.cleanup();
-  }
+  } finally { dom.cleanup(); }
 });

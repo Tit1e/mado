@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖浏览器 window 全局对象，收录 index.html 与 app.js 使用的中文界面文案
- * [OUTPUT]: 对外提供 MADO_DICT 静态词典和 MADO_DICT_RULES 动态翻译规则，覆盖项目运行命令
+ * [OUTPUT]: 对外提供 MADO_DICT 静态词典和 MADO_DICT_RULES 动态翻译规则，覆盖手动项目与项目运行命令
  * [POS]: public 模块的英文词典真源，由 i18n.js 在运行时消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -12,8 +12,12 @@ window.MADO_DICT = {
   '搜索全部文件': 'Search all files',
   '快速入口': 'Quick access',
   '收藏': 'Favorites',
-  'Codex 项目': 'Codex projects',
-  '最近被 Codex 处理过的项目，自动从本机会话记录扫出来': 'Projects recently worked on by Codex, auto-discovered from local session logs',
+  '项目': 'Projects',
+  '添加项目': 'Add project',
+  '点击右上角 ＋ 添加项目': 'Click + at the top right to add a project',
+  '移除项目': 'Remove project',
+  '目录不存在或无法访问': 'Folder is missing or unavailable',
+  '目录不可用': 'Folder unavailable',
   '皮肤': 'Theme',
   '档案': 'Archive',
   '终端': 'Terminal',
@@ -27,18 +31,18 @@ window.MADO_DICT = {
   '没有子文件夹': 'No subfolders',
   '悬停文件点 ☆ 即可收藏': 'Hover a file and click ☆ to favorite',
   '移除': 'Remove',
-  '用 Codex 跑过的项目会出现在这里': 'Projects run with Codex will show up here',
-  '归档': 'Archive',
-  '删除': 'Delete',
-  '读取 Codex 会话失败': 'Failed to read Codex sessions',
-  '没有找到可处理的 Codex 会话': 'No Codex sessions to process',
-  '正在归档…': 'Archiving…',
-  '正在删除…': 'Deleting…',
-  '归档失败': 'Archive failed',
-  '删除失败': 'Delete failed',
-  '这个项目的会话正在处理中': 'Sessions for this project are already being processed',
-  '会话列表已经变化，请重新操作并确认': 'The session list changed. Review and confirm again.',
-  '没找到 codex 命令': 'Codex CLI was not found',
+  '读取项目失败': 'Failed to load projects',
+  '添加项目失败': 'Failed to add project',
+  '移除项目失败': 'Failed to remove project',
+  '请选择有效的项目目录': 'Choose a valid project folder',
+  '项目路径无效': 'Invalid project path',
+  '所选路径不是目录': 'The selected path is not a folder',
+  '所选目录不存在或无法访问': 'The selected folder is missing or unavailable',
+  '项目已存在': 'Project already exists',
+  '已从项目列表移除': 'Removed from projects',
+  '项目已不在列表中': 'Project is no longer in the list',
+  '请在 Mado 桌面版添加项目': 'Add projects in the Mado desktop app',
+  '选择项目文件夹': 'Choose project folder',
 
   // ---------- 顶栏 ----------
   '折叠 / 展开侧栏 (⌘B)': 'Toggle sidebar (⌘B)',
@@ -213,8 +217,8 @@ window.MADO_DICT = {
   '开启文件跟随后，文件区和预览会追踪当前 Codex；Git 状态可直接打开工作区 Diff。': 'File Follow keeps the file view and preview on the active Codex session. Open the working-tree diff directly from Git status.',
   '多终端工作': 'Work across terminals',
   '用数字键快速切换标签；重新运行会先停止当前服务，等 Shell 就绪后再执行原命令。': 'Switch tabs with number keys. Rerun stops the current service, waits for the shell, then starts the original command again.',
-  '找回历史任务': 'Resume previous work',
-  '左侧 Codex 项目汇总本机会话；退出时保存的运行命令，可在下次启动时选择恢复。': 'Codex Projects collects local sessions in the sidebar. Commands saved on quit can be selected for recovery next time.',
+  '管理项目': 'Manage projects',
+  '左侧项目列表由你手动添加，与具体 Agent 无关；退出时保存的运行命令，可在下次启动时选择恢复。': 'Add projects manually in the sidebar, independently of any Agent. Commands saved on quit can be selected for recovery next time.',
   '常用快捷键': 'Common shortcuts',
   '全局搜索': 'Global search',
   '当前目录筛选': 'Filter current folder',
@@ -352,17 +356,10 @@ window.MADO_DICT_RULES = [
   [/^(\d+) 分钟前$/, (m) => `${m[1]} min ago`],
   [/^(\d+) 小时前$/, (m) => `${m[1]} hr ago`],
   [/^(\d+) 天前$/, (m) => `${m[1]} days ago`],
-  // 短相对时间（agoShort：侧栏 Codex 项目）
-  [/^(\d+) 分$/, (m) => `${m[1]}m`],
-  [/^(\d+) 时$/, (m) => `${m[1]}h`],
-  [/^(\d+) 天$/, (m) => `${m[1]}d`],
-  // Codex 项目会话归档 / 删除
-  [/^有 (\d+) 条会话正在运行，请先结束后再操作$/, (m) => `${m[1]} sessions are running. Stop them before continuing.`],
-  [/^归档「(.+)」的 (\d+) 条会话？之后可在 Codex 中恢复。$/, (m) => `Archive ${m[2]} sessions for "${m[1]}"? You can restore them in Codex.`],
-  [/^永久删除「(.+)」的 (\d+) 条会话？此操作不可恢复。$/, (m) => `Permanently delete ${m[2]} sessions for "${m[1]}"? This cannot be undone.`],
-  [/^已归档 (\d+) 条会话$/, (m) => `Archived ${m[1]} sessions`],
-  [/^已删除 (\d+) 条会话$/, (m) => `Deleted ${m[1]} sessions`],
-  [/^成功 (\d+) 条，失败 (\d+) 条：([\s\S]*)$/, (m) => `${m[1]} succeeded, ${m[2]} failed: ${m[3]}`],
+  // 手动项目
+  [/^最多添加 (\d+) 个项目$/, (m) => `You can add up to ${m[1]} projects`],
+  [/^项目目录不可用：([\s\S]+)$/, (m) => `Project folder unavailable: ${m[1]}`],
+  [/^(.+)，目录不可用$/, (m) => `${m[1]}, folder unavailable`],
   // 错误前缀类
   [/^无法打开：([\s\S]*)$/, (m) => `Can't open: ${m[1]}`],
   [/^打开失败：([\s\S]*)$/, (m) => `Open failed: ${m[1]}`],
@@ -391,11 +388,6 @@ window.MADO_DICT_RULES = [
   // 预览底部：创建/修改时间
   [/^创建 (.+)$/, (m) => `Created ${m[1]}`],
   [/^改 (.+)$/, (m) => `Modified ${m[1]}`],
-  // 侧栏 Codex 项目 tooltip：路径\nCodex · N 时前活跃
-  [/^([\s\S]+)\n(.+) · (刚刚|\d+ 分|\d+ 时|\d+ 天)前活跃$/, (m) => {
-    const t = m[3] === '刚刚' ? 'just now' : m[3].replace(/^(\d+) 分$/, '$1m ago').replace(/^(\d+) 时$/, '$1h ago').replace(/^(\d+) 天$/, '$1d ago');
-    return `${m[1]}\n${m[2]} · active ${t}`;
-  }],
   // 命令面板
   [/^当前目录 (.+)$/, (m) => `This folder ${m[1]}`],
   [/^(.+) · (\d+) 个文件 · \+(\d+) −(\d+)$/, (m) => `${m[1]} · ${m[2]} files · +${m[3]} −${m[4]}`],

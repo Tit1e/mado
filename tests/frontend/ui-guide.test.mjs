@@ -33,7 +33,7 @@ test('首次使用显示指南并在确认后记录完成状态', () => {
       '⌘K', '/', '⌘↵', '↑↓ / ↵ / Esc', '⌘⇧T', '⌘⇧N', '⌘T / ⌘W', '⌘1–9', '⌘⇧R', '⌘B / ⌘[',
     ]);
     assert.deepEqual([...document.querySelectorAll('.guide-features b')].map((item) => item.textContent), [
-      '找文件与预览', '启动 Codex', '跟踪与核对改动', '多终端工作', '找回历史任务',
+      '找文件与预览', '启动 Codex', '跟踪与核对改动', '多终端工作', '管理项目',
     ]);
     assert.equal(document.querySelector('#guide-ok').textContent, '开始使用');
     assert.equal(localStorage.getItem('mado_guided'), null);

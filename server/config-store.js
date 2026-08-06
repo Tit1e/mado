@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 依赖 Node.js fs/promises，依赖调用方提供的配置文件绝对路径
  * [OUTPUT]: 对外提供 createConfigStore，返回 readConfig 与 updateConfig
- * [POS]: server 模块的配置持久化基础设施，被文件服务、语言设置和用户偏好消费
+ * [POS]: server 模块的配置持久化基础设施，被项目、文件、运行规则、语言设置和用户偏好消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 'use strict';
@@ -15,7 +15,7 @@ function createConfigStore(configFile) {
       const raw = await fsp.readFile(configFile, 'utf8');
       return JSON.parse(raw);
     } catch (err) {
-      if (err && err.code === 'ENOENT') return { favorites: [], recentOpened: [] };
+      if (err && err.code === 'ENOENT') return { favorites: [], recentOpened: [], projects: [] };
       throw err;
     }
   }

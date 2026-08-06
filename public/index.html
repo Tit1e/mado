@@ -1,6 +1,6 @@
 <!--
   [INPUT]: 依赖 styles/ 样式分片、app.js、i18n.js 和本地 vendor 浏览器资源
-  [OUTPUT]: 对外提供 Mado 单页应用的文件区、主题化隐藏文件控件、使用指南入口、Svelte 界面岛挂载点、终端区（含预览浮层）、通用弹层 DOM 骨架
+  [OUTPUT]: 对外提供 Mado 单页应用的手动项目入口、文件区、主题化隐藏文件控件、使用指南、Svelte 界面岛挂载点、终端区（含预览浮层）与通用弹层 DOM 骨架
   [POS]: public 模块的页面入口，定义渲染层组件挂载点与脚本加载顺序
   [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
 -->
@@ -48,8 +48,8 @@
       </nav>
 
       <nav class="nav-section">
-        <div class="nav-title" title="最近被 Codex 处理过的项目，自动从本机会话记录扫出来"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> Codex 项目</div>
-        <ul id="codex-projects-list" class="nav-list"></ul>
+        <div class="nav-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v10H3z"/><path d="M3 7V5h7l2 2"/></svg><span>项目</span><button id="project-add" type="button" title="添加项目" aria-label="添加项目">＋</button></div>
+        <ul id="projects-list" class="nav-list"></ul>
       </nav>
 
       <div class="theme-switch" id="theme-switch">

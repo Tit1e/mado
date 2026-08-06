@@ -17,7 +17,7 @@ test('配置不存在时返回安全默认值', async (t) => {
   const dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-config-'));
   t.after(() => fsp.rm(dir, { recursive: true, force: true }));
   const store = createConfigStore(path.join(dir, 'config.json'));
-  assert.deepEqual(await store.readConfig(), { favorites: [], recentOpened: [] });
+  assert.deepEqual(await store.readConfig(), { favorites: [], recentOpened: [], projects: [] });
 });
 
 test('损坏配置会报错而不是伪装成空配置', async (t) => {
@@ -37,5 +37,5 @@ test('并发读改写按顺序落盘且不丢字段', async (t) => {
     store.updateConfig((cfg) => { cfg.favorites = [{ path: '/a' }]; }),
     store.updateConfig((cfg) => { cfg.recentOpened = ['/b']; }),
   ]);
-  assert.deepEqual(JSON.parse(await fsp.readFile(file, 'utf8')), { favorites: [{ path: '/a' }], recentOpened: ['/b'] });
+  assert.deepEqual(JSON.parse(await fsp.readFile(file, 'utf8')), { favorites: [{ path: '/a' }], recentOpened: ['/b'], projects: [] });
 });

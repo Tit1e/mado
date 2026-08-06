@@ -1,11 +1,11 @@
 /**
- * [INPUT]: 依赖共享 state、Svelte 按钮组同步回调、终端/命令面板控制器及文件和预览动作
+ * [INPUT]: 依赖共享 state、Svelte 按钮组同步回调、手动项目动作、终端/命令面板控制器及文件和预览动作
  * [OUTPUT]: 对外提供 createUiController，管理全局事件、主题、拖拽尺寸、首次引导和手动重开指南
  * [POS]: public/modules 的界面编排控制器，被应用启动入口消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createUiController(deps) {
-  const { $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview, toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename, popupMenu, mona, svgWrap, SVG, openWith, playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax, setPreviewMax, moveCursor, cursorEnter, toggleFav, setThemeControlValue } = deps;
+  const { $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview, toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename, popupMenu, mona, svgWrap, SVG, openWith, playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax, setPreviewMax, moveCursor, cursorEnter, toggleFav, setThemeControlValue, addProject } = deps;
 // ---------- 使用指南 ----------
 function showGuide(markGuided = false) {
   if (document.querySelector('.guide-overlay')) return false;
@@ -21,7 +21,7 @@ function showGuide(markGuided = false) {
       <li><b>启动 Codex</b><span>按终端设置继续最近会话，或新开无参数会话；把文件或文件夹拖进终端即可加入上下文。</span></li>
       <li><b>跟踪与核对改动</b><span>开启文件跟随后，文件区和预览会追踪当前 Codex；Git 状态可直接打开工作区 Diff。</span></li>
       <li><b>多终端工作</b><span>用数字键快速切换标签；重新运行会先停止当前服务，等 Shell 就绪后再执行原命令。</span></li>
-      <li><b>找回历史任务</b><span>左侧 Codex 项目汇总本机会话；退出时保存的运行命令，可在下次启动时选择恢复。</span></li>
+      <li><b>管理项目</b><span>左侧项目列表由你手动添加，与具体 Agent 无关；退出时保存的运行命令，可在下次启动时选择恢复。</span></li>
     </ul>
     <h3>常用快捷键</h3>
     <div class="guide-shortcuts">
@@ -188,6 +188,7 @@ function bindEvents() {
   $('#preview-close').onclick = closePreview;
   $('#cmdk-trigger').onclick = () => cmdk.open();
   $('#btn-guide').onclick = () => showGuide();
+  $('#project-add').onclick = () => addProject();
   $('#btn-terminal').onclick = () => term.toggle();
   bindCodexControls();
   shotTray.init();

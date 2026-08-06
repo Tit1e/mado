@@ -8,8 +8,8 @@ run-rule-service.test.js: 运行规则稳定标识、保存/移除、最长祖�
 file-service.test.js: 临时目录中的原子写入、并发冲突、创建、移动、重命名、图片保存与废纸篓命令测试
 git-service.test.js: 隔离临时仓库中的分支识别、变更文件和文本增删行汇总测试
 http-security.test.js: 主 HTTP Host/Origin 防护、请求体上限与隔离预览路径边界测试
-http-file-workflow.test.js: 随机本机端口上的完整文件和配置 HTTP 工作流测试，系统废纸篓以注入命令替身隔离
+http-file-workflow.test.js: 随机本机端口上的文件、手动项目和配置 HTTP 工作流测试，系统废纸篓以注入命令替身隔离
 path-service.test.js: 路径规整、文件类型、JavaScript 模块 MIME 和项目类型推断测试
-codex-sessions.test.js: Codex 新旧会话元数据、项目聚合和快照保护测试
+project-service.test.js: 手动项目持久化、去重、上限、失效保留与安全移除测试
 
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md

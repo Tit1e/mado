@@ -16,7 +16,7 @@ function createAppServer(options) {
     defaultRoots, listDir, readFile, serveRaw, serveHtmlPreview, serveThumb, searchFiles, grepFiles, contentSearch,
     termVerify, locatePath, gitStatus, gitFileDiff, openInOS, updateConfig, writeTextFile, archiveList,
     trashPath, movePath, renamePath, saveImage, createEntry,
-    inspectCodexProjectSessions, mutateCodexProjectSessions, codexProjects, readConfig, ruleFor, saveRule, removeRule, serveStatic,
+    listProjects, addProject, removeProject, readConfig, ruleFor, saveRule, removeRule, serveStatic,
   } = options.services;
 const server = http.createServer(async (req, res) => {
   if (!hostAllowed(req)) { res.writeHead(403); res.end('forbidden host'); return; }
@@ -136,17 +136,16 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req);
       return sendJSON(res, 200, await createEntry(b.path, b.name, b.type));
     }
-    if (p === '/api/codex-projects/inspect' && req.method === 'POST') {
-      const body = await readBody(req);
-      return sendJSON(res, 200, await inspectCodexProjectSessions(body.path, body.action));
+    if (p === '/api/projects' && req.method === 'GET') {
+      return sendJSON(res, 200, await listProjects());
     }
-    if ((p === '/api/codex-projects/archive' || p === '/api/codex-projects/delete') && req.method === 'POST') {
+    if (p === '/api/projects/add' && req.method === 'POST') {
       const body = await readBody(req);
-      const action = p.endsWith('/delete') ? 'delete' : 'archive';
-      return sendJSON(res, 200, await mutateCodexProjectSessions(body.path, action, body.snapshot));
+      return sendJSON(res, 200, await addProject(body.path));
     }
-    if (p === '/api/codex-projects') {
-      return sendJSON(res, 200, await codexProjects());
+    if (p === '/api/projects/remove' && req.method === 'POST') {
+      const body = await readBody(req);
+      return sendJSON(res, 200, await removeProject(body.path));
     }
     if (p === '/api/favorites') {
       if (req.method === 'POST') {

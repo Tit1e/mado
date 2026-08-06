@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 Electron 窗口/菜单/IPC 能力、PTY/Shell 集成/恢复/退出/开发刷新等领域服务、../server.js 与端口配置
- * [OUTPUT]: 对外提供 Mado 桌面主进程、PTY/恢复与文件/剪贴板/更新/菜单语言 IPC、Codex 新会话与命令重启快捷键、开发热重载、菜单和窗口生命周期
+ * [OUTPUT]: 对外提供 Mado 桌面主进程、PTY/恢复与项目目录选择/文件/剪贴板/更新/菜单语言 IPC、Codex 新会话与命令重启快捷键、开发热重载、菜单和窗口生命周期
  * [POS]: electron 模块的主进程编排器，与 preload.js 和开发监督脚本协作连接渲染层、本地服务和操作系统
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -301,6 +301,16 @@ ipcMain.handle('win:focus', () => {
 ipcMain.handle('win:traffic', (e, { show }) => {
   if (!win || win.isDestroyed() || typeof win.setWindowButtonVisibility !== 'function') return;
   win.setWindowButtonVisibility(!!show);
+});
+
+// 目录选择 IPC 不接收渲染层路径参数；写入时仍由服务端重新验证目录
+ipcMain.handle('projects:choose-directory', async () => {
+  const owner = win && !win.isDestroyed() ? win : undefined;
+  const result = await dialog.showOpenDialog(owner, {
+    title: M('选择项目文件夹', 'Choose project folder'),
+    properties: ['openDirectory'],
+  });
+  return result.canceled ? null : (result.filePaths[0] || null);
 });
 
 // 界面语言：用户手动选过的存在 ~/.mado/config.json（渲染层切换时写入），没选过跟随系统

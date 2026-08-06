@@ -5,7 +5,7 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function startApplication(deps) {
-  const { $, state, applyTheme, applyLayout, term, bindEvents, bindSidebarResizer, bindSelectionToTerminal, enableTooltips, loadRoots, loadFavorites, loadCodexProjects, navigate, maybeShowGuide, escapeHtml, toast, recoveryDialog, refreshGitStatus } = deps;
+  const { $, state, applyTheme, applyLayout, term, bindEvents, bindSidebarResizer, bindSelectionToTerminal, enableTooltips, loadRoots, loadFavorites, loadProjects, navigate, maybeShowGuide, escapeHtml, toast, recoveryDialog, refreshGitStatus } = deps;
 // ---------- 启动 ----------
 async function init() {
   // 桌面 app：标记 body，给顶部交通灯留位、顶部可拖拽
@@ -39,8 +39,7 @@ async function init() {
   }, true);
   await loadRoots();
   await loadFavorites();
-  loadCodexProjects();
-  setInterval(loadCodexProjects, 60000); // 每分钟刷新项目与相对时间；服务端同样缓存 60s
+  loadProjects();
   await navigate(state.home, false);
   setInterval(() => { if (state.cwd) refreshGitStatus(state.cwd); }, 5000);
   if (window.madoRecovery && recoveryDialog) {

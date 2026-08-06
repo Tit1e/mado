@@ -91,6 +91,8 @@ The three skins are not simple color swaps: palette, typography, icons, code hig
   Rendered Markdown, live HTML, syntax-highlighted code, inline images/video/PDF (HEIC included), archive content listing, checkerboard backing for transparent images.
 - **缩略图缓存 / Cached thumbnails**，图片和视频使用本地缩略图，重复浏览直接读取缓存。<br>
   Images and videos use local thumbnails that are reused on later views.
+- **手动项目列表 / Manual projects** — 在桌面版侧栏通过系统目录选择器添加项目；列表持久保存且不依赖 Codex、Pi 或其他 Agent 的会话记录。<br>
+  Add projects from the desktop sidebar with the system folder picker. The persistent list is independent of Codex, Pi, or any other Agent session history.
 - **项目徽章 / Project badges** — 文件夹行标 node / web / py / rs / go 徽章，一下午起的十个项目一眼认出类型。<br>
   Folder rows show node / web / py / rs / go badges, so ten projects from one afternoon are recognizable at a glance.
 

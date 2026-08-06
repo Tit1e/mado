@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * [INPUT]: 依赖 Node.js 内置模块、server/ 领域服务、Codex CLI 与 ~/.codex 会话、port-config.js 端口配置和 public 静态资源
- * [OUTPUT]: 对外提供文件 HTTP API、Codex 项目会话归档/删除、静态页面、隔离预览服务与 mado CLI 入口
+ * [INPUT]: 依赖 Node.js 内置模块、server/ 领域服务、~/.mado 配置、port-config.js 端口配置和 public 静态资源
+ * [OUTPUT]: 对外提供文件与手动项目 HTTP API、静态页面、隔离预览服务与 mado CLI 入口
  * [POS]: 根模块的本地服务核心，被直接命令、npm start 和 Electron 主进程复用
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -13,11 +13,10 @@ const { exec } = require('child_process');
 const { resolvePort } = require('./port-config');
 const { createConfigStore } = require('./server/config-store');
 const { createPathService, IGNORE_DIRS, TEXT_EXT, IMAGE_EXT, VIDEO_EXT, AUDIO_EXT, PDF_EXT, ARCHIVE_EXT, MIME, ext, projectOf, kindOf } = require('./server/path-service');
-const { createCodexSessions } = require('./server/codex-sessions');
+const { createProjectService } = require('./server/project-service');
 const { createBrowserService } = require('./server/browser-service');
 const { createGitService } = require('./server/git-service');
 const { createFileService } = require('./server/file-service');
-const { createDeveloperTools } = require('./server/developer-tools');
 const { createMediaService } = require('./server/media-service');
 const { createRunRuleService } = require('./server/run-rule-service');
 const { hostAllowed, originAllowed, readBody, sendJSON } = require('./server/http-security');
@@ -46,24 +45,18 @@ const { gitStatus, gitFileDiff } = createGitService({ resolvePath, kindOf });
 const { writeTextFile, trashPath, renamePath, movePath, createEntry, termVerify, locatePath, saveImage, openInOS, defaultRoots } = createFileService({
   home: HOME, platform: PLATFORM, resolvePath, textExt: TEXT_EXT, ext, searchFiles, mdfind,
 });
-const { findCodexBin } = createDeveloperTools();
 const { archiveList, serveStatic, serveThumb, serveRaw, serveHtmlPreview, pruneThumbs } = createMediaService({
   publicDir: PUBLIC, thumbDir: THUMB_DIR, resolvePath, mime: MIME, ext,
 });
 
-// ---------- Codex 项目（最近被 Codex 处理过的项目文件夹）----------
-const { codexProjects, inspectCodexProjectSessions, mutateCodexProjectSessions } = createCodexSessions({
-  home: HOME,
-  platform: PLATFORM,
-  resolvePath,
-  findCodexBin,
-});
+// ---------- 用户项目（手动添加，配置持久化）----------
+const { listProjects, addProject, removeProject } = createProjectService({ resolvePath, readConfig, updateConfig });
 const services = {
   listDir, readFile, searchFiles, grepFiles, contentSearch, termVerify, locatePath,
   gitStatus, gitFileDiff, openInOS, updateConfig, writeTextFile, archiveList,
   trashPath, movePath, renamePath,
-  saveImage, createEntry, inspectCodexProjectSessions, mutateCodexProjectSessions,
-  codexProjects, readConfig, ruleFor, saveRule, removeRule, serveRaw, serveHtmlPreview, serveThumb, serveStatic, defaultRoots,
+  saveImage, createEntry, listProjects, addProject, removeProject,
+  readConfig, ruleFor, saveRule, removeRule, serveRaw, serveHtmlPreview, serveThumb, serveStatic, defaultRoots,
 };
 const server = createAppServer({
   home: HOME, platform: PLATFORM, port: PORT, resolvePath, ext, pathSeparator: path.sep,

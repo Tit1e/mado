@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 index.html DOM、generated/ui.mjs Svelte 界面岛、HTTP/Git API、xterm/Monaco/Milkdown 和 Electron PTY/恢复桥与快捷动作
- * [OUTPUT]: 对外提供文件管理、Git 查看、预览编辑、内嵌终端及选择性命令恢复、Codex 会话、命令重启和全局交互
+ * [OUTPUT]: 对外提供文件管理、手动项目、Git 查看、预览编辑、内嵌终端及选择性命令恢复、命令重启和全局交互
  * [POS]: public 模块的渲染层主入口，集中编排页面状态、视图和桌面能力
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -22,7 +22,7 @@ import { createUiController } from './modules/ui-controller.js';
 import { startApplication } from './modules/lifecycle.js';
 import { createEffects } from './modules/effects.js';
 import { guardEditExit } from './modules/edit-session.js';
-import { createCodexProjectsService, createContextMenuService, createDialogService, createFavoritesService, createFileListService, createGitPanel, createRootsService, createSegmentedControlService } from './generated/ui.mjs';
+import { createProjectsService, createContextMenuService, createDialogService, createFavoritesService, createFileListService, createGitPanel, createRootsService, createSegmentedControlService } from './generated/ui.mjs';
 
 const $ = (s) => document.querySelector(s);
 const api = (p) => fetch(p).then((r) => r.json());
@@ -131,7 +131,7 @@ let animateLayout, restoreFileAreaIfHidden, showPreviewPanel, setPreviewMax, isP
 let selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor;
 let doRename, doTrash, doCreate, inputDialog, confirmDialog;
 let showContextMenu, popupMenu, shotTray;
-let loadRoots, renderRootsActive, loadFavorites, renderFavs, loadCodexProjects, showCodexProjectMenu, openFavoriteFile;
+let loadRoots, renderRootsActive, loadFavorites, renderFavs, loadProjects, addProject, showProjectMenu, showUnavailableProject, openFavoriteFile;
 let cmdk;
 let term;
 let gitPanel;
@@ -147,11 +147,12 @@ const dialogService = createDialogService();
 const { recoveryDialog } = dialogService;
 const contextMenuService = createContextMenuService();
 const segmentedControlService = createSegmentedControlService();
-const codexProjectsService = createCodexProjectsService({
-  target: $('#codex-projects-list'), api,
+const projectsService = createProjectsService({
+  target: $('#projects-list'), api,
   navigate: (...args) => navigate(...args),
   makeDraggable: (...args) => makeDraggablePath(...args),
-  openMenu: (...args) => showCodexProjectMenu(...args),
+  openMenu: (...args) => showProjectMenu(...args),
+  onUnavailable: (...args) => showUnavailableProject(...args),
   folderIcon: svgWrap(SVG.folder, 'currentColor', 16, true),
 });
 const favoritesService = createFavoritesService({
@@ -279,15 +280,15 @@ function setupControllers() {
     baseOf, refresh, runtime,
   }));
   ({
-    loadRoots, renderRootsActive, loadFavorites, renderFavs, loadCodexProjects, showCodexProjectMenu, openFavoriteFile,
+    loadRoots, renderRootsActive, loadFavorites, renderFavs, loadProjects, addProject, showProjectMenu, showUnavailableProject, openFavoriteFile,
   } = createSidebarController({
-    $, api, apiPost, state, SVG, svgWrap, escapeHtml, dirOf, navigate, makeDraggablePath,
-    openPreview, renderFiles, toggleFav, toast, confirmDialog, popupMenu,
-    codexProjects: codexProjectsService, favorites: favoritesService, roots: rootsService,
+    $, api, apiPost, state, dirOf, navigate,
+    openPreview, renderFiles, toast, popupMenu,
+    projects: projectsService, favorites: favoritesService, roots: rootsService,
   }));
   projectRun = createProjectRunController({
     $, state, api, apiPost, term, inputDialog, popupMenu, toast, ic,
-    setRunningRoots: (roots) => codexProjectsService.setRunningRoots(roots),
+    setRunningRoots: (roots) => projectsService.setRunningRoots(roots),
   });
   projectRun.startPolling();
   cmdk = createCommandPalette({
@@ -303,7 +304,7 @@ function setupControllers() {
     popupMenu, mona, svgWrap, SVG, openWith,
     playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax,
     setPreviewMax, moveCursor, cursorEnter, toggleFav,
-    setThemeControlValue: (value) => themeControl?.setValue(value),
+    setThemeControlValue: (value) => themeControl?.setValue(value), addProject,
   }));
   setupSegmentedControls();
 }
@@ -316,7 +317,7 @@ window.madoWebgl = (on) => { term.setWebgl(!!on); console.log('[mado] WebGL ' + 
 setupControllers();
 startApplication({
   $, state, applyTheme, applyLayout, term, bindEvents, bindSidebarResizer,
-  bindSelectionToTerminal, enableTooltips, loadRoots, loadFavorites, loadCodexProjects,
+  bindSelectionToTerminal, enableTooltips, loadRoots, loadFavorites, loadProjects,
   navigate, maybeShowGuide, escapeHtml, toast,
   recoveryDialog,
   refreshGitStatus: (...args) => gitPanel?.refresh(...args),

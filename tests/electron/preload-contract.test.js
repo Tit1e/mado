@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 Node.js 文件读取与 electron/main.js、preload.js IPC 字符串
- * [OUTPUT]: 验证 preload 使用的 invoke/send 频道均在主进程注册，并校验桌面 Codex 新会话与命令重启快捷键链路
+ * [OUTPUT]: 验证 preload 与主进程 IPC 频道一致，并校验项目目录选择、Codex 新会话与命令重启链路
  * [POS]: tests/electron 的跨文件 IPC 与菜单快捷键契约测试，防止桥接改名漂移
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -19,6 +19,14 @@ test('preload 发出的 IPC 频道全部由主进程注册', async () => {
   const registered = new Set([...main.matchAll(/ipcMain\.(?:handle|on)\('([^']+)'/g)].map((match) => match[1]));
   assert.ok(sent.length > 0);
   assert.deepEqual(sent.filter((channel) => !registered.has(channel)), []);
+});
+
+test('项目目录选择桥接使用主进程原生目录选择器', async () => {
+  const root = path.resolve(__dirname, '..', '..');
+  const preload = await fsp.readFile(path.join(root, 'electron', 'preload.js'), 'utf8');
+  const main = await fsp.readFile(path.join(root, 'electron', 'main.js'), 'utf8');
+  assert.match(preload, /madoProjects[\s\S]*chooseDirectory:\s*\(\) => ipcRenderer\.invoke\('projects:choose-directory'\)/);
+  assert.match(main, /ipcMain\.handle\('projects:choose-directory'[\s\S]*showOpenDialog[\s\S]*properties:\s*\['openDirectory'\]/);
 });
 
 test('preload 事件订阅都提供 removeListener 清理函数', async () => {
