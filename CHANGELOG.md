@@ -15,7 +15,7 @@
 - 发版时把 `[Unreleased]` 改成版本号 + 日期，开新的空 `[Unreleased]`
 - GitHub Release 的发布说明直接复制对应版本的段落
 
-## [Unreleased]
+## [2.9.0] - 2026-08-06
 
 ### Changed
 - **应用更名为 Mado**：npm 包名、CLI、bundle ID、配置目录、环境变量、渲染桥接、拖拽 MIME、文档与资产全部从 CodexBox 收敛为 Mado；旧配置与用户数据不迁移。
