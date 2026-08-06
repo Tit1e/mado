@@ -393,15 +393,6 @@ const shotTray = {
   dismiss() { clearTimeout(this.timer); if (this.el) { this.el.remove(); this.el = null; } },
 };
 
-// AI 整理：一键在内嵌终端拉起 Codex 对话式整理。
-// CodexBox 只备料——把整理偏好、过往整理历史、工作约定写成 brief 文件，Codex 读完先摊方案，
-// 你在终端里对话确认/调整后它才动手；每批移动写回滚日志，想撤销在对话里说一声就行
-async function organizeLaunch(dirPath) {
-  const r = await apiPost('/api/organize/launch', { path: dirPath });
-  if (!r.ok) { toast(r.error || 'AI 整理启动失败', true); return; }
-  term.runInDir(dirPath, r.cmd, 'Codex 已开聊——先摊方案，你点头它才动手');
-}
-
 // 右键上下文菜单：业务层只组装动作，渲染、定位和关闭生命周期交给 Svelte 服务。
 function showContextMenu(ev, e) {
   ev.preventDefault();
@@ -409,7 +400,6 @@ function showContextMenu(ev, e) {
   const items = [];
   if (e.isDir) items.push({ label: '打开', fn: () => navigate(e.path) });
   else items.push({ label: '预览', fn: () => { state.selected = e.path; openPreview(e); renderFiles(); } });
-  if (e.isDir) items.push({ label: 'AI 整理…', fn: () => organizeLaunch(e.path) });
   if (e.isDir) items.push({ label: '磁盘占用透视', fn: () => diskPanel(e.path) });
   if (e.isDir) items.push({ label: '在终端打开', fn: () => term.openInDir(e.path) });
   else items.push({ label: '在所在目录开终端', fn: () => term.openInDir(dirOf(e.path)) });
@@ -424,5 +414,5 @@ function showContextMenu(ev, e) {
   items.push({ label: '移到废纸篓', danger: true, fn: () => doTrash(e) });
   popupMenu(ev, items);
 }
-  return { selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor, doRename, doTrash, doCreate, inputDialog, confirmDialog, organizeLaunch, diskPanel, showContextMenu, popupMenu, shotTray };
+  return { selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor, doRename, doTrash, doCreate, inputDialog, confirmDialog, diskPanel, showContextMenu, popupMenu, shotTray };
 }

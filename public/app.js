@@ -132,7 +132,7 @@ let applyLayout, bindSelectionToTerminal, enableTooltips, bindSidebarResizer, ap
 let animateLayout, restoreFileAreaIfHidden, showPreviewPanel, setPreviewMax, isPreviewMax, toggleSidebar, lightbox;
 
 let selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor;
-let doRename, doTrash, doCreate, inputDialog, confirmDialog, organizeLaunch, diskPanel;
+let doRename, doTrash, doCreate, inputDialog, confirmDialog, diskPanel;
 let showContextMenu, popupMenu, shotTray;
 let loadRoots, renderRootsActive, loadFavorites, renderFavs, loadCodexProjects, showCodexProjectMenu, openFavoriteFile;
 let cmdk;
@@ -219,7 +219,7 @@ function setupControllers() {
   });
   ({
     selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor,
-    doRename, doTrash, doCreate, inputDialog, confirmDialog, organizeLaunch,
+    doRename, doTrash, doCreate, inputDialog, confirmDialog,
     diskPanel, showContextMenu, popupMenu, shotTray,
   } = createFileActionsController({
     $, state, api, apiPost, toast,
@@ -315,7 +315,7 @@ function setupControllers() {
   } = createUiController({
     $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview,
     toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename,
-    diskPanel, organizeLaunch, popupMenu, mona, svgWrap, SVG, openWith,
+    diskPanel, popupMenu, mona, svgWrap, SVG, openWith,
     playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax,
     setPreviewMax, moveCursor, cursorEnter, toggleFav,
     setThemeControlValue: (value) => themeControl?.setValue(value),

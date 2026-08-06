@@ -71,7 +71,6 @@ window.CODEXBOX_DICT = {
   // ---------- 右键菜单 ----------
   '打开': 'Open',
   '预览': 'Preview',
-  'AI 整理…': 'Organize with AI…',
   '磁盘占用透视': 'Disk usage',
   '在终端打开': 'Open in Terminal',
   '在所在目录开终端': 'Open Terminal in enclosing folder',
@@ -195,12 +194,6 @@ window.CODEXBOX_DICT = {
   '不理它也会自己走': 'Goes away on its own',
   '已收进 素材/': 'Filed into 素材/',
   '移动失败': 'Move failed',
-
-  // ---------- AI 整理（终端交互式）----------
-  '没找到 codex 命令——AI 整理需要先安装 Codex CLI': 'codex command not found — install Codex CLI before using AI organize',
-  'AI 整理启动失败': 'Failed to launch AI organize',
-  '返回': 'Back',
-  'Codex 已开聊——先摊方案，你点头它才动手': 'Codex is ready — it lays out a plan first and only moves files after you approve',
 
   // ---------- 磁盘占用面板 ----------
   '计算中…（大目录会慢几秒）': 'Calculating… (big folders take a few seconds)',
