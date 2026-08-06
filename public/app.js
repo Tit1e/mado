@@ -37,8 +37,6 @@ const state = {
   showHidden: localStorage.getItem('mado_hidden') === '1',
   filter: '', selected: null, cursor: -1, visible: [],
   favorites: [], recentOpened: [],
-  previewW: Number(localStorage.getItem('mado_preview_w')) || 0, // 0 = 用户还没拖过，走 1:2 比例默认
-  previewH: Number(localStorage.getItem('mado_preview_h')) || 0,
   sidebarCollapsed: localStorage.getItem('mado_sidebar_collapsed') === '1',
   sidebarW: Math.min(420, Math.max(190, Number(localStorage.getItem('mado_sidebar_w')) || 248)),
   muted: localStorage.getItem('mado_muted') === '1', // WOW4 提示音静音开关
@@ -139,7 +137,7 @@ let term;
 let gitPanel;
 let projectRun;
 
-let maybeShowGuide, bindResizer, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, applyTheme;
+let maybeShowGuide, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, applyTheme;
 let undoImage;
 
 
@@ -297,7 +295,7 @@ function setupControllers() {
     openPreview, renderFiles,
   });
   ({
-    maybeShowGuide, bindResizer, bindTerminalResizer, bindCodexControls, bindEvents,
+    maybeShowGuide, bindTerminalResizer, bindCodexControls, bindEvents,
     applyTheme, codexResumeLast,
   } = createUiController({
     $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview,
@@ -317,7 +315,7 @@ window.madoWebgl = (on) => { term.setWebgl(!!on); console.log('[mado] WebGL ' + 
 
 setupControllers();
 startApplication({
-  $, state, applyTheme, applyLayout, term, bindEvents, bindResizer, bindSidebarResizer,
+  $, state, applyTheme, applyLayout, term, bindEvents, bindSidebarResizer,
   bindSelectionToTerminal, enableTooltips, loadRoots, loadFavorites, loadCodexProjects,
   navigate, maybeShowGuide, escapeHtml, toast,
   recoveryDialog,

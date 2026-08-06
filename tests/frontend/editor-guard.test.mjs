@@ -49,7 +49,7 @@ test('用户确认放弃修改后允许离开并清除 dirty 守卫', async () =
 });
 
 test('关闭预览会释放 Monaco、Crepe 和图片编辑状态', async () => {
-  const dom = installDom('<section id="preview"></section><div id="preview-resizer"></div>');
+  const dom = installDom('<section id="terminal-panel"><section id="preview"></section></section>');
   try {
     const calls = [];
     const runtime = { imgEditState: { dirty: false } };
@@ -70,7 +70,6 @@ test('关闭预览会释放 Monaco、Crepe 和图片编辑状态', async () => {
     assert.equal(runtime.imgEditState, null);
     assert.deepEqual(calls, ['mona', 'crepe', ['selection', null], 'fit']);
     assert.equal(document.querySelector('#preview').classList.contains('hidden'), true);
-    assert.equal(document.querySelector('#preview-resizer').classList.contains('hidden'), true);
   } finally {
     dom.cleanup();
   }

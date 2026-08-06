@@ -5,7 +5,7 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function startApplication(deps) {
-  const { $, state, applyTheme, applyLayout, term, bindEvents, bindResizer, bindSidebarResizer, bindSelectionToTerminal, enableTooltips, loadRoots, loadFavorites, loadCodexProjects, navigate, maybeShowGuide, escapeHtml, toast, recoveryDialog, refreshGitStatus } = deps;
+  const { $, state, applyTheme, applyLayout, term, bindEvents, bindSidebarResizer, bindSelectionToTerminal, enableTooltips, loadRoots, loadFavorites, loadCodexProjects, navigate, maybeShowGuide, escapeHtml, toast, recoveryDialog, refreshGitStatus } = deps;
 // ---------- 启动 ----------
 async function init() {
   // 桌面 app：标记 body，给顶部交通灯留位、顶部可拖拽
@@ -16,7 +16,6 @@ async function init() {
   applyLayout();
   term.applyDock(); // 初始就给 #main-body 设好 dock 类，决定预览/文件管理方向
   bindEvents();
-  bindResizer();
   bindSidebarResizer();
   bindSelectionToTerminal();
   enableTooltips();

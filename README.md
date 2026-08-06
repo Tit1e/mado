@@ -46,7 +46,7 @@ Every time Codex writes a file, its row lights up: *find files → run Codex →
   <img src="assets/screenshot-volt.png" alt="Mado · Volt skin · file browser on the left, README preview at the bottom, embedded terminal on the right" width="100%">
 </p>
 
-<p align="center"><sub>▲ 实时 App 截图：列表浏览本地文件，README 原地预览，内嵌终端同屏运行。<br>Live app capture: local files in the list, README previewed in place, and the embedded terminal running alongside.</sub></p>
+<p align="center"><sub>▲ 实时 App 截图：列表浏览本地文件，README 预览浮层覆盖终端，关闭即还原。<br>Live app capture: local files in the list, README preview floating over the terminal, restored on close.</sub></p>
 
 ---
 
@@ -57,9 +57,9 @@ Codex 帮你一个下午起十个项目，但它们散在各处、名字认不�
 
 Codex helps you start ten projects in an afternoon — then they scatter everywhere, the names stop making sense, and you can't see what got changed. The daily reality: dig through Finder → switch to iTerm to launch Codex → switch to the browser to check results. Three windows, endless hopping.
 
-Mado 把这条链路收进一个窗口：**左边文件 × 右边/下边终端 × 原地预览**，一个有机整体。它不跟 Finder 拼文件操作，不跟 VS Code 拼编辑，专注「找回 + 预览 + 轻改 + 指挥 Codex」这一条链路做到顺手。
+Mado 把这条链路收进一个窗口：**左边文件 × 右边/下边终端（预览以浮层覆盖其上，关闭即还原）**，一个有机整体。它不跟 Finder 拼文件操作，不跟 VS Code 拼编辑，专注「找回 + 预览 + 轻改 + 指挥 Codex」这一条链路做到顺手。
 
-Mado folds that loop into one window: **files on the left × terminal on the right/bottom × preview in place**. It doesn't compete with Finder on file ops or VS Code on editing. It does one chain well: *find → preview → light edits → command Codex*.
+Mado folds that loop into one window: **files on the left × terminal on the right/bottom (preview floats over it and restores on close)**. It doesn't compete with Finder on file ops or VS Code on editing. It does one chain well: *find → preview → light edits → command Codex*.
 
 Mado 自身不要求云端账号，也没有远程后端，文件浏览与配置都在本机完成。内嵌终端中的 Codex CLI 仍按它自己的账号与网络配置工作。
 

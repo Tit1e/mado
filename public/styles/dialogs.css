@@ -93,7 +93,6 @@
 #preview:has(.imgedit-tools) .preview-body { display: flex; flex-direction: column; }
 #preview:has(.imgedit-tools) .imgedit-canvas-wrap { flex: 1; min-height: 0; max-height: none; align-items: center; }
 #preview:has(.imgedit-tools) #ie-canvas { max-height: 100%; width: auto; height: auto; }
-#main-body:has(.imgedit-tools) #preview-resizer { display: none; }
 
 /* 通用输入弹窗 */
 .input-overlay {

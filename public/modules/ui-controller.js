@@ -51,30 +51,7 @@ function maybeShowGuide() {
   return showGuide(true);
 }
 
-// ---------- 预览面板拖拽调宽 ----------
-function bindResizer() {
-  const handle = $('#preview-resizer');
-  let dragging = false;
-  handle.addEventListener('mousedown', (e) => { dragging = true; e.preventDefault(); handle.classList.add('dragging'); document.body.style.userSelect = 'none'; });
-  window.addEventListener('mousemove', (e) => {
-    if (!dragging) return;
-    const fm = $('#filemgmt').getBoundingClientRect();
-    if (term.dock === 'right') { // 预览在文件区下方 → 纵向拖
-      state.previewH = Math.round(Math.min(fm.height - 120, Math.max(140, fm.bottom - e.clientY)));
-    } else { // 预览在文件区右侧 → 横向拖
-      state.previewW = Math.round(Math.min(fm.width - 220, Math.max(260, fm.right - e.clientX)));
-    }
-    applyPreviewSize();
-  });
-  window.addEventListener('mouseup', () => {
-    if (!dragging) return;
-    dragging = false; handle.classList.remove('dragging'); document.body.style.userSelect = '';
-    localStorage.setItem('mado_preview_w', state.previewW);
-    localStorage.setItem('mado_preview_h', state.previewH || 340);
-  });
-}
-
-// 终端面板拖拽调整大小（底部拖高度 / 右侧拖宽度）
+// ---------- 终端面板拖拽调整大小（底部拖高度 / 右侧拖宽度）
 // 丝滑要点：mousemove 只记目标值，用 rAF 每帧最多应用一次（含一次 fit），不再每个事件都 fit 触发重排
 function bindTerminalResizer() {
   const handle = $('#terminal-resizer');
@@ -382,5 +359,5 @@ function applyTheme(skin, rerender = true) {
   }
 }
 
-  return { showGuide, maybeShowGuide, bindResizer, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, applyTheme };
+  return { showGuide, maybeShowGuide, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, applyTheme };
 }

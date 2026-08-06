@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 依赖文件与 Git Diff API、共享 state/runtime、编辑器与终端代理
- * [OUTPUT]: 对外提供 createPreviewController，管理文件预览、单文件 Git Diff、预览动作和窗口布局
- * [POS]: public/modules 的预览与布局领域控制器，被文件浏览、编辑和文件跟随流程消费
+ * [OUTPUT]: 对外提供 createPreviewController，管理文件预览、单文件 Git Diff、预览动作、终端浮层覆盖和窗口布局
+ * [POS]: public/modules 的预览与布局领域控制器，预览以浮层覆盖终端面板，被文件浏览、编辑和文件跟随流程消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createPreviewController(deps) {
@@ -200,7 +200,6 @@ async function closePreview() {
   if (previewMax) setPreviewMax(false);
   animateLayout();
   $('#preview').classList.add('hidden');
-  $('#preview-resizer').classList.add('hidden');
   applySelection(null);
   term.fitActive();
 }
@@ -305,19 +304,9 @@ function bindSidebarResizer() {
     localStorage.setItem('mado_sidebar_w', state.sidebarW);
   });
 }
-// 预览尺寸随 dock 翻转：终端在右→预览在下方用高度，否则用宽度
+// 预览浮层覆盖终端面板，尺寸随面板自适应（不再需要拖拽调宽）
 function applyPreviewSize() {
-  const pv = $('#preview');
-  if (!pv || pv.classList.contains('hidden')) return;
-  const isRight = term.dock === 'right';
-  let basis = isRight ? state.previewH : state.previewW; // 0 = 还没手动拖过
-  if (!basis) { // 首次：文件列表:预览 = 1:2，预览占 2/3
-    const fm = $('#filemgmt');
-    const r = fm && fm.getBoundingClientRect();
-    const span = r ? (isRight ? r.height : r.width) : 0;
-    basis = span ? Math.round(span * 2 / 3) : (isRight ? 340 : 480);
-  }
-  pv.style.flexBasis = basis + 'px';
+  // 保留空实现：终端 dock 翻转时调用方仍引用此函数，浮层 inset:0 自动跟随
 }
 // 离散布局切换时短暂开启过渡（拖拽时不开，保证跟手）
 function animateLayout() {
@@ -348,11 +337,11 @@ function restoreFileAreaIfHidden() {
   }
 }
 function showPreviewPanel() {
+  // 预览浮层覆盖终端面板：终端若被收起则先展开，否则浮层无处安放
+  if ($('#terminal-panel').classList.contains('hidden')) term.open();
   const wasHidden = $('#preview').classList.contains('hidden');
   $('#preview').classList.remove('hidden');
-  $('#preview-resizer').classList.remove('hidden');
   if (wasHidden) animateLayout();
-  applyPreviewSize();
 }
 // 预览全屏：让 #preview 铺满整个窗口（盖住文件区/终端/侧边栏）。md 全屏下仍是所见即所得，可继续编辑。
 let previewMax = false;

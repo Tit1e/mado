@@ -27,6 +27,19 @@
 #terminal-resizer.hidden { display: none; }
 .dock-bottom #terminal-resizer { width: 100%; cursor: row-resize; }
 .dock-right #terminal-resizer { height: 100%; cursor: col-resize; }
+/* 视觉线由手柄自身绘制，避免绝对定位伪元素跨出分栏；6px 命中区保持不变 */
+#terminal-resizer {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-position: center; background-repeat: no-repeat;
+  opacity: 0; transition: opacity 0.15s ease 0.08s;
+}
+.dock-right #terminal-resizer {
+  background-size: 1px 100%;
+}
+.dock-bottom #terminal-resizer {
+  background-size: 100% 1px;
+}
+#terminal-resizer:hover, #terminal-resizer.dragging { opacity: 0.55; }
 /* 终端拖到头：文件区彻底让位（不再留 4px 残条），拖拽条保留，往回拖即还原 */
 #main-body.fm-squeezed > #filemgmt { display: none; }
 #main-body.fm-squeezed > #terminal-panel { flex: 1 1 auto !important; width: auto !important; height: auto !important; }

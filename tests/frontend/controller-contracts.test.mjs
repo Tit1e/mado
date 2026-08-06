@@ -28,7 +28,7 @@ const asyncNoop = async () => {};
 function dependencyBag(overrides = {}) {
   const state = {
     cwd: '/workspace', home: '/home/test', sep: '/', entries: [], favorites: [], recentOpened: [],
-    theme: 'warm', history: [], visible: [], previewW: 0, previewH: 0,
+    theme: 'warm', history: [], visible: [],
   };
   return new Proxy({ state, follow: { timers: {}, recentChanges: [] }, runtime: {}, $: () => null, ...overrides }, {
     get(target, key) {

@@ -1,6 +1,6 @@
 <!--
   [INPUT]: 依赖 styles/ 样式分片、app.js、i18n.js 和本地 vendor 浏览器资源
-  [OUTPUT]: 对外提供 Mado 单页应用的文件区、主题化隐藏文件控件、使用指南入口、Svelte 界面岛挂载点、预览区、终端区和通用弹层 DOM 骨架
+  [OUTPUT]: 对外提供 Mado 单页应用的文件区、主题化隐藏文件控件、使用指南入口、Svelte 界面岛挂载点、终端区（含预览浮层）、通用弹层 DOM 骨架
   [POS]: public 模块的页面入口，定义渲染层组件挂载点与脚本加载顺序
   [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
 -->
@@ -86,17 +86,6 @@
           <div id="file-area"></div>
           <div id="statusbar" class="hidden"></div>
         </div>
-        <div id="preview-resizer" class="hidden" title="拖动调整大小"></div>
-        <section id="preview" class="hidden">
-          <header class="preview-head">
-            <div class="preview-title" id="preview-title"></div>
-            <div class="preview-actions" id="preview-actions"></div>
-            <button id="preview-close" title="关闭">✕</button>
-          </header>
-          <div class="preview-body" id="preview-body"></div>
-          <div class="follow-narration hidden" id="follow-narration"></div>
-          <div class="preview-foot" id="preview-foot"></div>
-        </section>
         </div>
         <div id="terminal-resizer" class="hidden"></div>
         <section id="terminal-panel" class="hidden">
@@ -113,6 +102,16 @@
             </div>
           </header>
           <div id="xterm-host"></div>
+          <section id="preview" class="hidden">
+            <header class="preview-head">
+              <div class="preview-title" id="preview-title"></div>
+              <div class="preview-actions" id="preview-actions"></div>
+              <button id="preview-close" title="关闭">✕</button>
+            </header>
+            <div class="preview-body" id="preview-body"></div>
+            <div class="follow-narration hidden" id="follow-narration"></div>
+            <div class="preview-foot" id="preview-foot"></div>
+          </section>
         </section>
       </div>
     </main>

@@ -1,24 +1,23 @@
 /**
  * [INPUT]: 依赖 index.html 的 DOM 结构与 base.css 定义的主题变量
- * [OUTPUT]: 对外提供预览面板、共用分割线、Git 变更弹层、命令面板、状态组件与内容查看器样式
- * [POS]: public/styles 的预览面板与分割线样式分片，按 index.html 声明顺序参与级联
+ * [OUTPUT]: 对外提供预览浮层（覆盖终端面板）、Git 变更弹层、命令面板、状态组件与内容查看器样式
+ * [POS]: public/styles 的预览浮层与内容查看器样式分片，按 index.html 声明顺序参与级联
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
-/* ---------- 预览面板 ---------- */
+/* ---------- 预览面板（浮层：覆盖整个终端面板，关闭后还原终端） ---------- */
 #preview {
-  background: var(--panel); flex: 0 0 auto;
+  background: var(--panel);
+  position: absolute; inset: 0; z-index: 30;
   display: flex; flex-direction: column; overflow: hidden; min-height: 0; min-width: 0;
 }
 #preview.hidden { display: none; }
-/* 全屏放大：脱离分屏，铺满整个窗口（盖住文件区/终端/侧边栏）。md/html 放大后照样可看可编辑。
+/* 全屏放大：脱离终端浮层，铺满整个窗口（盖住文件区/终端/侧边栏）。md/html 放大后照样可看可编辑。
    z-index 取 55，和图片编辑全屏一致——低于弹窗层（.input-overlay 60），未保存确认等弹窗才能浮在上面。 */
 #preview.is-max {
   position: fixed; inset: 0; z-index: 55;
   flex-basis: auto !important; width: auto !important; height: auto !important;
   border: none;
 }
-.dock-bottom #preview { border-left: 1px solid var(--border); }
-.dock-right #preview { border-top: 1px solid var(--border); }
 /* 标题 + 操作按钮 + 关闭 全部并到一行，省掉一整行高度 */
 .preview-head { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
 .preview-title { flex: 0 1 auto; min-width: 36px; font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -170,26 +169,7 @@
 .nav-list li .ico, .cmdk-results .r-icon { display: inline-flex; align-items: center; }
 .nav-list li .ico svg { vertical-align: middle; }
 
-/* 预览面板拖拽手柄 */
-/* 预览分隔条：作为 flex 同级；轴向随 dock 翻转 */
-#preview-resizer { flex: 0 0 6px; background-color: transparent; z-index: 5; position: relative; }
-#preview-resizer.hidden { display: none; }
-.dock-bottom #preview-resizer { cursor: col-resize; }
-.dock-right #preview-resizer { cursor: row-resize; }
-/* 视觉线由手柄自身绘制，避免绝对定位伪元素跨出分栏；6px 命中区保持不变 */
-#preview-resizer, #terminal-resizer {
-  background-image: linear-gradient(var(--accent), var(--accent));
-  background-position: center; background-repeat: no-repeat;
-  opacity: 0; transition: opacity 0.15s ease 0.08s;
-}
-.dock-bottom #preview-resizer, .dock-right #terminal-resizer {
-  background-size: 1px 100%;
-}
-.dock-right #preview-resizer, .dock-bottom #terminal-resizer {
-  background-size: 100% 1px;
-}
-#preview-resizer:hover, #preview-resizer.dragging,
-#terminal-resizer:hover, #terminal-resizer.dragging { opacity: 0.55; }
+/* 预览浮层不再需要拖拽手柄：预览覆盖终端面板，尺寸随面板；终端分割线视觉线见 terminal.css */
 .pv-img { cursor: zoom-in; }
 /* 图片全屏：在窗口中居中，并整图缩放到铺满可视区（约束 max-height 避免 flex 居中把高图顶部裁掉） */
 #preview.is-max .preview-body:has(> .pv-img) { display: flex; align-items: center; justify-content: center; }

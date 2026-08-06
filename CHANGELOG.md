@@ -15,6 +15,11 @@
 - 发版时把 `[Unreleased]` 改成版本号 + 日期，开新的空 `[Unreleased]`
 - GitHub Release 的发布说明直接复制对应版本的段落
 
+## [Unreleased]
+
+### Changed
+- **预览覆盖终端面板**：点击文件后内容预览以浮层覆盖整个终端区域，关闭即还原终端；移除预览与文件区之间的分割条，文件区可保持紧凑尺寸；全屏放大能力保留。
+
 ## [2.9.0] - 2026-08-06
 
 ### Changed
@@ -277,7 +282,7 @@
 ## [1.13.0] - 2026-06-17
 
 ### Added
-- **Markdown 支持 HEIC/HEIF 预览**：苹果 HEIC 图片在 markdown 里 `![](x.heic)` 现在能正常显示。`serveRaw` 遇 heic/heif 用 macOS `sips` 转码成 jpeg 并缓存（复用缩略图那套缓存/LRU，零新依赖），`/api/raw`、`/fs/`、`/api/thumb` 三条路径透明覆盖。
+- **Markdown 支持 HEIC/HEIF 预览**：苹果 HEIC 图片在 markdown 里 `![](x.heic)` 现在能正常显示。`serveRaw` 遇 heic/heif 用 macOS `sips` 转码成 jpeg 并缓存（复用缩略图那套缓存/LRU，零新依赖），`/api/raw`、`/`、`/api/thumb` 三条路径透明覆盖。
 - **文件区拖入 app 内 / 外部图片存盘**：微信收到的图、预览里的图（都是 `<img>`，拖动带的是 `text/uri-list` 而非系统文件）现在也能拖进文件管理区存到当前文件夹；并把 drop 区扩展到撑满整个文件夹高度——文件下方的空白也算文件夹内，不再「下半截拖不进」。
 
 ### Fixed
