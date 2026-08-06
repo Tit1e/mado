@@ -111,8 +111,8 @@ function renderFiles() {
   state.visible = list;
   renderStatusbar();
   fileList.render({
-    entries: list, view: state.view, gridSize: state.gridSize, selected: state.selected,
-    cursor: state.cursor, changed: state.changed, favorites: state.favorites.map((favorite) => favorite.path),
+    entries: list, selected: state.selected, cursor: state.cursor,
+    changed: state.changed, favorites: state.favorites.map((favorite) => favorite.path),
   }, {
     click: (entry, index) => { state.cursor = index; onItemClick(entry); },
     open: (event, entry) => { if (!event.target.closest('.fav-btn')) onItemOpen(entry); },
@@ -120,7 +120,6 @@ function renderFiles() {
     favorite: (entry) => toggleFav(entry),
     drag: dragItem,
   });
-  state.cols = fileList.measureColumns();
 }
 function dragItem(event, entry) {
   event.dataTransfer.setData('text/plain', entry.path);
@@ -177,7 +176,7 @@ function makeDraggablePath(el, p) {
     ev.dataTransfer.effectAllowed = 'copy';
   });
 }
-// 只切换选中态的 class，绝不重建整个网格（重建会把所有缩略图重新解码 → 点击卡顿元凶）
+// 只切换选中态，不重建文件列表，避免重新解码媒体缩略图。
 function applySelection(path) {
   state.selected = path;
   fileList.setSelection(path);

@@ -62,8 +62,8 @@ body { transition: background-color 0.28s ease, color 0.28s ease; }
 }
 
 /* agent 改动文件的高亮：accent 描边 + 角标，4.5s 后淡出 */
-.item.changed, .row.changed { position: relative; box-shadow: inset 0 0 0 1.5px var(--accent); border-radius: var(--radius); }
-.item.changed::after, .row.changed::after {
+.row.changed { position: relative; box-shadow: inset 0 0 0 1.5px var(--accent); border-radius: var(--radius); }
+.row.changed::after {
   content: "改"; position: absolute; top: 4px; right: 4px; z-index: 3;
   background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 700;
   padding: 1px 5px; border-radius: 5px; animation: changedPulse 0.5s ease;
@@ -79,10 +79,9 @@ body { transition: background-color 0.28s ease, color 0.28s ease; }
 .input-dialog { background: color-mix(in srgb, var(--bg-2) 85%, transparent); -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4); }
 
 /* 变更角标显示计数（改·N），文本由 JS 写进 data-changed */
-.item.changed::after, .row.changed::after { content: attr(data-changed); }
-.row.changed::after { animation: changedPulse 0.45s ease; }
-/* WOW1 活的仪表盘：发光强度随「热度」(--heat：改得越频繁越亮)，持续轻呼吸；写入瞬间弹一下 + 荡涟漪 */
-.item.changed, .row.changed {
+.row.changed::after { content: attr(data-changed); animation: changedPulse 0.45s ease; }
+/* WOW1 活的仪表盘：发光强度随「热度」(--heat：改得越频繁越亮)，持续轻呼吸；写入瞬间高亮 + 荡涟漪 */
+.row.changed {
   box-shadow: inset 0 0 0 1.5px var(--accent), 0 0 calc(6px + 26px * var(--heat, 0.4)) color-mix(in srgb, var(--accent) calc(55% * var(--heat, 0.4)), transparent);
   animation: changedBreath 2.2s ease-in-out infinite;
 }
@@ -90,9 +89,7 @@ body { transition: background-color 0.28s ease, color 0.28s ease; }
   0%, 100% { box-shadow: inset 0 0 0 1.5px var(--accent), 0 0 calc(5px + 18px * var(--heat, 0.4)) color-mix(in srgb, var(--accent) calc(40% * var(--heat, 0.4)), transparent); }
   50% { box-shadow: inset 0 0 0 2.5px var(--accent), 0 0 calc(10px + 34px * var(--heat, 0.4)) color-mix(in srgb, var(--accent) calc(70% * var(--heat, 0.4)), transparent); }
 }
-/* 写入瞬间：卡片弹一下 */
-.item.live-edit { animation: liveZap 0.5s ease; }
-@keyframes liveZap { 0% { transform: scale(1); } 28% { transform: scale(1.055); } 100% { transform: scale(1); } }
+/* 写入瞬间：列表行闪亮 */
 .row.live-edit { animation: liveZapRow 0.5s ease; }
 @keyframes liveZapRow { 0% { background: transparent; } 28% { background: var(--accent-soft); } 100% { background: transparent; } }
 /* 写入涟漪：从图标中心荡开一圈 */
@@ -103,14 +100,7 @@ body { transition: background-color 0.28s ease, color 0.28s ease; }
 }
 @keyframes editRipple { 0% { transform: scale(0.5); opacity: 0.85; } 100% { transform: scale(7); opacity: 0; } }
 
-/* 排版呼吸：网格项更松、文件名行高更舒展 */
-.grid .item { padding: 14px 10px 12px; }
-.grid .fname { line-height: 1.4; }
-
-/* 强色实体字形直接漂在格子里，无底座方框（异形 + 强色本身就是识别度）；hover 轻微浮起 */
-.grid .item .svg-icon { align-items: center; justify-content: center; transition: transform 0.12s ease; }
-.grid .item:hover .svg-icon { transform: translateY(-1.5px); }
-/* 列表视图排版与网格对齐呼吸 */
+/* 文件列表排版呼吸 */
 .list .row { padding-top: 9px; padding-bottom: 9px; }
 .list .row .fname { line-height: 1.4; }
 

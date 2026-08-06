@@ -204,9 +204,7 @@ function bindEvents() {
   const tb = $('#topbar');
   new ResizeObserver((es) => {
     const w = es[0].contentRect.width;
-    tb.classList.toggle('tb-sm', w < 980);
     tb.classList.toggle('tb-xs', w < 880);
-    tb.classList.toggle('tb-xxs', w < 790);
     tb.classList.toggle('tb-min', w < 660);
   }).observe(tb);
   // 文件区被终端/预览压窄时，列表列让位：名称优先，先藏「大小」再藏「修改时间」（#49）
@@ -276,7 +274,7 @@ function bindEvents() {
   window.addEventListener('drop', (e) => e.preventDefault());
   // 文件区空白处双击/右键 → 新建菜单（#7：右键空白是更普遍的肌肉记忆）
   const blankMenu = (e) => {
-    if (e.target.closest('.item') || e.target.closest('.row')) return; // 条目自身的菜单不抢
+    if (e.target.closest('.row')) return; // 条目自身的菜单不抢
     e.preventDefault();
     popupMenu(e, [
       { label: '新建文件夹…', fn: () => doCreate('dir') },
@@ -294,15 +292,15 @@ function bindEvents() {
   // codexbox 内部路径拖拽（带 application/x-codexbox-path，拖去终端用）排除在外，不受影响。
   const fileArea = $('#file-area');
   const droppableTypes = (t) => t.includes('Files') || (t.includes('text/uri-list') && !t.includes('application/x-codexbox-path'));
-  const clearDropHi = () => { fileArea.classList.remove('area-drop'); fileArea.querySelectorAll('.item.drop-into').forEach((x) => x.classList.remove('drop-into')); };
+  const clearDropHi = () => { fileArea.classList.remove('area-drop'); fileArea.querySelectorAll('.row.drop-into').forEach((x) => x.classList.remove('drop-into')); };
   fileArea.addEventListener('dragover', (ev) => {
     if (!droppableTypes(ev.dataTransfer.types)) return;
     ev.preventDefault(); ev.dataTransfer.dropEffect = 'copy';
-    const item = ev.target.closest('.item');
-    const idx = item ? Number(item.dataset.idx) : -1;
-    const overDir = idx >= 0 && state.visible[idx] && state.visible[idx].isDir ? item : null;
+    const row = ev.target.closest('.row[data-idx]');
+    const idx = row ? Number(row.dataset.idx) : -1;
+    const overDir = idx >= 0 && state.visible[idx] && state.visible[idx].isDir ? row : null;
     if (overDir) { if (!overDir.classList.contains('drop-into')) { clearDropHi(); overDir.classList.add('drop-into'); } }
-    else { fileArea.querySelectorAll('.item.drop-into').forEach((x) => x.classList.remove('drop-into')); fileArea.classList.add('area-drop'); }
+    else { fileArea.querySelectorAll('.row.drop-into').forEach((x) => x.classList.remove('drop-into')); fileArea.classList.add('area-drop'); }
   });
   fileArea.addEventListener('dragleave', (ev) => { if (!fileArea.contains(ev.relatedTarget)) clearDropHi(); });
   fileArea.addEventListener('drop', async (ev) => {
@@ -311,8 +309,8 @@ function bindEvents() {
     const url = (!hasFiles && dt.types.includes('text/uri-list') && !dt.types.includes('application/x-codexbox-path')) ? dt.getData('text/uri-list') : '';
     if (!hasFiles && !url) return;
     ev.preventDefault(); clearDropHi();
-    const item = ev.target.closest('.item');
-    const idx = item ? Number(item.dataset.idx) : -1;
+    const row = ev.target.closest('.row[data-idx]');
+    const idx = row ? Number(row.dataset.idx) : -1;
     const over = idx >= 0 ? state.visible[idx] : null;
     const dir = over && over.isDir ? over.path : state.cwd;
     if (hasFiles) await dropFilesInto(dt.files, dir);
@@ -323,8 +321,6 @@ function bindEvents() {
 
   $('#toggle-hidden').checked = state.showHidden;
   $('#toggle-hidden').onchange = (e) => { state.showHidden = e.target.checked; localStorage.setItem('codexbox_hidden', state.showHidden ? '1' : '0'); renderFiles(); };
-
-  updateGridSizeVisibility();
 
   $('#cmdk-input').oninput = (e) => cmdk.search(e.target.value);
   $('#cmdk').onclick = (e) => { if (e.target.id === 'cmdk') cmdk.close(); };
@@ -361,8 +357,8 @@ function bindEvents() {
     if ((e.metaKey || e.ctrlKey) && (e.key === 'b' || e.key === 'B') && !inInput) { e.preventDefault(); toggleSidebar(); return; }
     if (inInput) return;
     // 主区键盘导航
-    if (e.key === 'ArrowDown') { e.preventDefault(); moveCursor(state.cols); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); moveCursor(-state.cols); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveCursor(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); moveCursor(-1); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); moveCursor(1); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); moveCursor(-1); }
     else if (e.key === 'Enter') { e.preventDefault(); cursorEnter(e.metaKey || e.ctrlKey); }
@@ -371,9 +367,6 @@ function bindEvents() {
     else if (e.key === ' ') { e.preventDefault(); const it = state.visible[state.cursor]; if (it) toggleFav(it); }
     else if (e.key === 'F2') { e.preventDefault(); const it = state.visible[state.cursor]; if (it) doRename(it); }
   });
-}
-function updateGridSizeVisibility() {
-  $('#gridsize-seg').style.display = state.view === 'grid' ? '' : 'none';
 }
 
 // ---------- 主题 / 皮肤 ----------
@@ -397,5 +390,5 @@ function applyTheme(skin, rerender = true) {
   }
 }
 
-  return { showGuide, maybeShowGuide, bindResizer, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, updateGridSizeVisibility, applyTheme };
+  return { showGuide, maybeShowGuide, bindResizer, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, applyTheme };
 }

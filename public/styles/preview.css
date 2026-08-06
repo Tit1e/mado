@@ -195,7 +195,7 @@
 #preview.is-max .preview-body:has(> .pv-img) { display: flex; align-items: center; justify-content: center; }
 #preview.is-max .preview-body > .pv-img { max-height: 100%; }
 /* 透明图垫棋盘格，白色/透明 PNG 也能看清边界 */
-.grid .item .icon .thumb, .pv-img, .lightbox img, .list .row .icon .thumb-sm {
+.pv-img, .lightbox img, .list .row .icon .thumb-sm {
   background: repeating-conic-gradient(color-mix(in srgb, var(--text) 11%, transparent) 0% 25%, transparent 0% 50%) 0 0 / 14px 14px, var(--bg-3);
 }
 /* 底部状态条：贴在文件区底缘，内容短时也贴底（margin-top:auto），滚动时 sticky 常驻 */

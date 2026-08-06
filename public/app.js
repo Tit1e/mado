@@ -33,11 +33,9 @@ const state = {
   cwd: null, home: null, platform: 'darwin', sep: '/',
   theme: localStorage.getItem('codexbox_theme') || 'warm',
   entries: [], project: null, history: [],
-  view: localStorage.getItem('codexbox_view') || 'grid',
-  gridSize: localStorage.getItem('codexbox_gridsize') || 'sm',
   sort: localStorage.getItem('codexbox_sort') || 'name',
   showHidden: localStorage.getItem('codexbox_hidden') === '1',
-  filter: '', selected: null, cursor: -1, cols: 1, visible: [],
+  filter: '', selected: null, cursor: -1, visible: [],
   favorites: [], recentOpened: [],
   previewW: Number(localStorage.getItem('codexbox_preview_w')) || 0, // 0 = 用户还没拖过，走 1:2 比例默认
   previewH: Number(localStorage.getItem('codexbox_preview_h')) || 0,
@@ -70,7 +68,7 @@ const runtime = {
   get edStatusTimer() { return edStatusTimer; },
   set edStatusTimer(value) { edStatusTimer = value; },
 };
-const { SVG, svgWrap, ic, iconSvg, richIcon, iconColorFor, TERM_LINK_RE_BARE } = createIcons(state);
+const { SVG, svgWrap, ic, iconSvg, richIcon, TERM_LINK_RE_BARE } = createIcons(state);
 const { mona, crepe } = createEditors(state);
 
 // ---------- 工具 ----------
@@ -140,7 +138,7 @@ let term;
 let gitPanel;
 let projectRun;
 
-let maybeShowGuide, bindResizer, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, updateGridSizeVisibility, applyTheme;
+let maybeShowGuide, bindResizer, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, applyTheme;
 let undoImage;
 
 
@@ -174,7 +172,7 @@ const rootsService = createRootsService({
   folderIcon: svgWrap(SVG.folder, 'currentColor', 16, true),
 });
 const fileListService = createFileListService({
-  target: $('#file-area'), iconSvg, iconColorFor,
+  target: $('#file-area'), iconSvg,
   formatSize: fmtSize, formatTime: fmtTime,
   favoriteIcon: (on) => svgWrap(SVG.star, 'currentColor', 15, on),
   emptyIcon: ic('inbox', 'currentColor', 48),
@@ -186,16 +184,6 @@ function setupSegmentedControls() {
     target: $('#sort-seg'), value: state.sort, variant: 'compact-text', ariaLabel: '排序方式',
     items: [{ value: 'name', label: '名称' }, { value: 'mtime', label: '时间' }, { value: 'size', label: '大小' }],
     onChange: (value) => { state.sort = value; localStorage.setItem('codexbox_sort', value); renderFiles(); },
-  });
-  segmentedControlService.mount({
-    target: $('#view-seg'), value: state.view, variant: 'compact-icon', ariaLabel: '文件视图',
-    items: [{ value: 'grid', label: '▦', title: '网格' }, { value: 'list', label: '☰', title: '列表' }],
-    onChange: (value) => { state.view = value; localStorage.setItem('codexbox_view', value); updateGridSizeVisibility(); renderFiles(); },
-  });
-  segmentedControlService.mount({
-    target: $('#gridsize-seg'), value: state.gridSize, variant: 'compact-icon', ariaLabel: '缩略图大小',
-    items: [{ value: 'sm', label: '·', title: '小' }, { value: 'md', label: '▪', title: '中' }, { value: 'lg', label: '◼', title: '大' }],
-    onChange: (value) => { state.gridSize = value; localStorage.setItem('codexbox_gridsize', value); renderFiles(); },
   });
   themeControl = segmentedControlService.mount({
     target: $('#theme-seg'), value: state.theme, variant: 'regular', ariaLabel: '皮肤',
@@ -255,7 +243,7 @@ function setupControllers() {
     api, toast, state, renderRootsActive: (...args) => renderRootsActive(...args), renderProjectRunActions: (...args) => projectRun?.render(...args), term: termProxy,
     openPreview: (...args) => openPreview(...args), setFileFollow: (...args) => setFileFollow(...args),
     recordRecent, toggleFav, iconSvg, fmtSize, fmtTime, isFav, escapeHtml, openWith,
-    showContextMenu, baseOf, ic, svgWrap, SVG, diskPanel, iconColorFor, refresh,
+    showContextMenu, baseOf, ic, svgWrap, SVG, diskPanel, refresh,
     kindFromName, setPreviewMax: (...args) => setPreviewMax(...args), fileList: fileListService,
     loadGitStatus: (...args) => gitPanel?.load(...args),
     renderGitStatus: (...args) => gitPanel?.render(...args),
@@ -311,7 +299,7 @@ function setupControllers() {
   });
   ({
     maybeShowGuide, bindResizer, bindTerminalResizer, bindCodexControls, bindEvents,
-    updateGridSizeVisibility, applyTheme, codexResumeLast,
+    applyTheme, codexResumeLast,
   } = createUiController({
     $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview,
     toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename,

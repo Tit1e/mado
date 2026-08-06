@@ -29,10 +29,10 @@
 <br>
 
 一边浏览、预览、编辑本地文件；一边在内嵌真实终端里跑 Codex。<br>
- Codex 每写一个文件，对应卡片就会亮起来——*找回文件 → 运行 Codex → 看清改了什么*，全部在一个窗口完成。<br>
+ Codex 每写一个文件，对应文件行就会亮起来，*找回文件 → 运行 Codex → 看清改了什么*，全部在一个窗口完成。<br>
 <br>
 Browse, preview and edit local files on one side; run Codex in a real embedded terminal on the other.<br>
-Every time Codex writes a file, its card lights up — *find files → run Codex → see what changed*, all in one window.
+Every time Codex writes a file, its row lights up: *find files → run Codex → see what changed*, all in one window.
 
 <br>
 
@@ -46,7 +46,7 @@ Every time Codex writes a file, its card lights up — *find files → run Codex
   <img src="assets/screenshot-volt.png" alt="CodexBox · Volt skin · file browser on the left, README preview at the bottom, embedded terminal on the right" width="100%">
 </p>
 
-<p align="center"><sub>▲ 真机截图：浏览 codexbox 仓库本身，README 原地预览，内嵌终端正在跑 git。本页所有截图均由 Playwright 从实时 App 中直接拍摄，未修图。<br>Real capture: browsing the codexbox repo itself, README previewed in place, git running in the embedded terminal. All screenshots in this README are taken from the live app via Playwright, unedited.</sub></p>
+<p align="center"><sub>▲ 实时 App 截图：列表浏览本地文件，README 原地预览，内嵌终端同屏运行。<br>Live app capture: local files in the list, README previewed in place, and the embedded terminal running alongside.</sub></p>
 
 ---
 
@@ -85,19 +85,19 @@ The three skins are not simple color swaps: palette, typography, icons, code hig
 
 - **⌘K 全局模糊搜索 / Global fuzzy search** — 记得名字片段就行；`⌘↵` 用编辑器整包打开项目；`内容:关键词` 切全文搜索。  
   A fragment of the name is enough; `⌘↵` opens the project in your editor; `content:keyword` switches to full-text search.
-- **强色实体图标 / Bold solid icons** — 每种文件「长得像它自己」：PDF 红、JS 黄、Markdown 蓝；照片视频按真实比例呈现。  
-  Every file type "looks like itself": red PDFs, yellow JS, blue Markdown; photos and videos render at true aspect ratio.
+- **强色实体图标 / Bold solid icons** — 每种文件「长得像它自己」：PDF 红、JS 黄、Markdown 蓝；图片和视频在列表中显示紧凑缩略图。<br>
+  Every file type "looks like itself": red PDFs, yellow JS, blue Markdown; images and videos show compact thumbnails in the list.
 - **原地预览 / Preview in place** — Markdown 渲染、HTML 实时成品、代码语法高亮、图片/视频/PDF 内嵌（HEIC 直接显示）、压缩包内容清单、透明图棋盘格垫底。  
   Rendered Markdown, live HTML, syntax-highlighted code, inline images/video/PDF (HEIC included), archive content listing, checkerboard backing for transparent images.
-- **缩略图缓存 / Cached thumbnails**，图片、视频和 PDF 使用按尺寸生成的本地缩略图，重复打开直接读取缓存。<br>
-  Images, videos and PDFs use locally generated, size-aware thumbnails that are reused on later views.
-- **项目徽章 / Project badges** — 文件夹卡片标 node / web / py / rs / go 徽章，一下午起的十个项目一眼认出类型。  
-  Folder cards show node / web / py / rs / go badges, so ten projects from one afternoon are recognizable at a glance.
+- **缩略图缓存 / Cached thumbnails**，图片和视频使用本地缩略图，重复浏览直接读取缓存。<br>
+  Images and videos use local thumbnails that are reused on later views.
+- **项目徽章 / Project badges** — 文件夹行标 node / web / py / rs / go 徽章，一下午起的十个项目一眼认出类型。<br>
+  Folder rows show node / web / py / rs / go badges, so ten projects from one afternoon are recognizable at a glance.
 
 ### Watch what Codex changed · 看 Codex 改了什么
 
-- **活的仪表盘 / A live dashboard** — Codex 每写一个文件，那张卡片当场荡开涟漪、按改动频率发光呼吸，Codex 写到哪光走到哪。
-  Every file Codex writes makes its card ripple and glow by change frequency; the light follows wherever Codex goes.
+- **活的仪表盘 / A live dashboard** — Codex 每写一个文件，对应文件行当场荡开涟漪、按改动频率发光呼吸，Codex 写到哪光走到哪。
+  Every file Codex writes makes its row ripple and glow by change frequency; the light follows wherever Codex goes.
 - **跟随模式 / Follow mode** — 一键让文件视图 + 预览跟踪 Codex 正在编辑的文件：代码随新写行高亮闪烁，HTML 边写边实时渲染（双缓冲、零白闪），Markdown 实时渲染。任何手动浏览立即把控制权交还给你。
   One click and the file view + preview track whatever Codex edits: code scrolls with freshly written lines flashing, HTML renders live as it is written (double-buffered, zero white flash), and Markdown renders live. Any manual browsing hands control back to you instantly.
 - **Git 改动 diff / Git diff** — Monaco 只读 DiffEditor 并排展示 HEAD vs 当前工作区，看清 Codex 到底改了哪几行。

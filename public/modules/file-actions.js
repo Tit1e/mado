@@ -38,7 +38,7 @@ async function toggleFav(e) {
   state.favorites = r.favorites;
   renderFavs();
   if (!$('#preview').classList.contains('hidden') && state.selected === e.path) renderPreviewActions(e);
-  // 只更新该项的星标，不重建网格（避免重新解码所有缩略图）
+  // 只更新该行的星标，不重建列表，避免重新解码媒体缩略图。
   const on = isFav(e.path);
   const star = $('#file-area').querySelector(`[data-path="${CSS.escape(e.path)}"] .fav-btn`);
   if (star) { star.classList.toggle('on', on); star.innerHTML = svgWrap(SVG.star, 'currentColor', 15, on); }
@@ -180,7 +180,7 @@ async function enterEditMode(e) {
 // 离开（切文件/跳目录/关预览）由 guardDirty 的 runtime.autosaveFlush 把残余改动写掉，不弹确认框。
 async function mdEditor(e, data, mode = 'rich') {
   const body = $('#preview-body');
-  // 拖图进编辑器时，浏览器常把卡片/预览缩略图的内部 URL（localhost/api-thumb、/fs 镜像）写进文档，
+  // 拖图进编辑器时，浏览器常把列表/预览缩略图的内部 URL（localhost/api-thumb、/fs 镜像）写进文档，
   // 而那是低清缩略图（w=160）链接，发出去就裂。这里统一还原成真实文件路径；外链 https/data: 不动。
   const cleanImgUrls = (md) => String(md)
     .replace(/(?:https?:\/\/localhost:\d+)?\/api\/(?:thumb|raw)\?path=([^)\s"'&]+)(?:&[^)\s"']*)?/g,

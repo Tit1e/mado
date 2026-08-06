@@ -1,51 +1,95 @@
 /**
- * [INPUT]: 依赖 playwright-core、Electron 入口、假 HOME 和三套界面主题
+ * [INPUT]: 依赖 Electron 主进程、假 HOME、README 示例文件和三套界面主题
  * [OUTPUT]: 对外提供 README 使用的三套 CodexBox 实拍截图
  * [POS]: experiments/readme-shots 的截图生成入口，用于更新公开产品图片
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
-// README 实拍截图：Playwright 驱动 Electron，三套皮肤各一张。
-// 用假 HOME（/tmp/codexbox-home）跑，避免把真实收藏/最近打开拍进公开截图。
-const { _electron } = require('playwright-core');
-const path = require('path');
-const fs = require('fs');
-const ROOT = path.resolve(__dirname, '../..');
-const FAKE_HOME = '/tmp/codexbox-home';
+'use strict';
 
-(async () => {
-  for (const d of ['Desktop', 'Documents', 'Downloads']) fs.mkdirSync(path.join(FAKE_HOME, d), { recursive: true });
-  const app = await _electron.launch({
-    args: [ROOT], cwd: ROOT,
-    env: { ...process.env, HOME: FAKE_HOME, CODEXBOX_DEV_PORT: '4621' },
+const fs = require('fs');
+const path = require('path');
+
+const ROOT = path.resolve(__dirname, '../..');
+const FAKE_HOME = process.env.CODEXBOX_SCREENSHOT_HOME || '/tmp/codexbox-readme-shots';
+process.env.HOME = FAKE_HOME;
+process.env.CODEXBOX_DEV_PORT ||= '4621';
+const { app, BrowserWindow } = require('electron');
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function prepareHome() {
+  ['Desktop', 'Documents', 'Downloads', 'Projects', 'Pictures', 'Notes'].forEach((name) => {
+    fs.mkdirSync(path.join(FAKE_HOME, name), { recursive: true });
   });
-  const win = await app.firstWindow();
-  await app.evaluate(({ BrowserWindow }) => {
-    const w = BrowserWindow.getAllWindows()[0];
-    w.setSize(1560, 950); w.center();
-  });
-  await win.waitForTimeout(2200);
-  // 跳过首次引导弹窗
-  await win.evaluate(() => { localStorage.setItem('codexbox_guided', '1'); document.querySelector('.guide-overlay')?.remove(); });
-  // 进入 codexbox 仓库本身（吃自己的狗粮）
-  await win.evaluate((p) => navigate(p), ROOT);
-  await win.waitForTimeout(1000);
-  // 开终端（dock 在右），跑两条真实命令
-  await win.evaluate(() => { term.setDock && term.setDock('right'); });
-  await win.evaluate(() => { term.open ? term.open() : $('#btn-terminal')?.click(); });
-  await win.waitForTimeout(2000);
-  await win.evaluate(() => window.codexboxPty.input(term.active, 'git log --oneline -6\r'));
-  await win.waitForTimeout(1200);
-  await win.evaluate(() => window.codexboxPty.input(term.active, 'ls public/\r'));
-  await win.waitForTimeout(1200);
-  // 预览 README
-  await win.evaluate(() => { const e = state.entries.find((x) => x.name === 'README.md'); if (e) openPreview(e); });
-  await win.waitForTimeout(1500);
-  for (const name of ['终端', '档案', '索引']) {
-    await win.evaluate((n) => { const b = [...document.querySelectorAll('button')].find((x) => x.textContent.trim() === n); if (b) b.click(); }, name);
-    await win.waitForTimeout(900);
-    await win.evaluate(() => document.querySelector('.guide-overlay')?.remove());
-    await win.screenshot({ path: path.join(ROOT, 'assets', `screenshot-${name}.png`) });
-    console.log('shot', name);
+  fs.writeFileSync(path.join(FAKE_HOME, 'README.md'), '# CodexBox\n\n本地文件驾驶舱，列表浏览、原地预览、内嵌终端。\n');
+  fs.writeFileSync(path.join(FAKE_HOME, 'notes.md'), '# 今日记录\n\nCodex 正在整理当前项目。\n');
+  fs.writeFileSync(path.join(FAKE_HOME, 'package.json'), JSON.stringify({ name: 'codexbox-sample', private: true }, null, 2));
+}
+
+async function waitForWindow() {
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const win = BrowserWindow.getAllWindows()[0];
+    if (win && !win.isDestroyed()) {
+      const ready = await win.webContents.executeJavaScript("!!document.querySelector('#file-area .row[data-idx]')").catch(() => false);
+      if (ready) return win;
+    }
+    await sleep(100);
   }
-  await app.close();
-})().catch((e) => { console.error(e); process.exit(1); });
+  throw new Error('CodexBox window did not become ready');
+}
+
+async function capture(win, file) {
+  const image = await win.webContents.capturePage();
+  fs.writeFileSync(path.join(ROOT, 'assets', file), image.toPNG());
+  console.log('shot', file);
+}
+
+prepareHome();
+require('../../electron/main.js');
+
+app.whenReady().then(async () => {
+  try {
+    const win = await waitForWindow();
+    win.setSize(1560, 950);
+    win.center();
+    await sleep(700);
+    await win.webContents.executeJavaScript(`
+      localStorage.setItem('codexbox_guided', '1');
+      localStorage.setItem('codexbox_view', 'grid');
+      localStorage.setItem('codexbox_gridsize', 'lg');
+      document.querySelector('.guide-overlay')?.remove();
+      [...document.querySelectorAll('.row[data-idx]')].find((row) => row.querySelector('.fname')?.textContent.includes('README.md'))?.click();
+      document.querySelector('#btn-terminal')?.click();
+    `);
+    await sleep(700);
+    await win.webContents.executeJavaScript("document.querySelector('#term-newtab')?.click()");
+    await sleep(900);
+
+    const contract = await win.webContents.executeJavaScript(`({
+      list: !!document.querySelector('.list .row[data-idx]'),
+      grid: !!document.querySelector('.grid'),
+      viewControl: !!document.querySelector('#view-seg'),
+      sizeControl: !!document.querySelector('#gridsize-seg')
+    })`);
+    if (!contract.list || contract.grid || contract.viewControl || contract.sizeControl) {
+      throw new Error('list-only screenshot contract failed: ' + JSON.stringify(contract));
+    }
+
+    const shots = [
+      { theme: '终端', file: 'screenshot-volt.png' },
+      { theme: '档案', file: 'screenshot-archive.png' },
+      { theme: '索引', file: 'screenshot-index.png' },
+    ];
+    for (const shot of shots) {
+      await win.webContents.executeJavaScript(`
+        [...document.querySelectorAll('button')].find((button) => button.textContent.trim() === ${JSON.stringify(shot.theme)})?.click();
+        document.querySelector('.guide-overlay')?.remove();
+      `);
+      await sleep(500);
+      await capture(win, shot.file);
+    }
+    app.exit(0);
+  } catch (error) {
+    console.error(error);
+    app.exit(1);
+  }
+});

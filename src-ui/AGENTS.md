@@ -13,8 +13,8 @@ FavoritesList.svelte: Svelte 5 收藏列表界面岛，渲染目录/文件收藏
 favorites-service.js: 收藏列表适配入口，连接目录 API、导航预览与收藏移除动作
 RootsList.svelte: Svelte 5 快速入口界面岛，复用递归目录节点渲染根目录树
 roots-service.js: 快速入口适配层，连接根目录数据、目录 API 与导航拖拽动作
-FileList.svelte: Svelte 5 主文件列表界面岛，声明式渲染网格/列表、缩略图、变更热度、收藏和选择状态
-file-list-service.js: 主文件列表适配层，同步提交视图模型并提供选择、游标和网格列数接口
+FileList.svelte: Svelte 5 主文件列表界面岛，声明式渲染唯一列表视图、媒体缩略图、变更热度、收藏和选择状态
+file-list-service.js: 主文件列表适配层，同步提交列表模型并提供选择与游标接口
 SegmentedControl.svelte: Svelte 5 通用受控按钮组，统一等宽布局、选中态、焦点和方向键操作
 segmented-control-service.js: 通用按钮组适配入口，按原生目标容器挂载 Svelte 组件
 context-menu-service.js: 上下文菜单适配入口，向原生控制器保留 popupMenu/closeContextMenu 接口

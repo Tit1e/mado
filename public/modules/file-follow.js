@@ -340,13 +340,13 @@ function liveHtml(e, first) {
 }
 
 // WOW4 环境感知：完成时文件区荡开一圈大涟漪 + 极轻提示音（Web Audio 当场合成，无需音频文件）
-// WOW1 活的仪表盘：每次写入，让对应文件卡片当场荡开涟漪 + 弹一下 + 按热度发光，agent 写到哪光走到哪
-function igniteCard(top, count) {
+// WOW1 活的仪表盘：每次写入，让对应文件行当场荡开涟漪 + 高亮 + 按热度发光，agent 写到哪光走到哪。
+function igniteRow(top, count) {
   const area = $('#file-area');
   if (!area || !state.cwd) return;
   const path = state.cwd.replace(/\/$/, '') + state.sep + top;
   const el = area.querySelector(`[data-path="${CSS.escape(path)}"]`);
-  if (!el) return; // 卡片还没渲染（新文件首次出现），等 refresh 后由 renderFiles 接管发光
+  if (!el) return; // 文件行还没渲染（新文件首次出现），等 refresh 后由 renderFiles 接管发光
   el.style.setProperty('--heat', Math.min(1, 0.4 + count * 0.12).toFixed(2));
   el.classList.remove('live-edit'); void el.offsetWidth; el.classList.add('live-edit'); // 重新触发弹跳
   const host = el.querySelector('.icon') || el;
@@ -388,7 +388,7 @@ if (window.codexboxFs) {
   };
   window.codexboxFs.onChanged(({ dir, filename }) => {
     // 系统/构建噪声（~/Library 缓存、node_modules 等 macOS 后台不停写）直接丢弃：
-    // 既不点亮卡片、不触发文件跟随，也不刷新列表——否则 Library 会永远显示「被修改」
+    // 既不点亮文件行、不触发文件跟随，也不刷新列表，否则 Library 会永远显示「被修改」。
     if (filename && isNoisyChange(filename)) return;
     // 自己刚打开的文件：macOS 写 lastuseddate 扩展属性触发的假变更，整条丢弃（不点卡、不跟随、不刷新）
     if (filename) {
@@ -419,7 +419,7 @@ if (window.codexboxFs) {
       rec.count++; rec.ts = Date.now();
       if (rec.files.size < 8 && sub !== top) rec.files.add(sub);
       scheduleSweep();
-      igniteCard(top, rec.count); // 当场点亮这张卡（不等 250ms 刷新）
+      igniteRow(top, rec.count); // 当场点亮这一行，不等 250ms 刷新。
     }
     clearTimeout(rt);
     rt = setTimeout(async () => {

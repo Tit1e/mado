@@ -88,7 +88,7 @@ test('用户主动导航时停止文件跟随，跟随内部导航不停止', as
   try {
     const stopCalls = [];
     const follow = { on: true, navving: false };
-    const state = { cwd: '/work/old', history: [], entries: [], favorites: [], showHidden: false, sort: 'name', view: 'grid' };
+    const state = { cwd: '/work/old', history: [], entries: [], favorites: [], showHidden: false, sort: 'name' };
     const controller = createFileBrowserController(new Proxy({
       $: (selector) => document.querySelector(selector),
       state,
@@ -103,7 +103,7 @@ test('用户主动导航时停止文件跟随，跟随内部导航不停止', as
       ic: () => '',
       restoreFileAreaIfHidden: noop,
       renderRootsActive: noop,
-      fileList: { render: noop, measureColumns: () => 1, setSelection: noop, setCursor: noop },
+      fileList: { render: noop, setSelection: noop, setCursor: noop },
     }, {
       get(target, key) { return key in target ? target[key] : noop; },
     }));
