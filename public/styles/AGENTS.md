@@ -3,7 +3,7 @@
 
 ## 成员清单
 base.css: 三套主题变量、全局排印、可访问性与页面顶层布局
-sidebar.css: 侧边栏、目录树与 Codex 项目列表样式
+sidebar.css: 侧边栏、1px 高亮分割线、目录树与 Codex 项目列表样式
 workspace.css: 主工作区、顶栏项目运行动作、文件网格与列表样式
 preview.css: 预览面板、共用分割线、命令面板、状态组件与内容查看器样式
 dialogs.css: 编辑器、图片工具、输入弹窗与右键菜单样式
