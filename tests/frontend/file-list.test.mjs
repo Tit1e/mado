@@ -62,6 +62,11 @@ test('文件列表始终渲染列表并转发选择、收藏和菜单动作', as
     assert.equal(document.querySelectorAll('.list .row[data-idx]').length, 3);
     assert.equal(document.querySelector('.grid'), null);
     assert.equal(document.querySelector('[data-path="/repo/src"] .proj-tag').textContent, 'node');
+    // 大小列已并入文件名：文件显示「名称 · 大小」，目录不显示大小
+    assert.equal(document.querySelector('[data-path="/repo/note.md"] .fname').textContent, 'note.md · 12B');
+    assert.equal(document.querySelector('[data-path="/repo/photo.png"] .fname').textContent, 'photo.png · 20B');
+    assert.equal(document.querySelector('[data-path="/repo/src"] .fname').textContent, 'srcnode');
+    assert.equal(document.querySelectorAll('.list .row[data-idx] .meta').length, 3); // 只剩修改时间一列 meta
     const note = document.querySelector('[data-path="/repo/note.md"]');
     assert.equal(note.classList.contains('selected'), true);
     assert.equal(note.classList.contains('cursor'), true);

@@ -120,7 +120,7 @@
 /* 文件列表 */
 .list { display: flex; flex-direction: column; }
 .list .row {
-  display: grid; grid-template-columns: 30px 1fr 130px 90px 26px; align-items: center; gap: 10px;
+  display: grid; grid-template-columns: 30px 1fr 130px 26px; align-items: center; gap: 10px;
   padding: 7px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; position: relative;
 }
 .list .row:hover { background: var(--bg-2); }
@@ -133,11 +133,9 @@
 .list .row .meta { color: var(--text-faint); font-size: 12px; }
 .list-head { color: var(--text-faint); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; cursor: default; }
 .list-head:hover { background: none; }
-/* 文件区被压窄时列让位（#49）：名称优先，先藏「大小」再藏「修改时间」 */
-#file-area.fa-narrow .list .row { grid-template-columns: 30px 1fr 130px 26px; }
-#file-area.fa-narrow .list .row > :nth-child(4) { display: none; }
-#file-area.fa-tight .list .row { grid-template-columns: 30px 1fr 26px; }
-#file-area.fa-tight .list .row > :nth-child(3) { display: none; }
+/* 文件区被压窄时列让位（#49）：名称优先，先藏「修改时间」 */
+#file-area.fa-narrow .list .row { grid-template-columns: 30px 1fr 26px; }
+#file-area.fa-narrow .list .row > :nth-child(3) { display: none; }
 
 /* 收藏按钮（悬停出现，可直接收藏，无需先预览） */
 .fav-btn { position: absolute; opacity: 0; transition: 0.12s; cursor: pointer; color: var(--text-faint); font-size: 15px; }

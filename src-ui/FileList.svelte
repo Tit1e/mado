@@ -21,6 +21,7 @@
   const changeTitle = (change) => change?.files?.size ? `刚变更：\n${[...change.files].join('\n')}` : undefined;
   const heat = (change) => change ? Math.min(1, 0.4 + change.count * 0.12).toFixed(2) : undefined;
   const changeText = (change) => change ? (change.count > 1 ? `改·${change.count}` : '改') : undefined;
+  const sizeText = (entry) => entry.isDir ? '' : formatSize(entry.size);
   function project(entry) { return entry.isDir && projectLabels[entry.project] ? projectLabels[entry.project] : ''; }
   function activate(event, entry, index) {
     if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
@@ -38,7 +39,7 @@
   <div class="empty-state"><div class="big">{@html emptyIcon}</div>这个文件夹是空的</div>
 {:else}
   <div class="list">
-    <div class="row list-head"><div></div><div>名称</div><div>修改时间</div><div>大小</div><div></div></div>
+    <div class="row list-head"><div></div><div>名称</div><div>修改时间</div><div></div></div>
     {#each entries as entry, index (entry.path)}
       {@const change = changeFor(entry)}
       <div
@@ -56,9 +57,8 @@
             <img class="thumb-sm" loading="lazy" decoding="async" src={`/api/thumb?path=${encodeURIComponent(entry.path)}&w=96&v=${entry.mtime || 0}`} alt="" onerror={(event) => removeBrokenThumb(event, entry)} />
           {:else}<span class="svg-icon">{@html iconSvg(entry, 18)}</span>{/if}
         </div>
-        <div class="fname">{entry.name}{#if project(entry)}<span class={`proj-tag proj-${entry.project}`}>{project(entry)}</span>{/if}</div>
+        <div class="fname">{entry.name}{#if sizeText(entry)}{' · '}{sizeText(entry)}{/if}{#if project(entry)}<span class={`proj-tag proj-${entry.project}`}>{project(entry)}</span>{/if}</div>
         <div class="meta">{formatTime(entry.mtime)}</div>
-        <div class="meta">{entry.isDir ? '' : formatSize(entry.size)}</div>
         <span class:on={isFavorite(entry.path)} class="fav-btn" title="收藏" role="button" tabindex="0" onclick={(event) => { event.stopPropagation(); actions.favorite(entry); }} onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); actions.favorite(entry); } }}>{@html favoriteIcon(isFavorite(entry.path))}</span>
       </div>
     {/each}
