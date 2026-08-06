@@ -59,8 +59,6 @@ window.CODEXBOX_DICT = {
 
   // ---------- 文件区 / 状态栏 ----------
   '这个文件夹是空的': 'This folder is empty',
-  '发版': 'Release',
-  '版本号→CHANGELOG→打包→push→Release 一条龙，在终端跑': 'Version bump → CHANGELOG → build → push → Release, end to end in the terminal',
   '占用透视': 'Disk usage',
   '算上子目录的真实磁盘占用': 'True disk usage including subfolders',
   '改': 'edited',
@@ -203,20 +201,6 @@ window.CODEXBOX_DICT = {
   'AI 整理启动失败': 'Failed to launch AI organize',
   '返回': 'Back',
   'Codex 已开聊——先摊方案，你点头它才动手': 'Codex is ready — it lays out a plan first and only moves files after you approve',
-
-  // ---------- 发版面板 ----------
-  '检查项目状态…': 'Checking project status…',
-  '版本号': 'Version',
-  '发布说明': 'Release notes',
-  '发布说明（预填自 CHANGELOG 的 Unreleased 段）': "Release notes (prefilled from CHANGELOG's Unreleased section)",
-  '打包（npm run dist）': 'Build (npm run dist)',
-  '推送（git push）': 'Push (git push)',
-  'GitHub Release（附 dmg）': 'GitHub Release (with dmg)',
-  '工作区有未提交改动，会一并进这次发版 commit': 'Working tree has uncommitted changes — they will be included in the release commit',
-  '这里不是 git 仓库，只能改版本号': 'Not a git repo — only the version number can be bumped',
-  '在终端开跑': 'Run in terminal',
-  '版本号要 x.y.z 格式': 'Version must be x.y.z',
-  '准备失败': 'Preparation failed',
 
   // ---------- 磁盘占用面板 ----------
   '计算中…（大目录会慢几秒）': 'Calculating… (big folders take a few seconds)',
@@ -433,9 +417,6 @@ window.CODEXBOX_DICT_RULES = [
     const t = m[3] === '刚刚' ? 'just now' : m[3].replace(/^(\d+) 分$/, '$1m ago').replace(/^(\d+) 时$/, '$1h ago').replace(/^(\d+) 天$/, '$1d ago');
     return `${m[1]}\n${m[2]} · active ${t}`;
   }],
-  // 发版
-  [/^当前 v(.+) →$/, (m) => `now v${m[1]} →`],
-  [/^v(.+) 发版序列已在终端开跑$/, (m) => `v${m[1]} release pipeline running in terminal`],
   // 磁盘占用：共 1.6 GB · 只显示前 N 项
   [/^共 (.+?)( · 只显示前 (\d+) 项)?$/, (m) => `Total ${m[1]}${m[3] ? ` · top ${m[3]} shown` : ''}`],
   // 命令面板

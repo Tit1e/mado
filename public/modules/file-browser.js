@@ -5,7 +5,7 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createFileBrowserController(deps) {
-  const { $, guardDirty, follow, restoreFileAreaIfHidden, api, toast, state, renderRootsActive, renderProjectRunActions, term, openPreview, setFileFollow, recordRecent, toggleFav, fmtSize, escapeHtml, openWith, showContextMenu, baseOf, ic, diskPanel, releasePanel, refresh, kindFromName, setPreviewMax, loadGitStatus, renderGitStatus, fileList } = deps;
+  const { $, guardDirty, follow, restoreFileAreaIfHidden, api, toast, state, renderRootsActive, renderProjectRunActions, term, openPreview, setFileFollow, recordRecent, toggleFav, fmtSize, escapeHtml, openWith, showContextMenu, baseOf, ic, diskPanel, refresh, kindFromName, setPreviewMax, loadGitStatus, renderGitStatus, fileList } = deps;
 // ---------- 导航 ----------
 async function navigate(p, pushHistory = true) {
   if (!await guardDirty()) return;
@@ -102,10 +102,9 @@ function renderStatusbar() {
   const files = list.length - dirs;
   const bytes = list.reduce((a, e) => a + (e.isDir ? 0 : e.size || 0), 0);
   sb.classList.remove('hidden');
-  sb.innerHTML = `<span>${list.length} 项${dirs ? ` · ${dirs} 文件夹` : ''}${files ? ` · ${files} 文件 ${fmtSize(bytes)}` : ''}</span><span class="sb-links"><span id="git-status-slot"></span>${state.project ? '<a id="sb-rel" title="版本号→CHANGELOG→打包→push→Release 一条龙，在终端跑">发版</a>' : ''}<a id="sb-du" title="算上子目录的真实磁盘占用">占用透视</a></span>`;
+  sb.innerHTML = `<span>${list.length} 项${dirs ? ` · ${dirs} 文件夹` : ''}${files ? ` · ${files} 文件 ${fmtSize(bytes)}` : ''}</span><span class="sb-links"><span id="git-status-slot"></span><a id="sb-du" title="算上子目录的真实磁盘占用">占用透视</a></span>`;
   renderGitStatus();
   $('#sb-du').onclick = () => diskPanel(state.cwd);
-  const rel = $('#sb-rel'); if (rel) rel.onclick = () => releasePanel();
 }
 function renderFiles() {
   const list = visibleEntries();

@@ -43,11 +43,11 @@ const { listDir, readFile, searchFiles, grepFiles, contentSearch, mdfind } = cre
   ignoreDirs: IGNORE_DIRS,
 });
 const { gitStatus, gitFileDiff } = createGitService({ resolvePath, kindOf });
-const { writeTextFile, trashPath, renamePath, movePath, createEntry, termVerify, locatePath, saveImage, openInOS, defaultRoots, shellQuote } = createFileService({
+const { writeTextFile, trashPath, renamePath, movePath, createEntry, termVerify, locatePath, saveImage, openInOS, defaultRoots } = createFileService({
   home: HOME, platform: PLATFORM, resolvePath, textExt: TEXT_EXT, ext, searchFiles, mdfind,
 });
-const { findCodexBin, organizeLaunch, releaseInspect, releasePrepare, diskUsage } = createDeveloperTools({
-  configDir: CONFIG_DIR, resolvePath, shellQuote,
+const { findCodexBin, organizeLaunch, diskUsage } = createDeveloperTools({
+  configDir: CONFIG_DIR, resolvePath,
 });
 const { archiveList, serveStatic, serveThumb, serveRaw, serveHtmlPreview, pruneThumbs } = createMediaService({
   publicDir: PUBLIC, thumbDir: THUMB_DIR, resolvePath, mime: MIME, ext,
@@ -63,7 +63,7 @@ const { codexProjects, inspectCodexProjectSessions, mutateCodexProjectSessions }
 const services = {
   listDir, readFile, searchFiles, grepFiles, contentSearch, termVerify, locatePath,
   gitStatus, gitFileDiff, openInOS, updateConfig, writeTextFile, archiveList, diskUsage,
-  organizeLaunch, releaseInspect, releasePrepare, trashPath, movePath, renamePath,
+  organizeLaunch, trashPath, movePath, renamePath,
   saveImage, createEntry, inspectCodexProjectSessions, mutateCodexProjectSessions,
   codexProjects, readConfig, ruleFor, saveRule, removeRule, serveRaw, serveHtmlPreview, serveThumb, serveStatic, defaultRoots,
 };

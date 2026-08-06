@@ -21,7 +21,7 @@ export const svelteBuildOptions = {
   plugins: [sveltePlugin({ compilerOptions: { dev: false, css: 'injected', runes: true } })],
   legalComments: 'none',
   banner: { js: `/**
- * [INPUT]: 依赖 src-ui 的 Git、含终端恢复的弹窗、菜单、磁盘、发布、按钮组、侧边栏及文件列表源码与 Svelte 运行时
+ * [INPUT]: 依赖 src-ui 的 Git、含终端恢复的弹窗、菜单、磁盘、按钮组、侧边栏及文件列表源码与 Svelte 运行时
  * [OUTPUT]: 对外提供全部 Svelte 界面岛服务的浏览器模块
  * [POS]: public/generated 的 Svelte 界面构建产物，由 public/app.js 直接消费
  * [PROTOCOL]: 由 build/svelte-ui.mjs 生成，修改 src-ui 后重新构建并检查 AGENTS.md

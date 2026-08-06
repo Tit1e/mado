@@ -111,8 +111,6 @@ The three skins are not simple color swaps: palette, typography, icons, code hig
   Take a system screenshot and a card pops up in the corner: feed it to Codex, file it into the project's `素材/` (assets) folder, or annotate before sending.
 - **AI 整理 / AI organize** — Codex 读取整理 brief 后先提出方案，用户确认才移动文件；每批操作写回滚日志，并沉淀整理偏好。
   Codex reads a generated organize brief, proposes a plan first, and moves files only after approval; every batch writes a rollback log and preserves learned preferences.
-- **发版向导 / Release wizard** — node 项目一键串起版本号、CHANGELOG、打包、推送、GitHub Release，整条命令序列在内嵌终端可见地跑。  
-  For node projects: version bump, CHANGELOG promotion, build, push and GitHub Release composed into one command sequence that runs visibly in the embedded terminal.
 - **磁盘占用透视 / Disk usage lens** — `du` 口径的真实占用条形榜，可下钻，专治「电脑空间又满了」。  
   `du`-accurate bars per folder, drill-down, for the "my disk is full again" moments.
 

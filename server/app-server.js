@@ -15,7 +15,7 @@ function createAppServer(options) {
   const {
     defaultRoots, listDir, readFile, serveRaw, serveHtmlPreview, serveThumb, searchFiles, grepFiles, contentSearch,
     termVerify, locatePath, gitStatus, gitFileDiff, openInOS, updateConfig, writeTextFile, archiveList, diskUsage,
-    organizeLaunch, releaseInspect, releasePrepare, trashPath, movePath, renamePath, saveImage, createEntry,
+    organizeLaunch, trashPath, movePath, renamePath, saveImage, createEntry,
     inspectCodexProjectSessions, mutateCodexProjectSessions, codexProjects, readConfig, ruleFor, saveRule, removeRule, serveStatic,
   } = options.services;
 const server = http.createServer(async (req, res) => {
@@ -120,12 +120,6 @@ const server = http.createServer(async (req, res) => {
     }
     if (p === '/api/organize/launch' && req.method === 'POST') {
       return sendJSON(res, 200, await organizeLaunch(await readBody(req)));
-    }
-    if (p === '/api/release/inspect') {
-      return sendJSON(res, 200, await releaseInspect(url.searchParams.get('path')));
-    }
-    if (p === '/api/release/prepare' && req.method === 'POST') {
-      return sendJSON(res, 200, await releasePrepare(await readBody(req)));
     }
     if (p === '/api/trash' && req.method === 'POST') {
       const b = await readBody(req);

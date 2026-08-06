@@ -22,7 +22,7 @@ import { createUiController } from './modules/ui-controller.js';
 import { startApplication } from './modules/lifecycle.js';
 import { createEffects } from './modules/effects.js';
 import { guardEditExit } from './modules/edit-session.js';
-import { createCodexProjectsService, createContextMenuService, createDialogService, createDiskPanelService, createFavoritesService, createFileListService, createGitPanel, createReleasePanelService, createRootsService, createSegmentedControlService } from './generated/ui.mjs';
+import { createCodexProjectsService, createContextMenuService, createDialogService, createDiskPanelService, createFavoritesService, createFileListService, createGitPanel, createRootsService, createSegmentedControlService } from './generated/ui.mjs';
 
 const $ = (s) => document.querySelector(s);
 const api = (p) => fetch(p).then((r) => r.json());
@@ -132,7 +132,7 @@ let applyLayout, bindSelectionToTerminal, enableTooltips, bindSidebarResizer, ap
 let animateLayout, restoreFileAreaIfHidden, showPreviewPanel, setPreviewMax, isPreviewMax, toggleSidebar, lightbox;
 
 let selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor;
-let doRename, doTrash, doCreate, inputDialog, confirmDialog, organizeLaunch, releasePanel, diskPanel;
+let doRename, doTrash, doCreate, inputDialog, confirmDialog, organizeLaunch, diskPanel;
 let showContextMenu, popupMenu, shotTray;
 let loadRoots, renderRootsActive, loadFavorites, renderFavs, loadCodexProjects, showCodexProjectMenu, openFavoriteFile;
 let cmdk;
@@ -151,7 +151,6 @@ const { recoveryDialog } = dialogService;
 const contextMenuService = createContextMenuService();
 const segmentedControlService = createSegmentedControlService();
 const diskPanelService = createDiskPanelService({ api, formatSize: fmtSize, parentOf: dirOf, separatorOf: () => state.sep, homeOf: () => state.home });
-const releasePanelService = createReleasePanelService({ api, apiPost, notify: toast, runCommand: (...args) => term?.runInDir(...args) });
 const codexProjectsService = createCodexProjectsService({
   target: $('#codex-projects-list'), api,
   navigate: (...args) => navigate(...args),
@@ -220,7 +219,7 @@ function setupControllers() {
   });
   ({
     selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor,
-    doRename, doTrash, doCreate, inputDialog, confirmDialog, organizeLaunch, releasePanel,
+    doRename, doTrash, doCreate, inputDialog, confirmDialog, organizeLaunch,
     diskPanel, showContextMenu, popupMenu, shotTray,
   } = createFileActionsController({
     $, state, api, apiPost, toast,
@@ -229,7 +228,6 @@ function setupControllers() {
     popupMenu: contextMenuService.popupMenu,
     closeContextMenu: contextMenuService.closeContextMenu,
     diskPanel: diskPanelService.diskPanel,
-    releasePanel: () => releasePanelService.releasePanel(state.cwd),
     loadFavorites: (...args) => loadFavorites(...args),
     renderFavs: (...args) => renderFavs(...args),
     renderFiles: (...args) => renderFiles(...args),
@@ -257,7 +255,7 @@ function setupControllers() {
     api, toast, state, renderRootsActive: (...args) => renderRootsActive(...args), renderProjectRunActions: (...args) => projectRun?.render(...args), term: termProxy,
     openPreview: (...args) => openPreview(...args), setFileFollow: (...args) => setFileFollow(...args),
     recordRecent, toggleFav, iconSvg, fmtSize, fmtTime, isFav, escapeHtml, openWith,
-    showContextMenu, baseOf, ic, svgWrap, SVG, diskPanel, releasePanel, iconColorFor, refresh,
+    showContextMenu, baseOf, ic, svgWrap, SVG, diskPanel, iconColorFor, refresh,
     kindFromName, setPreviewMax: (...args) => setPreviewMax(...args), fileList: fileListService,
     loadGitStatus: (...args) => gitPanel?.load(...args),
     renderGitStatus: (...args) => gitPanel?.render(...args),

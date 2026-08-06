@@ -16,7 +16,6 @@ git-panel.test.mjs: Svelte Git 常驻分支、按需汇总、静默刷新并发�
 i18n.test.mjs: 国际化原地双向切换、动态界面翻译、终端内容隔离与原生菜单同步测试
 navigation.test.mjs: 文件浏览排序过滤与命令面板导航测试
 project-run.test.mjs: 项目运行命令顶栏、继承规则与删除配置回归测试
-release-panel.test.mjs: Svelte 发布向导测试，覆盖状态检查、版本递增、选项提交与终端启动
 resizer-style.test.mjs: 侧边栏、文件预览与终端分割线样式契约测试，覆盖命中区、方向映射与 1px 悬停线
 roots-list.test.mjs: Svelte 快速入口测试，覆盖根目录渲染、活动高亮、目录展开与导航
 sidebar.test.mjs: Codex 项目会话归档、删除和运行态保护业务测试

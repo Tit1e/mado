@@ -5,7 +5,7 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createFileActionsController(deps) {
-  const { $, state, api, apiPost, toast, inputDialog, confirmDialog, popupMenu, closeContextMenu, diskPanel, releasePanel, loadFavorites, renderFavs, renderFiles, navigate, openPreview, setFileFollow, follow, term, mona, crepe, runtime, guardDirty, dirOf, fmtSize, escapeHtml, ic, svgWrap, SVG, showPreviewPanel, renderPreviewFoot, renderPreviewActions, isFav, renderBreadcrumb, renderTextPreview, isMdName, closePreview, lightbox, enterImageEdit, refreshGitStatus } = deps;
+  const { $, state, api, apiPost, toast, inputDialog, confirmDialog, popupMenu, closeContextMenu, diskPanel, loadFavorites, renderFavs, renderFiles, navigate, openPreview, setFileFollow, follow, term, mona, crepe, runtime, guardDirty, dirOf, fmtSize, escapeHtml, ic, svgWrap, SVG, showPreviewPanel, renderPreviewFoot, renderPreviewActions, isFav, renderBreadcrumb, renderTextPreview, isMdName, closePreview, lightbox, enterImageEdit, refreshGitStatus } = deps;
 // ---------- 操作 ----------
 // macOS 打开文件时 LaunchServices 会写 com.apple.lastuseddate#PS 扩展属性，FSEvents 据此连发事件——
 // 内容没动却会点亮「改」徽标。自己发起的打开记下路径，3 秒内该文件的变更事件按噪声丢弃
@@ -402,8 +402,6 @@ async function organizeLaunch(dirPath) {
   term.runInDir(dirPath, r.cmd, 'Codex 已开聊——先摊方案，你点头它才动手');
 }
 
-// 发版向导：版本号 + 发布说明（预填 CHANGELOG 的 Unreleased 段）→ 命令序列在内嵌终端跑，每步可见可拦
-
 // 右键上下文菜单：业务层只组装动作，渲染、定位和关闭生命周期交给 Svelte 服务。
 function showContextMenu(ev, e) {
   ev.preventDefault();
@@ -426,5 +424,5 @@ function showContextMenu(ev, e) {
   items.push({ label: '移到废纸篓', danger: true, fn: () => doTrash(e) });
   popupMenu(ev, items);
 }
-  return { selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor, doRename, doTrash, doCreate, inputDialog, confirmDialog, organizeLaunch, releasePanel, diskPanel, showContextMenu, popupMenu, shotTray };
+  return { selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor, doRename, doTrash, doCreate, inputDialog, confirmDialog, organizeLaunch, diskPanel, showContextMenu, popupMenu, shotTray };
 }

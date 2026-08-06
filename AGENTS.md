@@ -24,4 +24,9 @@ server.js - 本地 HTTP 文件服务、带快照确认与运行态保护的 Code
 build/entitlements.mac.plist - macOS 签名和 hardened runtime 权限
 </config>
 
+<verification>
+界面与交互验收禁止代理启动浏览器、Playwright 或其他浏览器自动化工具。
+界面与交互一律由用户手动验证；代理完成代码、构建和自动化测试后，只提供明确可执行的手动验证步骤。
+</verification>
+
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md

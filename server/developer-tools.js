@@ -1,6 +1,6 @@
 /**
- * [INPUT]: 依赖 Node.js 文件/进程能力、Codex CLI、配置目录和调用方路径/转义能力
- * [OUTPUT]: 对外提供 createDeveloperTools，封装 AI 整理、发版向导与磁盘占用分析
+ * [INPUT]: 依赖 Node.js 文件/进程能力、Codex CLI、配置目录和调用方路径解析能力
+ * [OUTPUT]: 对外提供 createDeveloperTools，封装 AI 整理、CLI 定位与磁盘占用分析
  * [POS]: server 模块的开发者工作流服务，被主 HTTP 路由和 Codex 会话服务消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -8,11 +8,9 @@
 
 const fsp = require('fs/promises');
 const path = require('path');
-const os = require('os');
-const { randomUUID } = require('crypto');
 const { execFile } = require('child_process');
 
-function createDeveloperTools({ configDir, resolvePath, shellQuote }) {
+function createDeveloperTools({ configDir, resolvePath }) {
   const CONFIG_DIR = configDir;
 // ---------- AI 整理：备料 + 在内嵌终端拉起 Codex ----------
 // CodexBox 只负责把整理偏好、过往整理历史和工作约定写成 brief 文件；
@@ -27,18 +25,6 @@ const DEFAULT_ORGANIZE_STRATEGY = `- 默认归档：过时/低频的文件移入
 - 最近 7 天内有动静的文件视为正在进行的工作，不要动
 - 文件夹一律不动，只整理松散文件
 - 拿不准的单独列出来问，宁可少动不要乱动`;
-
-async function replaceRegularFile(file, content) {
-  const stat = await fsp.lstat(file);
-  if (!stat.isFile()) throw new Error(`${path.basename(file)} 不是普通文件`);
-  const temp = path.join(path.dirname(file), `.${path.basename(file)}.${randomUUID()}.tmp`);
-  try {
-    await fsp.writeFile(temp, content, { mode: stat.mode });
-    await fsp.rename(temp, file);
-  } finally {
-    await fsp.rm(temp, { force: true }).catch(() => {});
-  }
-}
 
 // codex 各版本旗标常变（0.139 移除了 --full-auto）：按 --help 实测有什么用什么，
 // 全不认识就裸跑——退化成多几次审批确认，但不会因 unexpected argument 拉不起来
@@ -121,88 +107,6 @@ ${history || '（还没有历史记录）'}
   return { ok: true, cmd };
 }
 
-// ---------- 发版向导：检查项目状态 → 改版本号/CHANGELOG → 命令序列交给内嵌终端跑（每步可见可拦）----------
-async function releaseInspect(p) {
-  const dir = resolvePath(p);
-  const sh = (cmd, args) => new Promise((resolve) => execFile(cmd, args, { cwd: dir, timeout: 8000 }, (err, stdout) => resolve(err ? null : String(stdout).trim())));
-  let pkg;
-  try { pkg = JSON.parse(await fsp.readFile(path.join(dir, 'package.json'), 'utf8')); }
-  catch { return { ok: false, error: '这里没有 package.json——发版向导目前只认 node 项目' }; }
-  const out = { ok: true, dir, name: pkg.name || path.basename(dir), version: pkg.version || '0.0.0' };
-  out.hasDist = !!(pkg.scripts && pkg.scripts.dist);
-  out.remote = await sh('git', ['remote', 'get-url', 'origin']);
-  out.branch = await sh('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
-  const status = await sh('git', ['status', '--porcelain']);
-  out.isRepo = status !== null;
-  out.dirty = !!(status && status.length);
-  out.gh = !!(await sh('/bin/sh', ['-lc', 'command -v gh']));
-  out.unreleased = ''; out.hasChangelog = false;
-  try {
-    const cl = await fsp.readFile(path.join(dir, 'CHANGELOG.md'), 'utf8');
-    out.hasChangelog = true;
-    const m = cl.match(/## \[Unreleased\]\s*([\s\S]*?)(?=\n## \[|$)/);
-    if (m) out.unreleased = m[1].trim();
-  } catch { /* 没有 CHANGELOG 不挡发版 */ }
-  return out;
-}
-
-async function releasePrepare(b) {
-  const dir = resolvePath(b.path);
-  const version = String(b.version || '').trim();
-  if (!/^\d+\.\d+\.\d+$/.test(version)) return { ok: false, error: '版本号格式不对（要 x.y.z）' };
-  const notes = String(b.notes || '').trim();
-  // 1) package.json 和 package-lock.json 版本号必须同步，否则发布包与锁文件会表达两个版本
-  const pkgFile = path.join(dir, 'package.json');
-  let pkgRaw;
-  try {
-    const stat = await fsp.lstat(pkgFile);
-    if (!stat.isFile()) return { ok: false, error: 'package.json 不是普通文件' };
-    pkgRaw = await fsp.readFile(pkgFile, 'utf8');
-  } catch { return { ok: false, error: '读不到 package.json' }; }
-  if (!/"version"\s*:\s*"[^"]*"/.test(pkgRaw)) return { ok: false, error: 'package.json 里没有 version 字段' };
-  const lockFile = path.join(dir, 'package-lock.json');
-  let lock = null;
-  try {
-    const stat = await fsp.lstat(lockFile);
-    if (!stat.isFile()) return { ok: false, error: 'package-lock.json 不是普通文件' };
-    lock = JSON.parse(await fsp.readFile(lockFile, 'utf8'));
-    lock.version = version;
-    if (lock.packages?.['']) lock.packages[''].version = version;
-  } catch (error) {
-    if (error.code !== 'ENOENT') return { ok: false, error: 'package-lock.json 格式不对' };
-  }
-  try {
-    await replaceRegularFile(pkgFile, pkgRaw.replace(/"version"\s*:\s*"[^"]*"/, `"version": "${version}"`));
-    if (lock) await replaceRegularFile(lockFile, JSON.stringify(lock, null, 2) + '\n');
-  } catch (error) {
-    return { ok: false, error: error.message || '发版元数据写入失败' };
-  }
-  // 2) CHANGELOG：Unreleased 段落升格为新版本，开新的空 Unreleased
-  const clFile = path.join(dir, 'CHANGELOG.md');
-  try {
-    const cl = await fsp.readFile(clFile, 'utf8');
-    if (cl.includes('## [Unreleased]')) {
-      const date = new Date().toISOString().slice(0, 10);
-      const next = cl.replace(/## \[Unreleased\][\s\S]*?(?=\n## \[|$)/, `## [Unreleased]\n\n## [${version}] - ${date}\n\n${notes}\n\n`);
-      await fsp.writeFile(clFile, next, 'utf8');
-    }
-  } catch { /* 没有 CHANGELOG 跳过 */ }
-  // 3) 发布说明落临时文件给 gh 用；命令序列拼好交还前端注入终端
-  const notesFile = path.join(os.tmpdir(), `codexbox-release-notes-${Date.now()}.md`);
-  await fsp.writeFile(notesFile, notes || `v${version}`, 'utf8');
-  // 标题优先取第一个要点的内容，「### Added」这类小节头当不了标题
-  const lines = notes.split('\n').map((l) => l.trim()).filter(Boolean);
-  const firstBullet = lines.find((l) => /^[-*]\s/.test(l));
-  const firstPlain = lines.find((l) => !/^#/.test(l));
-  const title = (firstBullet || firstPlain || '').replace(/^[#\-*\s]+/, '').slice(0, 60);
-  const steps = [];
-  if (b.doDist) steps.push('npm run dist');
-  steps.push('git add -A', `git commit -m ${shellQuote(`v${version}: ${title || '发版'}`)}`);
-  if (b.doPush) steps.push('git push');
-  if (b.doRelease) steps.push(`gh release create v${version} --title ${shellQuote(`v${version}${title ? ' · ' + title : ''}`)} --notes-file ${shellQuote(notesFile)}${b.doDist ? ` dist/*${version}*.dmg` : ''}`);
-  return { ok: true, cmd: steps.join(' && ') };
-}
-
 // ---------- 磁盘占用透视：算清当前目录每个子项的真实占用 ----------
 // 文件直接 stat（快）；目录一次 du -sk 批量算。du 碰到无权限子目录会报错但仍输出能算的部分，所以忽略 err 只用 stdout
 async function diskUsage(p) {
@@ -229,7 +133,7 @@ async function diskUsage(p) {
   return { ok: true, dir, total, items: items.slice(0, 60), more: Math.max(0, items.length - 60) };
 }
 
-  return { findCodexBin, organizeLaunch, releaseInspect, releasePrepare, diskUsage };
+  return { findCodexBin, organizeLaunch, diskUsage };
 }
 
 module.exports = { createDeveloperTools };
