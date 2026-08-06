@@ -14,7 +14,7 @@ function createAppServer(options) {
   const { home: HOME, platform: PLATFORM, port: PORT, resolvePath, ext, hostAllowed, originAllowed, readBody, sendJSON } = options;
   const {
     defaultRoots, listDir, readFile, serveRaw, serveHtmlPreview, serveThumb, searchFiles, grepFiles, contentSearch,
-    termVerify, locatePath, gitStatus, gitFileDiff, openInOS, updateConfig, writeTextFile, archiveList, diskUsage,
+    termVerify, locatePath, gitStatus, gitFileDiff, openInOS, updateConfig, writeTextFile, archiveList,
     trashPath, movePath, renamePath, saveImage, createEntry,
     inspectCodexProjectSessions, mutateCodexProjectSessions, codexProjects, readConfig, ruleFor, saveRule, removeRule, serveStatic,
   } = options.services;
@@ -101,9 +101,6 @@ const server = http.createServer(async (req, res) => {
     }
     if (p === '/api/archive') {
       return sendJSON(res, 200, await archiveList(url.searchParams.get('path')));
-    }
-    if (p === '/api/du') {
-      return sendJSON(res, 200, await diskUsage(url.searchParams.get('path')));
     }
     if (p === '/api/lang' && req.method === 'POST') {
       const b = await readBody(req);

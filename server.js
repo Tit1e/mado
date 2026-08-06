@@ -46,7 +46,7 @@ const { gitStatus, gitFileDiff } = createGitService({ resolvePath, kindOf });
 const { writeTextFile, trashPath, renamePath, movePath, createEntry, termVerify, locatePath, saveImage, openInOS, defaultRoots } = createFileService({
   home: HOME, platform: PLATFORM, resolvePath, textExt: TEXT_EXT, ext, searchFiles, mdfind,
 });
-const { findCodexBin, diskUsage } = createDeveloperTools({ resolvePath });
+const { findCodexBin } = createDeveloperTools();
 const { archiveList, serveStatic, serveThumb, serveRaw, serveHtmlPreview, pruneThumbs } = createMediaService({
   publicDir: PUBLIC, thumbDir: THUMB_DIR, resolvePath, mime: MIME, ext,
 });
@@ -60,7 +60,7 @@ const { codexProjects, inspectCodexProjectSessions, mutateCodexProjectSessions }
 });
 const services = {
   listDir, readFile, searchFiles, grepFiles, contentSearch, termVerify, locatePath,
-  gitStatus, gitFileDiff, openInOS, updateConfig, writeTextFile, archiveList, diskUsage,
+  gitStatus, gitFileDiff, openInOS, updateConfig, writeTextFile, archiveList,
   trashPath, movePath, renamePath,
   saveImage, createEntry, inspectCodexProjectSessions, mutateCodexProjectSessions,
   codexProjects, readConfig, ruleFor, saveRule, removeRule, serveRaw, serveHtmlPreview, serveThumb, serveStatic, defaultRoots,

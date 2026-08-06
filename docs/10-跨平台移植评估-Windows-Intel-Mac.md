@@ -66,7 +66,7 @@ Codex 在 Windows 的安装、凭据和会话行为由上游决定。应先用�
 ## 四、Windows 移植清单
 
 1. 先验证目标版本的 Codex 与 node-pty/ConPTY 基础链路。
-2. 为 `server/developer-tools.js`、`server/file-service.js` 收敛命令探测和磁盘统计的平台适配层。
+2. 为 `server/developer-tools.js`、`server/file-service.js` 收敛命令探测的平台适配层。
 3. 补齐打开、废纸篓、剪贴板、截图和电源管理的 Windows 实现或明确降级。
 4. 覆盖中文路径、空格路径、IME、resize、长输出和进程退出。
 5. 建立 Windows 打包、安装、升级与回归验收流程，再声明正式支持。

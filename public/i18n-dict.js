@@ -53,8 +53,6 @@ window.CODEXBOX_DICT = {
 
   // ---------- 文件区 / 状态栏 ----------
   '这个文件夹是空的': 'This folder is empty',
-  '占用透视': 'Disk usage',
-  '算上子目录的真实磁盘占用': 'True disk usage including subfolders',
   '改': 'edited',
   'Git 检查中…': 'Checking Git…',
   '本机 Git 不可用': 'Git is unavailable',
@@ -65,7 +63,6 @@ window.CODEXBOX_DICT = {
   // ---------- 右键菜单 ----------
   '打开': 'Open',
   '预览': 'Preview',
-  '磁盘占用透视': 'Disk usage',
   '在终端打开': 'Open in Terminal',
   '在所在目录开终端': 'Open Terminal in enclosing folder',
   '编辑文本': 'Edit text',
@@ -189,11 +186,6 @@ window.CODEXBOX_DICT = {
   '已收进 素材/': 'Filed into 素材/',
   '移动失败': 'Move failed',
 
-  // ---------- 磁盘占用面板 ----------
-  '计算中…（大目录会慢几秒）': 'Calculating… (big folders take a few seconds)',
-  '读取失败': 'Read failed',
-  '↑ 上一级': '↑ Up one level',
-
   // ---------- 命令面板 ----------
   '按文件名搜索…   用 “内容:” 前缀搜文件内容，如 “内容:useState”': 'Search by filename…   prefix with “content:” to search inside files, e.g. “content:useState”',
   '切换搜索范围（Tab）': 'Toggle search scope (Tab)',
@@ -264,6 +256,7 @@ window.CODEXBOX_DICT = {
   '文件跟随已停': 'Follow stopped',
   '手动接管，文件跟随已停': 'You took over — follow stopped',
   '跟随中': 'LIVE',
+  '读取失败': 'Read failed',
   '把文件区跳到终端当前所在目录': "Jump file view to the terminal's current folder",
   '定位文件': 'Locate',
   '新终端': 'New terminal',
@@ -395,7 +388,6 @@ window.CODEXBOX_DICT_RULES = [
   [/^新增 · (.+)$/, (m) => `Added · ${m[1]}`],
   [/^改动 · (.+)$/, (m) => `Changes · ${m[1]}`],
   [/^编辑 · (.+)$/, (m) => `Edit · ${m[1]}`],
-  [/^磁盘占用 · (.+)$/, (m) => `Disk usage · ${m[1]}`],
   // 预览底部：创建/修改时间
   [/^创建 (.+)$/, (m) => `Created ${m[1]}`],
   [/^改 (.+)$/, (m) => `Modified ${m[1]}`],
@@ -404,8 +396,6 @@ window.CODEXBOX_DICT_RULES = [
     const t = m[3] === '刚刚' ? 'just now' : m[3].replace(/^(\d+) 分$/, '$1m ago').replace(/^(\d+) 时$/, '$1h ago').replace(/^(\d+) 天$/, '$1d ago');
     return `${m[1]}\n${m[2]} · active ${t}`;
   }],
-  // 磁盘占用：共 1.6 GB · 只显示前 N 项
-  [/^共 (.+?)( · 只显示前 (\d+) 项)?$/, (m) => `Total ${m[1]}${m[3] ? ` · top ${m[3]} shown` : ''}`],
   // 命令面板
   [/^当前目录 (.+)$/, (m) => `This folder ${m[1]}`],
   [/^(.+) · (\d+) 个文件 · \+(\d+) −(\d+)$/, (m) => `${m[1]} · ${m[2]} files · +${m[3]} −${m[4]}`],

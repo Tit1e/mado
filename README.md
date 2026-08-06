@@ -109,8 +109,6 @@ The three skins are not simple color swaps: palette, typography, icons, code hig
   The first launch introduces the core workflow and common shortcuts. Reopen the guide anytime from the `?` button at the top right.
 - **截图直通车 / Screenshot express** — 系统截屏落盘即浮出直通卡：喂给终端里的 Codex、收进项目 `素材/`、或先标注再发。
   Take a system screenshot and a card pops up in the corner: feed it to Codex, file it into the project's `素材/` (assets) folder, or annotate before sending.
-- **磁盘占用透视 / Disk usage lens** — `du` 口径的真实占用条形榜，可下钻，专治「电脑空间又满了」。  
-  `du`-accurate bars per folder, drill-down, for the "my disk is full again" moments.
 
 ### Terminal · command Codex / 终端 · 指挥 Codex
 

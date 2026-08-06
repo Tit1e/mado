@@ -5,7 +5,7 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createUiController(deps) {
-  const { $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview, toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename, diskPanel, popupMenu, mona, svgWrap, SVG, openWith, playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax, setPreviewMax, moveCursor, cursorEnter, toggleFav, setThemeControlValue } = deps;
+  const { $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview, toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename, popupMenu, mona, svgWrap, SVG, openWith, playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax, setPreviewMax, moveCursor, cursorEnter, toggleFav, setThemeControlValue } = deps;
 // ---------- 使用指南 ----------
 function showGuide(markGuided = false) {
   if (document.querySelector('.guide-overlay')) return false;
@@ -282,7 +282,6 @@ function bindEvents() {
       { sep: true },
       { label: '在 Finder 显示', fn: () => openWith(state.cwd, 'reveal') },
       { label: '在终端打开', fn: () => term.openInDir(state.cwd) },
-      { label: '磁盘占用透视', fn: () => diskPanel(state.cwd) },
     ]);
   };
   $('#file-area').addEventListener('dblclick', blankMenu);

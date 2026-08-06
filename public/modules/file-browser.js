@@ -5,7 +5,7 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createFileBrowserController(deps) {
-  const { $, guardDirty, follow, restoreFileAreaIfHidden, api, toast, state, renderRootsActive, renderProjectRunActions, term, openPreview, setFileFollow, recordRecent, toggleFav, fmtSize, escapeHtml, openWith, showContextMenu, baseOf, ic, diskPanel, refresh, kindFromName, setPreviewMax, loadGitStatus, renderGitStatus, fileList } = deps;
+  const { $, guardDirty, follow, restoreFileAreaIfHidden, api, toast, state, renderRootsActive, renderProjectRunActions, term, openPreview, setFileFollow, recordRecent, toggleFav, fmtSize, escapeHtml, openWith, showContextMenu, baseOf, ic, refresh, kindFromName, setPreviewMax, loadGitStatus, renderGitStatus, fileList } = deps;
 // ---------- 导航 ----------
 async function navigate(p, pushHistory = true) {
   if (!await guardDirty()) return;
@@ -93,7 +93,7 @@ function visibleEntries() {
   else list.sort((a, b) => dirFirst(a, b) || a.name.localeCompare(b.name, 'zh', { numeric: true }));
   return list;
 }
-// 底部状态条：当前文件夹的基础信息小字常驻，「占用透视」入口也安在这
+// 底部状态条：当前文件夹的基础信息小字常驻，Git 状态由 Git 面板接管
 function renderStatusbar() {
   const sb = $('#statusbar'); if (!sb) return;
   if (!state.cwd) { sb.classList.add('hidden'); return; }
@@ -102,9 +102,8 @@ function renderStatusbar() {
   const files = list.length - dirs;
   const bytes = list.reduce((a, e) => a + (e.isDir ? 0 : e.size || 0), 0);
   sb.classList.remove('hidden');
-  sb.innerHTML = `<span>${list.length} 项${dirs ? ` · ${dirs} 文件夹` : ''}${files ? ` · ${files} 文件 ${fmtSize(bytes)}` : ''}</span><span class="sb-links"><span id="git-status-slot"></span><a id="sb-du" title="算上子目录的真实磁盘占用">占用透视</a></span>`;
+  sb.innerHTML = `<span>${list.length} 项${dirs ? ` · ${dirs} 文件夹` : ''}${files ? ` · ${files} 文件 ${fmtSize(bytes)}` : ''}</span><span class="sb-links"><span id="git-status-slot"></span></span>`;
   renderGitStatus();
-  $('#sb-du').onclick = () => diskPanel(state.cwd);
 }
 function renderFiles() {
   const list = visibleEntries();

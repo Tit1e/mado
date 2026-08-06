@@ -22,7 +22,7 @@ import { createUiController } from './modules/ui-controller.js';
 import { startApplication } from './modules/lifecycle.js';
 import { createEffects } from './modules/effects.js';
 import { guardEditExit } from './modules/edit-session.js';
-import { createCodexProjectsService, createContextMenuService, createDialogService, createDiskPanelService, createFavoritesService, createFileListService, createGitPanel, createRootsService, createSegmentedControlService } from './generated/ui.mjs';
+import { createCodexProjectsService, createContextMenuService, createDialogService, createFavoritesService, createFileListService, createGitPanel, createRootsService, createSegmentedControlService } from './generated/ui.mjs';
 
 const $ = (s) => document.querySelector(s);
 const api = (p) => fetch(p).then((r) => r.json());
@@ -131,7 +131,7 @@ let applyLayout, bindSelectionToTerminal, enableTooltips, bindSidebarResizer, ap
 let animateLayout, restoreFileAreaIfHidden, showPreviewPanel, setPreviewMax, isPreviewMax, toggleSidebar, lightbox;
 
 let selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor;
-let doRename, doTrash, doCreate, inputDialog, confirmDialog, diskPanel;
+let doRename, doTrash, doCreate, inputDialog, confirmDialog;
 let showContextMenu, popupMenu, shotTray;
 let loadRoots, renderRootsActive, loadFavorites, renderFavs, loadCodexProjects, showCodexProjectMenu, openFavoriteFile;
 let cmdk;
@@ -149,7 +149,6 @@ const dialogService = createDialogService();
 const { recoveryDialog } = dialogService;
 const contextMenuService = createContextMenuService();
 const segmentedControlService = createSegmentedControlService();
-const diskPanelService = createDiskPanelService({ api, formatSize: fmtSize, parentOf: dirOf, separatorOf: () => state.sep, homeOf: () => state.home });
 const codexProjectsService = createCodexProjectsService({
   target: $('#codex-projects-list'), api,
   navigate: (...args) => navigate(...args),
@@ -209,14 +208,13 @@ function setupControllers() {
   ({
     selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor,
     doRename, doTrash, doCreate, inputDialog, confirmDialog,
-    diskPanel, showContextMenu, popupMenu, shotTray,
+    showContextMenu, popupMenu, shotTray,
   } = createFileActionsController({
     $, state, api, apiPost, toast,
     inputDialog: dialogService.inputDialog,
     confirmDialog: dialogService.confirmDialog,
     popupMenu: contextMenuService.popupMenu,
     closeContextMenu: contextMenuService.closeContextMenu,
-    diskPanel: diskPanelService.diskPanel,
     loadFavorites: (...args) => loadFavorites(...args),
     renderFavs: (...args) => renderFavs(...args),
     renderFiles: (...args) => renderFiles(...args),
@@ -244,7 +242,7 @@ function setupControllers() {
     api, toast, state, renderRootsActive: (...args) => renderRootsActive(...args), renderProjectRunActions: (...args) => projectRun?.render(...args), term: termProxy,
     openPreview: (...args) => openPreview(...args), setFileFollow: (...args) => setFileFollow(...args),
     recordRecent, toggleFav, iconSvg, fmtSize, fmtTime, isFav, escapeHtml, openWith,
-    showContextMenu, baseOf, ic, svgWrap, SVG, diskPanel, refresh,
+    showContextMenu, baseOf, ic, svgWrap, SVG, refresh,
     kindFromName, setPreviewMax: (...args) => setPreviewMax(...args), fileList: fileListService,
     loadGitStatus: (...args) => gitPanel?.load(...args),
     renderGitStatus: (...args) => gitPanel?.render(...args),
@@ -304,7 +302,7 @@ function setupControllers() {
   } = createUiController({
     $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview,
     toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename,
-    diskPanel, popupMenu, mona, svgWrap, SVG, openWith,
+    popupMenu, mona, svgWrap, SVG, openWith,
     playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax,
     setPreviewMax, moveCursor, cursorEnter, toggleFav,
     setThemeControlValue: (value) => themeControl?.setValue(value),

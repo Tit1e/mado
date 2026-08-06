@@ -5,7 +5,7 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createFileActionsController(deps) {
-  const { $, state, api, apiPost, toast, inputDialog, confirmDialog, popupMenu, closeContextMenu, diskPanel, loadFavorites, renderFavs, renderFiles, navigate, openPreview, setFileFollow, follow, term, mona, crepe, runtime, guardDirty, dirOf, fmtSize, escapeHtml, ic, svgWrap, SVG, showPreviewPanel, renderPreviewFoot, renderPreviewActions, isFav, renderBreadcrumb, renderTextPreview, isMdName, closePreview, lightbox, enterImageEdit, refreshGitStatus } = deps;
+  const { $, state, api, apiPost, toast, inputDialog, confirmDialog, popupMenu, closeContextMenu, loadFavorites, renderFavs, renderFiles, navigate, openPreview, setFileFollow, follow, term, mona, crepe, runtime, guardDirty, dirOf, fmtSize, escapeHtml, ic, svgWrap, SVG, showPreviewPanel, renderPreviewFoot, renderPreviewActions, isFav, renderBreadcrumb, renderTextPreview, isMdName, closePreview, lightbox, enterImageEdit, refreshGitStatus } = deps;
 // ---------- 操作 ----------
 // macOS 打开文件时 LaunchServices 会写 com.apple.lastuseddate#PS 扩展属性，FSEvents 据此连发事件——
 // 内容没动却会点亮「改」徽标。自己发起的打开记下路径，3 秒内该文件的变更事件按噪声丢弃
@@ -400,7 +400,6 @@ function showContextMenu(ev, e) {
   const items = [];
   if (e.isDir) items.push({ label: '打开', fn: () => navigate(e.path) });
   else items.push({ label: '预览', fn: () => { state.selected = e.path; openPreview(e); renderFiles(); } });
-  if (e.isDir) items.push({ label: '磁盘占用透视', fn: () => diskPanel(e.path) });
   if (e.isDir) items.push({ label: '在终端打开', fn: () => term.openInDir(e.path) });
   else items.push({ label: '在所在目录开终端', fn: () => term.openInDir(dirOf(e.path)) });
   if (e.kind === 'text') items.push({ label: '编辑文本', fn: () => enterEditMode(e) });
@@ -414,5 +413,5 @@ function showContextMenu(ev, e) {
   items.push({ label: '移到废纸篓', danger: true, fn: () => doTrash(e) });
   popupMenu(ev, items);
 }
-  return { selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor, doRename, doTrash, doCreate, inputDialog, confirmDialog, diskPanel, showContextMenu, popupMenu, shotTray };
+  return { selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor, doRename, doTrash, doCreate, inputDialog, confirmDialog, showContextMenu, popupMenu, shotTray };
 }

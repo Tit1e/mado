@@ -7,7 +7,7 @@ edit-session.js: 编辑会话安全守卫，统一处理自动保存、未保存
 editors.js: Monaco 与 Milkdown Crepe 编辑器适配工厂，集中处理加载、主题、语言和资源释放
 file-follow.js: Agent 文件跟随控制器，管理目标选择、实时代码/Markdown/HTML 渲染和变化反馈
 file-browser.js: 文件浏览控制器，管理目录导航、文件视图模型、选择、拖放与键盘移动，列表渲染委托 Svelte 服务
-file-actions.js: 文件动作控制器，管理文本编辑、文件变更和开发工具面板，输入、确认、上下文菜单与磁盘透视复用 Svelte 服务
+file-actions.js: 文件动作控制器，管理文本编辑、文件变更和开发工具面板，输入、确认与上下文菜单复用 Svelte 服务
 icons.js: 文件类型与界面 SVG 图标工厂，提供富图标、通用图标和终端文件链接规则
 image-editor.js: Canvas 图片编辑控制器，提供标注、打码、缩放、格式转换和安全保存
 lifecycle.js: 应用生命周期控制器，完成界面初始化、Git 五秒轮询、首批数据加载、终端恢复和更新提示绑定

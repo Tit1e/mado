@@ -6,7 +6,6 @@ controller-contracts.test.mjs: 渲染层控制器与终端快捷动作工厂的�
 context-menu-service.test.mjs: Svelte 上下文菜单测试，覆盖视口定位、危险项、动作执行与关闭路径
 codex-projects.test.mjs: Svelte Codex 项目列表测试，覆盖活动高亮、目录展开、导航与菜单转发
 dialog-service.test.mjs: Svelte 通用弹窗测试，覆盖输入、确认、终端恢复选择、焦点、键盘与请求串行
-disk-panel.test.mjs: Svelte 磁盘透视测试，覆盖汇总、路径显示、目录下钻与关闭
 dom-environment.mjs: happy-dom 全局环境安装与清理辅助工具，覆盖原生控制器和 Svelte 运行时 DOM 构造器
 editor-guard.test.mjs: 自动保存、未保存确认、预览关闭与编辑器资源释放测试
 file-follow.test.mjs: 文件跟随启停、终端绑定与手动导航接管测试
