@@ -205,7 +205,6 @@ function bindEvents() {
     term.toggleMax();
   });
   $('#term-dock').onclick = () => term.setDock(term.dock === 'bottom' ? 'right' : 'bottom');
-  $('#term-close').onclick = () => term.close();
   $('#btn-sidebar').onclick = () => toggleSidebar();
   $('#file-follow').onclick = () => setFileFollow(!follow.on);
   // 定位文件按钮已撤（双击终端 tab 即可定位，见 term.locateCwd / renderTabs 的 ondblclick）

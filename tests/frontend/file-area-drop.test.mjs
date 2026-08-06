@@ -17,7 +17,7 @@ function elementShell() {
     <button id="preview-close"></button><button id="cmdk-trigger"></button><button id="btn-guide"></button>
     <button id="btn-terminal"></button><button id="term-codex"></button><button id="term-settings"></button>
     <button id="term-newtab"></button><button id="term-max"></button><button id="term-dock"></button>
-    <button id="term-close"></button><button id="btn-sidebar"></button><button id="file-follow"></button>
+    <button id="btn-sidebar"></button><button id="file-follow"></button>
     <div id="main-body"><div id="terminal-resizer"></div><div id="terminal-panel"></div></div>
     <div class="term-head"></div><div id="term-tabs"></div><div id="xterm-host"></div>
     <div id="content"><div id="file-area"><div class="list">
