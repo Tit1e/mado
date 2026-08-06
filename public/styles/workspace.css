@@ -129,7 +129,6 @@
 .list .row .icon { display: flex; align-items: center; justify-content: center; }
 .list .row .icon .thumb-sm { width: 24px; height: 24px; object-fit: cover; border-radius: 4px; }
 .list .row .fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.list .row .fname .fname-size { font-size: 11px; color: var(--text-dim); vertical-align: middle; }
 .list .row.is-dir .fname { font-weight: 650; }
 .list .row .meta { color: var(--text-faint); font-size: 12px; }
 .list-head { color: var(--text-faint); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; cursor: default; }

@@ -173,7 +173,7 @@ const rootsService = createRootsService({
 });
 const fileListService = createFileListService({
   target: $('#file-area'), iconSvg,
-  formatSize: fmtSize, formatTime: fmtTime,
+  formatTime: fmtTime,
   favoriteIcon: (on) => svgWrap(SVG.star, 'currentColor', 15, on),
   emptyIcon: ic('inbox', 'currentColor', 48),
 });
@@ -241,7 +241,7 @@ function setupControllers() {
     restoreFileAreaIfHidden: (...args) => restoreFileAreaIfHidden(...args),
     api, toast, state, renderRootsActive: (...args) => renderRootsActive(...args), renderProjectRunActions: (...args) => projectRun?.render(...args), term: termProxy,
     openPreview: (...args) => openPreview(...args), setFileFollow: (...args) => setFileFollow(...args),
-    recordRecent, toggleFav, iconSvg, fmtSize, fmtTime, isFav, escapeHtml, openWith,
+    recordRecent, toggleFav, iconSvg, fmtTime, isFav, escapeHtml, openWith,
     showContextMenu, baseOf, ic, svgWrap, SVG, refresh,
     kindFromName, setPreviewMax: (...args) => setPreviewMax(...args), fileList: fileListService,
     loadGitStatus: (...args) => gitPanel?.load(...args),

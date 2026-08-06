@@ -17,7 +17,7 @@ function createListService(target, suffix) {
   return import(new URL(`../../public/generated/ui.mjs?${suffix}=${Date.now()}`, import.meta.url)).then(({ createFileListService }) => createFileListService({
     target,
     iconSvg: (entry, size) => `<svg data-name="${entry.name}" data-size="${size}"></svg>`,
-    formatSize: (size) => `${size}B`, formatTime: () => '刚刚',
+    formatTime: () => '刚刚',
     favoriteIcon: (on) => `<svg data-favorite="${on}"></svg>`, emptyIcon: '<svg data-empty></svg>',
   }));
 }
@@ -62,13 +62,13 @@ test('文件列表始终渲染列表并转发选择、收藏和菜单动作', as
     assert.equal(document.querySelectorAll('.list .row[data-idx]').length, 3);
     assert.equal(document.querySelector('.grid'), null);
     assert.equal(document.querySelector('[data-path="/repo/src"] .proj-tag').textContent, 'node');
-    // 大小列已并入文件名：文件显示「名称 · 大小」，目录不显示大小
-    assert.equal(document.querySelector('[data-path="/repo/note.md"] .fname').textContent, 'note.md · 12B');
-    assert.equal(document.querySelector('[data-path="/repo/photo.png"] .fname').textContent, 'photo.png · 20B');
+    // 文件名后不再显示大小，目录不显示大小
+    assert.equal(document.querySelector('[data-path="/repo/note.md"] .fname').textContent, 'note.md');
+    assert.equal(document.querySelector('[data-path="/repo/photo.png"] .fname').textContent, 'photo.png');
     assert.equal(document.querySelector('[data-path="/repo/src"] .fname').textContent, 'srcnode');
     assert.equal(document.querySelectorAll('.list .row[data-idx] .meta').length, 3); // 只剩修改时间一列 meta
     const workspaceCss = await readFile(new URL('../../public/styles/workspace.css', import.meta.url), 'utf8');
-    assert.match(workspaceCss, /\.fname-size \{ font-size: 11px; color: var\(--text-dim\); vertical-align: middle; \}/); // 大小文字小一号、灰色、垂直居中
+    assert.doesNotMatch(workspaceCss, /\.fname-size/); // 大小样式已移除
     const note = document.querySelector('[data-path="/repo/note.md"]');
     assert.equal(note.classList.contains('selected'), true);
     assert.equal(note.classList.contains('cursor'), true);

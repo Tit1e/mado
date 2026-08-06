@@ -5,7 +5,7 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createFileBrowserController(deps) {
-  const { $, guardDirty, follow, restoreFileAreaIfHidden, api, toast, state, renderRootsActive, renderProjectRunActions, term, openPreview, setFileFollow, recordRecent, toggleFav, fmtSize, escapeHtml, openWith, showContextMenu, baseOf, ic, refresh, kindFromName, setPreviewMax, loadGitStatus, renderGitStatus, fileList } = deps;
+  const { $, guardDirty, follow, restoreFileAreaIfHidden, api, toast, state, renderRootsActive, renderProjectRunActions, term, openPreview, setFileFollow, recordRecent, toggleFav, escapeHtml, openWith, showContextMenu, baseOf, ic, refresh, kindFromName, setPreviewMax, loadGitStatus, renderGitStatus, fileList } = deps;
 // ---------- 导航 ----------
 async function navigate(p, pushHistory = true) {
   if (!await guardDirty()) return;
@@ -100,9 +100,8 @@ function renderStatusbar() {
   const list = state.visible || [];
   const dirs = list.filter((e) => e.isDir).length;
   const files = list.length - dirs;
-  const bytes = list.reduce((a, e) => a + (e.isDir ? 0 : e.size || 0), 0);
   sb.classList.remove('hidden');
-  sb.innerHTML = `<span>${list.length} 项${dirs ? ` · ${dirs} 文件夹` : ''}${files ? ` · ${files} 文件 ${fmtSize(bytes)}` : ''}</span><span class="sb-links"><span id="git-status-slot"></span></span>`;
+  sb.innerHTML = `<span>${list.length} 项${dirs ? ` · ${dirs} 文件夹` : ''}${files ? ` · ${files} 文件` : ''}</span><span class="sb-links"><span id="git-status-slot"></span></span>`;
   renderGitStatus();
 }
 function renderFiles() {

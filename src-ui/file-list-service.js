@@ -7,8 +7,8 @@
 import { flushSync, mount } from 'svelte';
 import FileList from './FileList.svelte';
 
-export function createFileListService({ target, iconSvg, formatSize, formatTime, favoriteIcon, emptyIcon }) {
-  const host = mount(FileList, { target, props: { iconSvg, formatSize, formatTime, favoriteIcon, emptyIcon } });
+export function createFileListService({ target, iconSvg, formatTime, favoriteIcon, emptyIcon }) {
+  const host = mount(FileList, { target, props: { iconSvg, formatTime, favoriteIcon, emptyIcon } });
   return {
     render(model, actions) { flushSync(() => host.render(model, actions)); },
     setSelection(path) { flushSync(() => host.setSelection(path)); },
