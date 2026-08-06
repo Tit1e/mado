@@ -31,17 +31,17 @@ const apiPost = (p, body) => fetch(p, { method: 'POST', headers: { 'Content-Type
 
 const state = {
   cwd: null, home: null, platform: 'darwin', sep: '/',
-  theme: localStorage.getItem('codexbox_theme') || 'warm',
+  theme: localStorage.getItem('mado_theme') || 'warm',
   entries: [], project: null, history: [],
-  sort: localStorage.getItem('codexbox_sort') || 'name',
-  showHidden: localStorage.getItem('codexbox_hidden') === '1',
+  sort: localStorage.getItem('mado_sort') || 'name',
+  showHidden: localStorage.getItem('mado_hidden') === '1',
   filter: '', selected: null, cursor: -1, visible: [],
   favorites: [], recentOpened: [],
-  previewW: Number(localStorage.getItem('codexbox_preview_w')) || 0, // 0 = 用户还没拖过，走 1:2 比例默认
-  previewH: Number(localStorage.getItem('codexbox_preview_h')) || 0,
-  sidebarCollapsed: localStorage.getItem('codexbox_sidebar_collapsed') === '1',
-  sidebarW: Math.min(420, Math.max(190, Number(localStorage.getItem('codexbox_sidebar_w')) || 248)),
-  muted: localStorage.getItem('codexbox_muted') === '1', // WOW4 提示音静音开关
+  previewW: Number(localStorage.getItem('mado_preview_w')) || 0, // 0 = 用户还没拖过，走 1:2 比例默认
+  previewH: Number(localStorage.getItem('mado_preview_h')) || 0,
+  sidebarCollapsed: localStorage.getItem('mado_sidebar_collapsed') === '1',
+  sidebarW: Math.min(420, Math.max(190, Number(localStorage.getItem('mado_sidebar_w')) || 248)),
+  muted: localStorage.getItem('mado_muted') === '1', // WOW4 提示音静音开关
 };
 const follow = {
   on: false,
@@ -183,7 +183,7 @@ function setupSegmentedControls() {
   segmentedControlService.mount({
     target: $('#sort-seg'), value: state.sort, variant: 'compact-text', ariaLabel: '排序方式',
     items: [{ value: 'name', label: '名称' }, { value: 'mtime', label: '时间' }, { value: 'size', label: '大小' }],
-    onChange: (value) => { state.sort = value; localStorage.setItem('codexbox_sort', value); renderFiles(); },
+    onChange: (value) => { state.sort = value; localStorage.setItem('mado_sort', value); renderFiles(); },
   });
   themeControl = segmentedControlService.mount({
     target: $('#theme-seg'), value: state.theme, variant: 'regular', ariaLabel: '皮肤',
@@ -311,9 +311,9 @@ function setupControllers() {
 }
 
 
-// 终端渲染器诊断开关：codexboxWebgl(false) 关 WebGL 用 DOM renderer 排查 CJK 残影，codexboxWebgl(true) 恢复。
+// 终端渲染器诊断开关：madoWebgl(false) 关 WebGL 用 DOM renderer 排查 CJK 残影，madoWebgl(true) 恢复。
 // 与设置面板「WebGL 加速渲染」同一逻辑，对所有已开标签立即生效
-window.codexboxWebgl = (on) => { term.setWebgl(!!on); console.log('[codexbox] WebGL ' + (on ? '已开启' : '已关闭（DOM renderer 兼容渲染）') + '，已对所有终端标签生效'); return !!on; };
+window.madoWebgl = (on) => { term.setWebgl(!!on); console.log('[mado] WebGL ' + (on ? '已开启' : '已关闭（DOM renderer 兼容渲染）') + '，已对所有终端标签生效'); return !!on; };
 
 setupControllers();
 startApplication({

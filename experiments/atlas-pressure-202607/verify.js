@@ -13,18 +13,18 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '../..');
-const HOME = '/tmp/codexbox-verify-atlas-home';
+const HOME = '/tmp/mado-verify-atlas-home';
 let fails = 0;
 const check = (ok, name, detail) => { console.log((ok ? 'PASS' : 'FAIL') + ': ' + name + (detail ? ' — ' + detail : '')); if (!ok) fails++; };
 setTimeout(() => { console.error('FAIL: watchdog 超时'); process.exit(2); }, 180000);
 
 (async () => {
   for (const d of ['Desktop', 'Documents', 'Downloads']) fs.mkdirSync(path.join(HOME, d), { recursive: true });
-  const app = await _electron.launch({ executablePath: require(path.join(ROOT, 'node_modules/electron')), args: [ROOT], cwd: ROOT, env: { ...process.env, HOME, CODEXBOX_DEV_PORT: '4642' } });
+  const app = await _electron.launch({ executablePath: require(path.join(ROOT, 'node_modules/electron')), args: [ROOT], cwd: ROOT, env: { ...process.env, HOME, MADO_DEV_PORT: '4642' } });
   const win = await app.firstWindow();
   await app.evaluate(({ BrowserWindow }) => { const w = BrowserWindow.getAllWindows()[0]; w.setSize(1560, 950); w.center(); });
   await win.waitForTimeout(2200);
-  await win.evaluate(() => { localStorage.setItem('codexbox_guided', '1'); localStorage.setItem('codexbox_term_open', '1'); localStorage.setItem('codexbox_term_dock', 'bottom'); });
+  await win.evaluate(() => { localStorage.setItem('mado_guided', '1'); localStorage.setItem('mado_term_open', '1'); localStorage.setItem('mado_term_dock', 'bottom'); });
   await win.evaluate(() => location.reload()).catch(() => {});
   await win.waitForTimeout(2500);
   await win.evaluate(() => { window.playChime = () => {}; term.notify = () => {}; });
@@ -106,7 +106,7 @@ setTimeout(() => { console.error('FAIL: watchdog 超时'); process.exit(2); }, 1
   await win.screenshot({ path: path.join(__dirname, 'shots', 'atlas-pressure-cjk.png') });
 
   console.log(fails === 0 ? '\n全部通过 ✅' : '\n有 ' + fails + ' 项失败 ❌');
-  await win.evaluate(() => term.sessions.slice().forEach((s) => { try { window.codexboxPty.kill(s.id); } catch { /* */ } }));
+  await win.evaluate(() => term.sessions.slice().forEach((s) => { try { window.madoPty.kill(s.id); } catch { /* */ } }));
   await win.waitForTimeout(400);
   await app.close().catch(() => {});
   setTimeout(() => process.exit(fails === 0 ? 0 : 1), 1200);

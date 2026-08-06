@@ -15,7 +15,7 @@ function createController({ confirm = async () => true, foreground = async () =>
   const killed = [];
   const restarted = [];
   const toasts = [];
-  window.codexboxPty = {
+  window.madoPty = {
     kill: (id) => killed.push(id),
     hasForegroundProcess: foreground,
     restartCommand: (id) => { restarted.push(id); return restart(id); },
@@ -122,7 +122,7 @@ test('桌面新建、启动 Codex、新建 Codex 会话、重启与关闭事件�
     let newCodexHandler;
     let restartHandler;
     let closeHandler;
-    window.codexboxWin = {
+    window.madoWin = {
       onNewTerminal(cb) { subscribed++; newHandler = cb; return () => {}; },
       onLaunchCodex(cb) { subscribed++; codexHandler = cb; return () => {}; },
       onLaunchNewCodex(cb) { subscribed++; newCodexHandler = cb; return () => {}; },

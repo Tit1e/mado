@@ -1,17 +1,17 @@
 /**
  * [INPUT]: 依赖 i18n-dict.js 词典、index.html 语言开关 DOM、localStorage、语言配置 HTTP API 和 Electron 菜单桥接
- * [OUTPUT]: 对外提供 window.t、window.codexboxSetLang 与 MutationObserver 动态翻译能力
+ * [OUTPUT]: 对外提供 window.t、window.madoSetLang 与 MutationObserver 动态翻译能力
  * [POS]: public 模块的国际化运行层，以中文原文缓存驱动界面双向原地切换，不重载渲染进程
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 'use strict';
 /**
- * CodexBox i18n —— 集中式翻译层。
+ * Mado i18n —— 集中式翻译层。
  * 词典在 i18n-dict.js（中文原文为键）。保留节点原文，切换语言时重绘现有 DOM；
  * 新增和更新的界面节点由 MutationObserver 接管。用户内容区（预览/编辑器/终端）一律不碰。
  */
 (() => {
-  const saved = localStorage.getItem('codexbox_lang');
+  const saved = localStorage.getItem('mado_lang');
   const sys = (navigator.language || 'en').toLowerCase();
   let lang = saved === 'zh' || saved === 'en' ? saved : (sys.startsWith('zh') ? 'zh' : 'en');
   const textSources = new WeakMap();
@@ -22,8 +22,8 @@
   const HAN = /[\u3400-\u9fff\u300c\u300d\uff08\uff09\uff1a\uff1b\uff01\uff1f\u2026\u00b7]/;
   const SKIP = '#preview-body, #ed-host, .xterm, .milkdown, .lightbox, .cp-name, .cp-dir, #lang-toggle';
   const ATTRS = ['title', 'placeholder'];
-  const dict = () => window.CODEXBOX_DICT || {};
-  const rules = () => window.CODEXBOX_DICT_RULES || [];
+  const dict = () => window.MADO_DICT || {};
+  const rules = () => window.MADO_DICT_RULES || [];
 
   const trOne = (core) => {
     const hit = dict()[core];
@@ -115,12 +115,12 @@
     // 按钮文字已明确表示目标语言，保留气泡只会挤出窄侧栏。
     delete toggle.dataset.tip;
     toggle.removeAttribute('title');
-    toggle.onclick = () => window.codexboxSetLang(lang === 'zh' ? 'en' : 'zh');
+    toggle.onclick = () => window.madoSetLang(lang === 'zh' ? 'en' : 'zh');
   }
 
   function applyLanguage(next) {
     lang = next;
-    window.codexboxLang = lang;
+    window.madoLang = lang;
     window.t = (value) => display(value);
     document.documentElement.lang = lang;
     wireToggle();
@@ -138,13 +138,13 @@
         if (!response.ok) throw new Error('语言配置保存失败');
         return response.json();
       })
-      .then(() => window.codexboxLocale?.refreshMenu?.())
+      .then(() => window.madoLocale?.refreshMenu?.())
       .catch(() => {});
   }
 
-  window.codexboxSetLang = (value) => {
+  window.madoSetLang = (value) => {
     const next = value === 'en' || value === 'zh' ? value : lang;
-    localStorage.setItem('codexbox_lang', next);
+    localStorage.setItem('mado_lang', next);
     applyLanguage(next);
     return persistLanguage(next);
   };

@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 Node.js HTTP、HTTP 安全基础设施和全部服务端领域服务
- * [OUTPUT]: 对外提供 createAppServer，创建 CodexBox 主 API 与静态资源服务
+ * [OUTPUT]: 对外提供 createAppServer，创建 Mado 主 API 与静态资源服务
  * [POS]: server 模块的 HTTP 路由组合器，由根 server.js 创建并监听
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */

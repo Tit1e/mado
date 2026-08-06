@@ -120,7 +120,7 @@ function renderHtmlPreview(data, meta) {
   };
   const onMsg = (ev) => {
     if (!frame.isConnected || ev.source !== frame.contentWindow) return;
-    const w = ev.data && ev.data.codexboxPreviewWidth;
+    const w = ev.data && ev.data.madoPreviewWidth;
     if (typeof w === 'number' && w > 0 && w !== natW) { natW = w; applyFit(); }
   };
   // 上一个 HTML 预览的监听先拆掉（切文件时旧 iframe 已 detach，监听只剩泄漏）
@@ -155,7 +155,7 @@ async function showDiff(e) {
 function renderPreviewActions(e) {
   const box = $('#preview-actions');
   box.innerHTML = '';
-  const clip = window.codexboxClipboard;
+  const clip = window.madoClipboard;
   // 图标为主、文字精简：主操作「打开」留字，其余只留图标 + tooltip
   const acts = [
     { id: 'preview-maxbtn', icon: ic(previewMax ? 'minimize' : 'maximize', 'currentColor', 15), title: previewMax ? '退出全屏' : '全屏放大', fn: () => setPreviewMax() },
@@ -192,8 +192,8 @@ function renderPreviewFoot(e) {
   if (!e || e.isDir) { f.innerHTML = ''; return; }
   f.innerHTML = `<span title="大小">${e.size ? fmtSize(e.size) : '0 B'}</span><span title="创建时间">创建 ${fmtDateTime(e.btime)}</span><span title="修改时间">改 ${fmtDateTime(e.mtime)}</span>`;
 }
-async function copyImage(p) { const r = await window.codexboxClipboard.copyImage(p); toast(r.ok ? '已复制图片，可粘贴到其它应用' : '复制图片失败：' + (r.error || ''), !r.ok); }
-async function copyFile(p) { const r = await window.codexboxClipboard.copyFile(p); toast(r.ok ? '已复制文件，可在访达里粘贴' : '复制文件失败', !r.ok); }
+async function copyImage(p) { const r = await window.madoClipboard.copyImage(p); toast(r.ok ? '已复制图片，可粘贴到其它应用' : '复制图片失败：' + (r.error || ''), !r.ok); }
+async function copyFile(p) { const r = await window.madoClipboard.copyFile(p); toast(r.ok ? '已复制文件，可在访达里粘贴' : '复制文件失败', !r.ok); }
 async function closePreview() {
   if (!await guardDirty()) return;
   mona.disposeIfAny(); crepe.disposeIfAny(); runtime.imgEditState = null;
@@ -302,7 +302,7 @@ function bindSidebarResizer() {
     document.body.style.userSelect = ''; document.body.style.cursor = '';
     if (raf) { cancelAnimationFrame(raf); raf = null; }
     apply();
-    localStorage.setItem('codexbox_sidebar_w', state.sidebarW);
+    localStorage.setItem('mado_sidebar_w', state.sidebarW);
   });
 }
 // 预览尺寸随 dock 翻转：终端在右→预览在下方用高度，否则用宽度
@@ -335,14 +335,14 @@ function restoreFileAreaIfHidden() {
   const mb = $('#main-body');
   if (mb && mb.classList.contains('fm-squeezed')) { // 拖成全铺：文件区被压没，退出并给终端一个 2/3 的默认尺寸
     mb.classList.remove('fm-squeezed');
-    localStorage.setItem('codexbox_term_squeeze', '0');
+    localStorage.setItem('mado_term_squeeze', '0');
     const r = mb.getBoundingClientRect();
     if (term.dock === 'bottom') {
       const h = r.height ? Math.round(r.height * 2 / 3) : 280;
-      panel.style.height = h + 'px'; localStorage.setItem('codexbox_term_h', h);
+      panel.style.height = h + 'px'; localStorage.setItem('mado_term_h', h);
     } else {
       const w = r.width ? Math.round(r.width * 2 / 3) : 480;
-      panel.style.width = w + 'px'; localStorage.setItem('codexbox_term_w', w);
+      panel.style.width = w + 'px'; localStorage.setItem('mado_term_w', w);
     }
     animateLayout(); term.fitActive();
   }
@@ -361,7 +361,7 @@ function setPreviewMax(on) {
   $('#preview').classList.toggle('is-max', previewMax);
   document.documentElement.classList.toggle('preview-maxed', previewMax); // 全屏期间关掉顶栏 drag 区，否则它会吞预览按钮的点击
   // 全屏时藏掉左上角红黄绿系统按钮（和右侧自家关闭图标太像），退出再显回来
-  try { window.codexboxWin?.trafficLights(!previewMax); } catch { /* 浏览器版无此桥 */ }
+  try { window.madoWin?.trafficLights(!previewMax); } catch { /* 浏览器版无此桥 */ }
   const b = $('#preview-maxbtn');
   if (b) { b.innerHTML = ic(previewMax ? 'minimize' : 'maximize', 'currentColor', 15); b.dataset.tip = previewMax ? '退出全屏' : '全屏放大'; }
 }
@@ -377,7 +377,7 @@ function toggleSidebar(force) {
     if (oldMw > 0) frac = panel.getBoundingClientRect().width / oldMw;
   }
   state.sidebarCollapsed = force === undefined ? !state.sidebarCollapsed : force;
-  localStorage.setItem('codexbox_sidebar_collapsed', state.sidebarCollapsed ? '1' : '0');
+  localStorage.setItem('mado_sidebar_collapsed', state.sidebarCollapsed ? '1' : '0');
   $('#app').classList.toggle('sidebar-collapsed', state.sidebarCollapsed);
   $('#btn-sidebar')?.classList.toggle('on', state.sidebarCollapsed);
   applyLayout();
@@ -385,7 +385,7 @@ function toggleSidebar(force) {
     const newMw = oldMw + (state.sidebarCollapsed ? state.sidebarW : -state.sidebarW); // 主区列 ±侧栏宽
     const tw = Math.max(280, Math.min(newMw - 480, Math.round(newMw * frac))); // 终端/文件区各留最小宽
     panel.style.width = tw + 'px';
-    localStorage.setItem('codexbox_term_w', tw);
+    localStorage.setItem('mado_term_w', tw);
     term.fitActive();
   }
 }

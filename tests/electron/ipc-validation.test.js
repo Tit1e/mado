@@ -27,7 +27,7 @@ test('PTY ID、输入与尺寸受到明确边界约束', () => {
 });
 
 test('监听目录只保留存在目录、去重并限制数量', async (t) => {
-  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-ipc-watch-'));
+  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-ipc-watch-'));
   t.after(() => fsp.rm(root, { recursive: true, force: true }));
   const dirs = [];
   for (let i = 0; i < validation.MAX_WATCH_DIRS + 3; i++) {
@@ -53,7 +53,7 @@ test('更新 IPC 只接受三段版本和 github.com HTTPS 地址', () => {
   assert.equal(validation.validVersion('v2.7.0'), '2.7.0');
   assert.equal(validation.validVersion('2.7'), null);
   assert.equal(validation.validVersion('../2.7.0'), null);
-  assert.equal(validation.validGithubUrl('https://github.com/Tit1e/codexbox/releases'), true);
-  assert.equal(validation.validGithubUrl('http://github.com/Tit1e/codexbox'), false);
+  assert.equal(validation.validGithubUrl('https://github.com/Tit1e/mado/releases'), true);
+  assert.equal(validation.validGithubUrl('http://github.com/Tit1e/mado'), false);
   assert.equal(validation.validGithubUrl('https://github.com.evil.example/release'), false);
 });

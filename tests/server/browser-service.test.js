@@ -15,7 +15,7 @@ const { createBrowserService } = require('../../server/browser-service');
 const { createPathService } = require('../../server/path-service');
 
 async function serviceFixture(t) {
-  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-browser-service-'));
+  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-browser-service-'));
   t.after(() => fsp.rm(home, { recursive: true, force: true }));
   const { resolvePath } = createPathService(home);
   const ext = (file) => path.extname(file).slice(1).toLowerCase();

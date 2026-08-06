@@ -26,7 +26,7 @@ function boot({ lang = 'zh', fetchImpl = async () => ({ ok: true, json: async ()
     <div id="terminal-shell" class="xterm">本地运行 · 数据不出本机</div>
     <a id="lang-toggle"></a>
   `);
-  localStorage.setItem('codexbox_lang', lang);
+  localStorage.setItem('mado_lang', lang);
   window.fetch = fetchImpl;
   vm.runInThisContext(dictSource);
   vm.runInThisContext(i18nSource);
@@ -45,7 +45,7 @@ test('语言切换原地重绘界面并保留终端 DOM', async () => {
     assert.equal(document.querySelector('#lang-toggle').hasAttribute('data-tip'), false);
     assert.equal(document.querySelector('#lang-toggle').hasAttribute('title'), false);
 
-    await window.codexboxSetLang('zh');
+    await window.madoSetLang('zh');
     assert.equal(document.querySelector('#ui-copy'), ui);
     assert.equal(document.querySelector('#terminal-shell'), terminal);
     assert.equal(ui.textContent, '本地运行 · 数据不出本机');
@@ -81,7 +81,7 @@ test('英文模式会翻译动态界面更新，并在切回中文时还原最�
     await flushMutations();
     assert.equal(projectRun.title, 'Run project command');
 
-    await window.codexboxSetLang('zh');
+    await window.madoSetLang('zh');
     assert.equal(dynamic.textContent, '搜索全部文件');
     assert.equal(dynamic.title, '本地运行 · 数据不出本机');
     assert.equal(projectRun.title, '运行项目命令');
@@ -99,11 +99,11 @@ test('保存语言后同步 Electron 原生菜单，且国际化层不重载页�
     },
   });
   try {
-    window.codexboxLocale = { refreshMenu: async () => { refreshed++; } };
-    await window.codexboxSetLang('en');
+    window.madoLocale = { refreshMenu: async () => { refreshed++; } };
+    await window.madoSetLang('en');
     assert.deepEqual(posted, { lang: 'en' });
     assert.equal(refreshed, 1);
-    assert.equal(localStorage.getItem('codexbox_lang'), 'en');
+    assert.equal(localStorage.getItem('mado_lang'), 'en');
     assert.equal(document.querySelector('#ui-copy').textContent, 'Runs locally · data never leaves this Mac');
     assert.doesNotMatch(i18nSource, /location\.reload/);
   } finally { dom.cleanup(); }

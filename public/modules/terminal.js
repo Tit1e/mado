@@ -12,8 +12,8 @@ export function createTerminalController(deps) {
 const TERM_ASK_RE = /(Do you want to (proceed|continue|make this edit|allow|use this)|Would you like to proceed|Ready to code\?|created or one you trust\?|tell Codex what to do differently|Yes, and don't ask again|Allow Codex to (run|apply|create)|Codex wants to|[❯›][ \t]*1\.[ \t]*Yes)/;
 const term = {
   sessions: [], seq: 0, active: null, maximized: false,
-  dock: localStorage.getItem('codexbox_term_dock') || 'right',
-  available() { return !!(window.codexboxPty && window.Terminal && !window.__noXterm); },
+  dock: localStorage.getItem('mado_term_dock') || 'right',
+  available() { return !!(window.madoPty && window.Terminal && !window.__noXterm); },
   // 每套皮肤一整套手调 ANSI 主题——暗皮肤暗终端、亮皮肤亮终端，不再出现「暖纸里嵌黑块」
   themes: {
     terminal: {
@@ -47,8 +47,8 @@ const term = {
     else if (!this.active || !interactive.some((session) => session.id === this.active)) this.activate(interactive[0].id);
     else this.fitActive();
     $('#btn-terminal').classList.add('active');
-    localStorage.setItem('codexbox_term_open', '1');
-    if (!localStorage.getItem('codexbox_term_draghint')) { localStorage.setItem('codexbox_term_draghint', '1'); setTimeout(() => toast('提示：把左侧文件 / 文件夹拖进终端，即插入路径喂给 Codex'), 700); }
+    localStorage.setItem('mado_term_open', '1');
+    if (!localStorage.getItem('mado_term_draghint')) { localStorage.setItem('mado_term_draghint', '1'); setTimeout(() => toast('提示：把左侧文件 / 文件夹拖进终端，即插入路径喂给 Codex'), 700); }
   },
   close() {
     if (this.maximized) this.toggleMax(false); // 铺满状态下收起终端，term-max 不清会把文件区一起藏没
@@ -56,7 +56,7 @@ const term = {
     $('#terminal-resizer').classList.add('hidden');
     $('#main-body').classList.remove('fm-squeezed'); // 终端收起后文件区必须回来
     $('#btn-terminal').classList.remove('active');
-    localStorage.setItem('codexbox_term_open', '0');
+    localStorage.setItem('mado_term_open', '0');
   },
   applyDock() {
     const mb = $('#main-body');
@@ -64,15 +64,15 @@ const term = {
     mb.classList.toggle('dock-right', this.dock === 'right');
     // 全铺状态只在终端可见时恢复，否则文件区会凭空消失
     const termOpen = !$('#terminal-panel').classList.contains('hidden');
-    mb.classList.toggle('fm-squeezed', termOpen && localStorage.getItem('codexbox_term_squeeze') === '1');
+    mb.classList.toggle('fm-squeezed', termOpen && localStorage.getItem('mado_term_squeeze') === '1');
     const panel = $('#terminal-panel');
     // 首次开终端：文件区:终端 = 1:2，终端占主区 2/3（用户拖过 resizer 后用记下的 px）
     const mbr = mb.getBoundingClientRect();
     if (this.dock === 'bottom') {
-      const h = Number(localStorage.getItem('codexbox_term_h')) || (mbr.height ? Math.round(mbr.height * 2 / 3) : 280);
+      const h = Number(localStorage.getItem('mado_term_h')) || (mbr.height ? Math.round(mbr.height * 2 / 3) : 280);
       panel.style.height = h + 'px'; panel.style.width = '';
     } else {
-      const w = Number(localStorage.getItem('codexbox_term_w')) || (mbr.width ? Math.round(mbr.width * 2 / 3) : 480);
+      const w = Number(localStorage.getItem('mado_term_w')) || (mbr.width ? Math.round(mbr.width * 2 / 3) : 480);
       panel.style.width = w + 'px'; panel.style.height = '';
     }
     applyPreviewSize(); // 预览随 dock 翻转轴向
@@ -80,7 +80,7 @@ const term = {
   },
   setDock(d) {
     if (this.maximized) this.toggleMax(false); // 铺满下切布局看不出任何变化，先退出铺满让分屏可见
-    animateLayout(); this.dock = d; localStorage.setItem('codexbox_term_dock', d); this.applyDock();
+    animateLayout(); this.dock = d; localStorage.setItem('mado_term_dock', d); this.applyDock();
   },
   // 终端最大化：铺满整个中区（文件区让位），再点还原
   toggleMax(force) {
@@ -98,7 +98,7 @@ const term = {
     $('#terminal-resizer').classList.remove('hidden');
     this.applyDock();
     $('#btn-terminal').classList.add('active');
-    localStorage.setItem('codexbox_term_open', '1'); // 右键/一键开终端也记住开合，和 open/close 对称
+    localStorage.setItem('mado_term_open', '1'); // 右键/一键开终端也记住开合，和 open/close 对称
     return this.newTab(dir);
   },
   // 拖拽文件/文件夹进来：把 shell 转义后的路径插入活动终端（作为 agent 上下文）
@@ -135,7 +135,7 @@ const term = {
       $('#terminal-panel').classList.remove('hidden');
       $('#terminal-resizer').classList.remove('hidden');
       $('#btn-terminal').classList.add('active');
-      localStorage.setItem('codexbox_term_open', '1');
+      localStorage.setItem('mado_term_open', '1');
       this.applyDock();
     }
     let restored = 0;
@@ -182,9 +182,9 @@ const term = {
       // 回车多半提交了条命令（cd 这类被回显过滤、不走 busy 周期），稍后把标题对齐真实目录
       if (d.indexOf('\r') !== -1) { clearTimeout(s._cwdT); s._cwdT = setTimeout(() => this.refreshCwd(s, true), 800); }
     }
-    window.codexboxPty.input(id, d);
+    window.madoPty.input(id, d);
   },
-  // 点终端里的文件名/路径 → 结合 cwd + 回扫 scrollback + 搜索定位真实文件，在 CodexBox 里打开
+  // 点终端里的文件名/路径 → 结合 cwd + 回扫 scrollback + 搜索定位真实文件，在 Mado 里打开
   // tail：路径在该逻辑行里的后续文本，服务端用它做「空格扩展」stat 验证（带空格的文件名靠它补全）
   // rowHint：点击处逻辑行的末物理行号（buffer 绝对行），回扫 scrollback 的起点
   async openTermPath(id, raw, tail, rowHint) {
@@ -193,7 +193,7 @@ const term = {
     let candidate = p;
     const isRel = !p.startsWith('/') && !p.startsWith('~');
     if (isRel) {
-      try { const r = await window.codexboxPty.cwd(id); if (r && r.ok && r.cwd) cwd = r.cwd; } catch { /* */ }
+      try { const r = await window.madoPty.cwd(id); if (r && r.ok && r.cwd) cwd = r.cwd; } catch { /* */ }
       candidate = (cwd || '').replace(/\/$/, '') + '/' + p.replace(/^\.\//, '');
     }
     const name = p.replace(/\/+$/, '').split('/').pop(); // 去掉目录结尾 / 再取 basename，否则名为空 basename 搜索失效
@@ -250,7 +250,7 @@ const term = {
   // 定位文件区到活动终端的真实目录
   async locateCwd() {
     if (!this.active) return;
-    const r = await window.codexboxPty.cwd(this.active);
+    const r = await window.madoPty.cwd(this.active);
     if (r && r.ok && r.cwd) navigate(r.cwd);
     else toast('取终端目录失败', true);
   },
@@ -266,7 +266,7 @@ const term = {
     if (!force && now - (s._cwdAt || 0) < 4000) return;
     s._cwdAt = now;
     try {
-      const r = await window.codexboxPty.cwd(s.id);
+      const r = await window.madoPty.cwd(s.id);
       if (r && r.ok && r.cwd && r.cwd !== s.cwd) {
         s.cwd = r.cwd; s.title = baseOf(r.cwd) || s.title;
         this.renderTabs(); renderBreadcrumb(); // 面包屑的项目配对色点也跟着换
@@ -305,8 +305,8 @@ const term = {
     }
     xterm.open(host);
     // WebGL 渲染加速（大输出/TUI 不掉帧），失败或上下文丢失回退 DOM
-    // 诊断开关：控制台跑 codexboxWebgl(false) 关掉 WebGL（用 DOM renderer）排查 CJK 残影乱码，codexboxWebgl(true) 恢复，需新开标签生效
-    const webglOff = (() => { try { return localStorage.getItem('codexbox.noWebgl') === '1'; } catch { return false; } })();
+    // 诊断开关：控制台跑 madoWebgl(false) 关掉 WebGL（用 DOM renderer）排查 CJK 残影乱码，madoWebgl(true) 恢复，需新开标签生效
+    const webglOff = (() => { try { return localStorage.getItem('mado.noWebgl') === '1'; } catch { return false; } })();
     let wg = null; // 存到 session 上，换肤/字号/resize 时清图集修 CJK 残影乱码（#37/#45）
     if (!webglOff && !window.__noWebgl && window.WebglAddon) {
       try {
@@ -331,7 +331,7 @@ const term = {
     if (kind !== 'service') this.activate(id);
     else this.renderTabs();
     updateWatches(); // 新终端的项目目录也纳入监听
-    const r = await window.codexboxPty.spawn({
+    const r = await window.madoPty.spawn({
       id, cwd: startDir, cols: kind === 'service' ? 120 : xterm.cols, rows: kind === 'service' ? 24 : xterm.rows,
       kind, serviceKey: kind === 'service' ? sess.projectRuleId : undefined,
     });
@@ -341,13 +341,13 @@ const term = {
       if (sess.dead) { if (d === '\r' || d === '\n') this.respawn(sess); return; } // 进程退出后回车真重开
       this.input(id, d);
     });
-    xterm.onResize(({ cols, rows }) => { sess.lastInput = Date.now(); window.codexboxPty.resize(id, cols, rows); }); // resize 引发的 TUI 重绘不算 agent 干活
-    if (kind !== 'service') window.codexboxPty.resize(id, xterm.cols, xterm.rows); // spawn 等待期间 fit 过的 resize 事件无人监听会丢：补发一次对齐 PTY
+    xterm.onResize(({ cols, rows }) => { sess.lastInput = Date.now(); window.madoPty.resize(id, cols, rows); }); // resize 引发的 TUI 重绘不算 agent 干活
+    if (kind !== 'service') window.madoPty.resize(id, xterm.cols, xterm.rows); // spawn 等待期间 fit 过的 resize 事件无人监听会丢：补发一次对齐 PTY
 
     // 自定义键盘处理：macOS 用 ⌘，其它平台用 Ctrl；纯 Ctrl 按键在 macOS 交给终端程序
     xterm.attachCustomKeyEventHandler((e) => {
       if (e.type !== 'keydown') return true;
-      const primaryShortcut = window.codexboxEnv?.platform === 'darwin' ? e.metaKey : e.ctrlKey;
+      const primaryShortcut = window.madoEnv?.platform === 'darwin' ? e.metaKey : e.ctrlKey;
       if (primaryShortcut && (e.key === 'c' || e.key === 'C')) {
         if (xterm.hasSelection()) {
           // 有选中 → 复制到剪贴板，不发给 PTY
@@ -405,7 +405,7 @@ const term = {
       }
     });
 
-    // 识别终端输出里的文件路径 → hover 高亮 + 点击在 CodexBox 打开
+    // 识别终端输出里的文件路径 → hover 高亮 + 点击在 Mado 打开
     // 三层匹配：引号串（边界最可靠，文件名可含空格）> 斜杠路径 > 带已知扩展名的裸文件名；
     // 长路径折行用逐 cell 拼回逻辑行（CJK 宽字符占两列，下标→坐标必须按 cell 算才不偏移）
     if (xterm.registerLinkProvider) {
@@ -545,7 +545,7 @@ const term = {
     let session = this.serviceSession(rule);
     if (session && !session.dead) {
       session.projectCommand = rule.command;
-      const foreground = await window.codexboxPty.hasForegroundProcess(session.id);
+      const foreground = await window.madoPty.hasForegroundProcess(session.id);
       if (foreground?.ok && foreground.running) return { ok: true, id: session.id, running: true, reused: true };
     } else {
       session = await this.newTab(rule.cwd, {
@@ -561,7 +561,7 @@ const term = {
     const session = this.serviceSession(rule);
     if (!session || session.dead) return { root: rule.cwd, ruleId: rule.id, running: false };
     try {
-      const foreground = await window.codexboxPty.hasForegroundProcess(session.id);
+      const foreground = await window.madoPty.hasForegroundProcess(session.id);
       return { root: rule.cwd, ruleId: rule.id, id: session.id, command: session.projectCommand, running: foreground?.ok === true && foreground.running === true };
     } catch { return { root: rule.cwd, ruleId: rule.id, id: session.id, command: session.projectCommand, running: false }; }
   },
@@ -573,12 +573,12 @@ const term = {
   async restartProjectRun(rule) {
     const session = this.serviceSession(rule);
     if (!session || session.dead) return { ok: false, error: '运行服务不存在' };
-    return window.codexboxPty.restartCommand(session.id);
+    return window.madoPty.restartCommand(session.id);
   },
   async stopProjectRun(rule) {
     const session = this.serviceSession(rule);
     if (!session || session.dead) return { ok: false, error: '运行服务不存在' };
-    const foreground = await window.codexboxPty.hasForegroundProcess(session.id);
+    const foreground = await window.madoPty.hasForegroundProcess(session.id);
     if (!foreground?.ok || !foreground.running) return { ok: false, error: '当前没有正在运行的命令' };
     this.input(session.id, '\x03');
     return { ok: true };
@@ -591,7 +591,7 @@ const term = {
     $('#terminal-resizer').classList.remove('hidden');
     this.applyDock();
     $('#btn-terminal').classList.add('active');
-    localStorage.setItem('codexbox_term_open', '1');
+    localStorage.setItem('mado_term_open', '1');
     this.activate(session.id);
     return true;
   },
@@ -617,7 +617,7 @@ const term = {
   async respawn(sess) {
     sess.dead = false;
     sess.xterm.reset(); // 清掉死亡残留，新 shell 提示符不和旧画面叠在一起
-    const r = await window.codexboxPty.spawn({
+    const r = await window.madoPty.spawn({
       id: sess.id, cwd: sess.startDir || state.cwd, cols: sess.xterm.cols, rows: sess.xterm.rows,
       kind: sess.kind, serviceKey: sess.kind === 'service' ? sess.projectRuleId : undefined,
     });
@@ -662,7 +662,7 @@ const term = {
     const s = this.sessions[i];
     if (s.kind === 'service') { this.hideProjectRun(id); return; }
     const visibleIndex = this.tabSessions().findIndex((session) => session.id === id);
-    try { window.codexboxPty.kill(id); } catch { /* */ }
+    try { window.madoPty.kill(id); } catch { /* */ }
     try { s.xterm.dispose(); } catch { /* */ }
     s.host.remove();
     this.sessions.splice(i, 1);
@@ -735,7 +735,7 @@ const term = {
   // 兼容渲染模式：关 WebGL 改用 DOM renderer（无字形图集，从机制上杜绝中文乱码；大输出略慢）。
   // 对所有已开标签立即生效；选择存 localStorage，新标签在创建处同样遵守
   setWebgl(on) {
-    try { if (on) localStorage.removeItem('codexbox.noWebgl'); else localStorage.setItem('codexbox.noWebgl', '1'); } catch { /* */ }
+    try { if (on) localStorage.removeItem('mado.noWebgl'); else localStorage.setItem('mado.noWebgl', '1'); } catch { /* */ }
     this.tabSessions().forEach((s) => {
       try {
         if (!on && s.webgl) { s.webgl.dispose(); s.webgl = null; }
@@ -859,7 +859,7 @@ const term = {
         const n = new Notification(title, { body });
         // 点通知：app 拉回前台 + 切到对应终端标签——多项目并行时直达要操作的那个环境
         n.onclick = () => {
-          try { if (window.codexboxWin) window.codexboxWin.focus(); else window.focus(); } catch { /* */ }
+          try { if (window.madoWin) window.madoWin.focus(); else window.focus(); } catch { /* */ }
           if (s && this.sessions.includes(s)) { this.open(); this.activate(s.id); }
           try { n.close(); } catch { /* */ }
         };
@@ -892,7 +892,7 @@ const term = {
   retheme() { const th = this.theme(); this.sessions.forEach((s) => { try { s.xterm.options.theme = th; s.webgl?.clearTextureAtlas?.(); } catch { /* */ } }); },
 };
   const shortcutActions = createTerminalShortcutActions({
-    term, pty: window.codexboxPty, win: window.codexboxWin, confirmDialog: deps.confirmDialog, toast,
+    term, pty: window.madoPty, win: window.madoWin, confirmDialog: deps.confirmDialog, toast,
   });
   term.closeActive = shortcutActions.closeActive;
   term.restartActive = shortcutActions.restartActive;

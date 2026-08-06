@@ -15,7 +15,7 @@ const { createPathService } = require('../../server/path-service');
 const { createCodexSessions } = require('../../server/codex-sessions');
 
 test('发现新旧格式会话并拒绝过期快照', async (t) => {
-  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-sessions-'));
+  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-sessions-'));
   t.after(() => fsp.rm(home, { recursive: true, force: true }));
   const project = path.join(home, 'project');
   const sessions = path.join(home, '.codex', 'sessions', '2026', '07', '11');

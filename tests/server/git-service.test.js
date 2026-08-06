@@ -18,13 +18,13 @@ const { createPathService, kindOf } = require('../../server/path-service');
 function git(cwd, ...args) { execFileSync('git', args, { cwd, stdio: 'ignore' }); }
 
 test('Git 状态返回分支、文件列表和完整增删行汇总', async () => {
-  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-git-'));
+  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-git-'));
   const repo = path.join(home, '项目');
   await fsp.mkdir(repo);
   try {
     git(repo, 'init', '-b', 'test-branch');
-    git(repo, 'config', 'user.name', 'CodexBox Test');
-    git(repo, 'config', 'user.email', 'test@codexbox.local');
+    git(repo, 'config', 'user.name', 'Mado Test');
+    git(repo, 'config', 'user.email', 'test@mado.local');
     await fsp.writeFile(path.join(repo, 'keep.txt'), 'a\nb\nc\n');
     await fsp.writeFile(path.join(repo, 'gone.txt'), 'gone\n');
     await fsp.writeFile(path.join(repo, 'rename me.txt'), 'old\n');
@@ -58,7 +58,7 @@ test('Git 状态返回分支、文件列表和完整增删行汇总', async () =
 });
 
 test('普通目录明确返回不是 Git 仓库', async () => {
-  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-no-git-'));
+  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-no-git-'));
   try {
     const { resolvePath } = createPathService(home);
     const status = await createGitService({ resolvePath, kindOf }).gitStatus(home);

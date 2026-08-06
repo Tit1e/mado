@@ -349,8 +349,8 @@ async function doCreate(type) {
 const shotTray = {
   el: null, timer: null,
   init() {
-    if (!window.codexboxShot) return; // 浏览器版没有截屏监听
-    window.codexboxShot.onNew((m) => this.show(m));
+    if (!window.madoShot) return; // 浏览器版没有截屏监听
+    window.madoShot.onNew((m) => this.show(m));
   },
   show(m) {
     this.dismiss();

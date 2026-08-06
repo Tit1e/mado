@@ -45,7 +45,7 @@ export async function prepareElectron(root = path.resolve(path.dirname(fileURLTo
   if (fs.existsSync(bundledTypes)) fs.renameSync(bundledTypes, path.join(electronDir, 'electron.d.ts'));
   if (!fs.existsSync(executableFile)) throw new Error('Electron.app 解压后缺少可执行文件');
   fs.writeFileSync(pathFile, executable);
-  console.log(`[codexbox] 已补全 Electron ${version} (${arch})`);
+  console.log(`[mado] 已补全 Electron ${version} (${arch})`);
   return { skipped: false, executable: executableFile };
 }
 

@@ -4,7 +4,7 @@
  * [POS]: experiments/bugfix-202606 的自动化回归入口，覆盖 2026-06 终端修复
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
-// 2026-06 批量修复的自动化验收：Playwright 驱动 Electron（假 HOME，不碰真实数据，不影响正在跑的 CodexBox）。
+// 2026-06 批量修复的自动化验收：Playwright 驱动 Electron（假 HOME，不碰真实数据，不影响正在跑的 Mado）。
 // 覆盖：①冷启动 PTY 列宽/开发端口与数据目录隔离 ②IME CapsLock 双写 ③通知误报四场景 ④标签项目识别/双击定位/Codex 按钮
 // ⑤滚动失同步（隐藏期灌行后能滚到底）⑥裸文件名回扫定位（带同名诱饵）⑦CSRF Origin 校验
 // ⑧有终端时确认退出能结束主进程。共 19 项断言。
@@ -25,7 +25,7 @@ function postWrite(origin, target, content) {
   });
 }
 const ROOT = path.resolve(__dirname, '../..');
-const HOME = '/tmp/codexbox-verify-home';
+const HOME = '/tmp/mado-verify-home';
 let fails = 0;
 const check = (ok, name, detail) => { console.log((ok ? 'PASS' : 'FAIL') + ': ' + name + (detail ? ' — ' + detail : '')); if (!ok) fails++; };
 setTimeout(() => { console.error('FAIL: watchdog 超时'); process.exit(2); }, 240000);
@@ -40,13 +40,13 @@ setTimeout(() => { console.error('FAIL: watchdog 超时'); process.exit(2); }, 2
   const png = Buffer.from('89504e470d0a1a0a0000000d49484452', 'hex');
   fs.writeFileSync(path.join(proj, 'lovart_2ffda3364d71.png'), png);
   fs.writeFileSync(path.join(decoy, 'lovart_2ffda3364d71.png'), png);
-  const app = await _electron.launch({ args: [ROOT], cwd: ROOT, env: { ...process.env, HOME, CODEXBOX_DEV_PORT: '4640' } });
+  const app = await _electron.launch({ args: [ROOT], cwd: ROOT, env: { ...process.env, HOME, MADO_DEV_PORT: '4640' } });
   const runtime = await app.evaluate(({ app: electronApp }) => ({ packaged: electronApp.isPackaged, userData: electronApp.getPath('userData') }));
-  check(!runtime.packaged && path.basename(runtime.userData) === 'CodexBox Dev', '开发版使用独立用户数据目录', JSON.stringify(runtime));
+  check(!runtime.packaged && path.basename(runtime.userData) === 'Mado Dev', '开发版使用独立用户数据目录', JSON.stringify(runtime));
   const win = await app.firstWindow();
   await app.evaluate(({ BrowserWindow }) => { const w = BrowserWindow.getAllWindows()[0]; w.setSize(1560, 950); w.center(); });
   await win.waitForTimeout(2200);
-  await win.evaluate(() => { localStorage.setItem('codexbox_guided', '1'); localStorage.setItem('codexbox_term_open', '1'); localStorage.setItem('codexbox_term_dock', 'bottom'); });
+  await win.evaluate(() => { localStorage.setItem('mado_guided', '1'); localStorage.setItem('mado_term_open', '1'); localStorage.setItem('mado_term_dock', 'bottom'); });
   await win.evaluate(() => location.reload()).catch(() => {}); // 复现冷启动恢复路径；上下文销毁属预期
   await win.waitForTimeout(2500);
 
@@ -59,19 +59,19 @@ setTimeout(() => { console.error('FAIL: watchdog 超时'); process.exit(2); }, 2
   const ptyCols = Number((stty || '0 0').split(' ')[1]);
   check(ptyCols > 120 && ptyCols === r1.cols, '冷启动 PTY 列宽与 xterm 对齐', 'stty=' + stty + ' xterm=' + r1.cols);
 
-  // 主进程用 CODEXBOX_DEV_PORT=4640 启动测试服务，但端口覆盖不能泄漏进用户终端。
-  await win.evaluate(() => term.input(term.active, 'printf "__CODEXBOX_ENV__%s|%s|%s\\n" "${CODEXBOX_PORT-unset}" "${CODEXBOX_DEV_PORT-unset}" "${CODEXBOX_NO_OPEN-unset}"\r'));
+  // 主进程用 MADO_DEV_PORT=4640 启动测试服务，但端口覆盖不能泄漏进用户终端。
+  await win.evaluate(() => term.input(term.active, 'printf "__MADO_ENV__%s|%s|%s\\n" "${MADO_PORT-unset}" "${MADO_DEV_PORT-unset}" "${MADO_NO_OPEN-unset}"\r'));
   await win.waitForTimeout(500);
   const portEnv = await win.evaluate(() => {
     const s = term.sessions.find((x) => x.id === term.active);
     const b = s.xterm.buffer.active;
     for (let i = b.length - 1; i >= 0; i--) {
       const line = b.getLine(i)?.translateToString(true).trim();
-      if (line?.startsWith('__CODEXBOX_ENV__')) return line;
+      if (line?.startsWith('__MADO_ENV__')) return line;
     }
     return null;
   });
-  check(portEnv === '__CODEXBOX_ENV__unset|unset|unset', '主进程端口变量不泄漏进终端', String(portEnv));
+  check(portEnv === '__MADO_ENV__unset|unset|unset', '主进程端口变量不泄漏进终端', String(portEnv));
 
   // ---------- ② IME：composition 中按 CapsLock，只应落一次 yaoda ----------
   const ime = await win.evaluate(async () => {

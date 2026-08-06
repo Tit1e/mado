@@ -30,7 +30,7 @@ test('顶栏不再渲染文件视图与图标尺寸控件', async () => {
     readFile(new URL('../../public/styles/workspace.css', import.meta.url), 'utf8'),
   ]);
   assert.doesNotMatch(index, /id="(?:view|gridsize)-seg"/);
-  assert.doesNotMatch(app, /codexbox_(?:view|gridsize)|gridSize|updateGridSizeVisibility/);
+  assert.doesNotMatch(app, /mado_(?:view|gridsize)|gridSize|updateGridSizeVisibility/);
   assert.doesNotMatch(css, /#(?:view|gridsize)-seg/);
 });
 

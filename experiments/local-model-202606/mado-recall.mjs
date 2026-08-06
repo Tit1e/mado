@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
  * [INPUT]: 依赖 Node.js 文件系统、Ollama embedding 服务、Spotlight 和实验向量数据
- * [OUTPUT]: 对外提供 codexbox-recall 语义与关键词双路检索命令
+ * [OUTPUT]: 对外提供 mado-recall 语义与关键词双路检索命令
  * [POS]: experiments/local-model-202606 的文件召回实验入口，不进入正式应用运行链路
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
-// codexbox-recall：给 coding agent 用的本地检索入口（实验3原型）
-// 用法：node codexbox-recall.mjs "模糊的自然语言查询" [--root 目录]
+// mado-recall：给 coding agent 用的本地检索入口（实验3原型）
+// 用法：node mado-recall.mjs "模糊的自然语言查询" [--root 目录]
 // 输出：语义命中（embedding）+ 关键词命中（Spotlight），纯文本，方便 agent 直接读
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +20,7 @@ const argv = process.argv.slice(2);
 const ri = argv.indexOf('--root');
 const root = ri >= 0 ? argv.splice(ri, 2)[1] : process.env.HOME;
 const query = argv.join(' ').trim();
-if (!query) { console.log('用法：codexbox-recall "想找什么（自然语言）" [--root 目录]'); process.exit(1); }
+if (!query) { console.log('用法：mado-recall "想找什么（自然语言）" [--root 目录]'); process.exit(1); }
 
 // 1) 语义检索：embedding 索引（当前覆盖公众号存档，实验阶段）
 let semantic = [];

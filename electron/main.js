@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 Electron 窗口/菜单/IPC 能力、PTY/Shell 集成/恢复/退出/开发刷新等领域服务、../server.js 与端口配置
- * [OUTPUT]: 对外提供 CodexBox 桌面主进程、PTY/恢复与文件/剪贴板/更新/菜单语言 IPC、Codex 新会话与命令重启快捷键、开发热重载、菜单和窗口生命周期
+ * [OUTPUT]: 对外提供 Mado 桌面主进程、PTY/恢复与文件/剪贴板/更新/菜单语言 IPC、Codex 新会话与命令重启快捷键、开发热重载、菜单和窗口生命周期
  * [POS]: electron 模块的主进程编排器，与 preload.js 和开发监督脚本协作连接渲染层、本地服务和操作系统
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -22,21 +22,21 @@ const { createZshIntegration } = require('./shell-integration');
 const { createTerminalRecoveryStore } = require('./terminal-recovery-store');
 const { createDevReloadService } = require('./dev-reload-service');
 
-const APP_NAME = 'CodexBox';
+const APP_NAME = 'Mado';
 app.setName(APP_NAME);
 // 正式版与开发版使用独立目录，避免同时运行时共享 Chromium 状态和窗口配置。
-app.setPath('userData', path.join(app.getPath('appData'), app.isPackaged ? 'CodexBox' : 'CodexBox Dev'));
+app.setPath('userData', path.join(app.getPath('appData'), app.isPackaged ? 'Mado' : 'Mado Dev'));
 
 // 复用现有后端：require 即 listen 127.0.0.1:PORT，不自动开浏览器
-process.env.CODEXBOX_NO_OPEN = '1';
+process.env.MADO_NO_OPEN = '1';
 const PORT = resolvePort({ dev: !app.isPackaged });
-process.env.CODEXBOX_PORT = String(PORT);
+process.env.MADO_PORT = String(PORT);
 require('../server.js');
 
 // node-pty 是原生模块，需 electron-rebuild 编译过；未就绪时终端能力降级但 app 仍可用
 let pty = null;
 try { pty = require('node-pty'); }
-catch (e) { console.error('[codexbox] node-pty 未就绪（跑 npm run rebuild）：', e.message); }
+catch (e) { console.error('[mado] node-pty 未就绪（跑 npm run rebuild）：', e.message); }
 
 let win = null;
 const send = (channel, payload) => {
@@ -109,7 +109,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  // 开发模式下 macOS 默认显示 Electron 图标——换成 CodexBox 自己的（打包后由 electron-builder 的 icon 接管）
+  // 开发模式下 macOS 默认显示 Electron 图标——换成 Mado 自己的（打包后由 electron-builder 的 icon 接管）
   if (process.platform === 'darwin' && app.dock) {
     try { app.dock.setIcon(nativeImage.createFromPath(path.join(__dirname, '..', 'build', 'icon.png'))); } catch { /* */ }
   }
@@ -188,21 +188,21 @@ function cmpVer(a, b) {
   for (let i = 0; i < 3; i++) { const d = (pa[i] || 0) - (pb[i] || 0); if (d) return d; }
   return 0;
 }
-const RELEASE_REPO = 'Tit1e/codexbox';
+const RELEASE_REPO = 'Tit1e/mado';
 const REL_PAGE = `https://github.com/${RELEASE_REPO}/releases/latest`;
 async function fetchLatestRelease() {
   // 先走 API（信息全）；代理共享出口 IP 很容易吃 GitHub API 的未认证限流（60 次/小时/IP，403），
   // 失败就退回抓 releases/latest 网页重定向——重定向后的 URL 自带 tag，且不占 API 配额
   try {
     const res = await net.fetch(`https://api.github.com/repos/${RELEASE_REPO}/releases/latest`, {
-      headers: { 'User-Agent': 'codexbox-app', Accept: 'application/vnd.github+json' },
+      headers: { 'User-Agent': 'mado-app', Accept: 'application/vnd.github+json' },
     });
     if (res.ok) {
       const rel = await res.json();
       if (rel.tag_name) return { tag: rel.tag_name, url: rel.html_url || REL_PAGE };
     }
   } catch { /* 走兜底 */ }
-  const res = await net.fetch(REL_PAGE, { headers: { 'User-Agent': 'codexbox-app' } });
+  const res = await net.fetch(REL_PAGE, { headers: { 'User-Agent': 'mado-app' } });
   const m = String(res.url || '').match(/\/releases\/tag\/([^/?#]+)/);
   if (m) return { tag: decodeURIComponent(m[1]), url: res.url };
   return null;
@@ -250,7 +250,7 @@ async function checkUpdate(opts) {
 ipcMain.handle('update:open', (e, { url }) => { if (validGithubUrl(url)) shell.openExternal(url); });
 ipcMain.handle('update:get', () => pendingUpdate);
 
-// #26 应用内下载更新：按当前架构拼 dmg 资产地址（发布产物统一 CodexBox-<版本>-<arch>.dmg），
+// #26 应用内下载更新：按当前架构拼 dmg 资产地址（发布产物统一 Mado-<版本>-<arch>.dmg），
 // 下到 ~/Downloads 后直接打开挂载，拖进 Applications 即完成。全自动安装（Squirrel）仍要等 Developer ID 签名
 let updDownloading = false;
 ipcMain.handle('update:download', async (e, { version }) => {
@@ -265,7 +265,7 @@ ipcMain.handle('update:download', async (e, { version }) => {
   updDownloading = true;
   const tmp = dest + '.part';
   try {
-    const res = await net.fetch(url, { headers: { 'User-Agent': 'codexbox-app' } });
+    const res = await net.fetch(url, { headers: { 'User-Agent': 'mado-app' } });
     if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
     const total = Number(res.headers.get('content-length')) || 0;
     const out = fs.createWriteStream(tmp);
@@ -303,19 +303,19 @@ ipcMain.handle('win:traffic', (e, { show }) => {
   win.setWindowButtonVisibility(!!show);
 });
 
-// 界面语言：用户手动选过的存在 ~/.codexbox/config.json（渲染层切换时写入），没选过跟随系统
+// 界面语言：用户手动选过的存在 ~/.mado/config.json（渲染层切换时写入），没选过跟随系统
 function uiLang() {
   try {
-    const c = JSON.parse(fs.readFileSync(path.join(os.homedir(), '.codexbox', 'config.json'), 'utf8'));
+    const c = JSON.parse(fs.readFileSync(path.join(os.homedir(), '.mado', 'config.json'), 'utf8'));
     if (c.lang === 'zh' || c.lang === 'en') return c.lang;
   } catch { /* 没配置过 */ }
   return String(app.getLocale() || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
 }
 const M = (zh, en) => (uiLang() === 'zh' ? zh : en);
 const devReloadService = createDevReloadService({ app, dialog, ptyService, getWindow: () => win, translate: M });
-if (process.env.CODEXBOX_DEV_WATCH === '1') {
+if (process.env.MADO_DEV_WATCH === '1') {
   process.on('message', (message) => {
-    if (message && message.type === 'codexbox-dev') devReloadService.request(message.action);
+    if (message && message.type === 'mado-dev') devReloadService.request(message.action);
   });
 }
 
@@ -324,7 +324,7 @@ if (process.env.CODEXBOX_DEV_WATCH === '1') {
 // 唯一手段是 `pmset -a disablesleep 1`（需 root）。为避免智能模式反复弹密码，首次开启时装一条
 // 仅限 pmset disablesleep 0/1 的 sudoers 免密规则，之后静默切换。
 // 智能模式：只有「开关开 且 有终端在跑」才真正禁休眠；终端全退/退出 app 立即恢复，绝不让 Mac 一直不睡。
-const CONFIG = path.join(os.homedir(), '.codexbox', 'config.json');
+const CONFIG = path.join(os.homedir(), '.mado', 'config.json');
 function readConfig() { try { return JSON.parse(fs.readFileSync(CONFIG, 'utf8')); } catch { return {}; } }
 function writeConfig(patch) {
   try { const c = readConfig(); Object.assign(c, patch); fs.mkdirSync(path.dirname(CONFIG), { recursive: true }); fs.writeFileSync(CONFIG, JSON.stringify(c, null, 2)); }
@@ -345,7 +345,7 @@ function installSudoers() {
     if (!user) return resolve(false);
     const sh = [
       '#!/bin/sh', 'set -e',
-      'f=/etc/sudoers.d/codexbox-pmset',
+      'f=/etc/sudoers.d/mado-pmset',
       "cat > \"$f\" <<'EOF'",
       `${user} ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 0, /usr/bin/pmset -a disablesleep 1`,
       'EOF',
@@ -355,7 +355,7 @@ function installSudoers() {
       '',
     ].join('\n');
     let tmp;
-    try { tmp = path.join(app.getPath('temp'), 'codexbox-sudoers-install.sh'); fs.writeFileSync(tmp, sh, { mode: 0o700 }); }
+    try { tmp = path.join(app.getPath('temp'), 'mado-sudoers-install.sh'); fs.writeFileSync(tmp, sh, { mode: 0o700 }); }
     catch { return resolve(false); }
     const apple = `do shell script "/bin/sh " & quoted form of "${tmp}" with administrator privileges`;
     console.log('[lid] running osascript admin prompt, tmp =', tmp);
@@ -375,8 +375,8 @@ async function setLidIntent(on) {
     const choice = dialog.showMessageBoxSync(win && !win.isDestroyed() ? win : undefined, {
       type: 'warning', buttons: [M('开启', 'Enable'), M('取消', 'Cancel')], defaultId: 0, cancelId: 1,
       message: M('合盖后继续运行', 'Keep running with lid closed'),
-      detail: M('开启后，只要还有终端会话在跑，合上盖子也不会休眠——agent 任务能接着干。\n\n注意：合盖期间持续耗电发热，建议接电源。终端全部退出或退出 CodexBox 时自动恢复正常休眠。\n\n首次开启需输入一次管理员密码（装一条仅限电源设置的免密规则）。',
-        'While any terminal session is running, closing the lid won\'t sleep the Mac — your agent tasks keep going.\n\nNote: it keeps drawing power and heat while closed; stay plugged in. Normal sleep is restored once all terminals exit or you quit CodexBox.\n\nFirst time needs your admin password once (installs a power-only passwordless rule).'),
+      detail: M('开启后，只要还有终端会话在跑，合上盖子也不会休眠——agent 任务能接着干。\n\n注意：合盖期间持续耗电发热，建议接电源。终端全部退出或退出 Mado 时自动恢复正常休眠。\n\n首次开启需输入一次管理员密码（装一条仅限电源设置的免密规则）。',
+        'While any terminal session is running, closing the lid won\'t sleep the Mac — your agent tasks keep going.\n\nNote: it keeps drawing power and heat while closed; stay plugged in. Normal sleep is restored once all terminals exit or you quit Mado.\n\nFirst time needs your admin password once (installs a power-only passwordless rule).'),
     });
     console.log('[lid] warning dialog choice =', choice, '(0=开启)');
     if (choice !== 0) { buildMenu(); return; } // 取消 → 复位勾选
@@ -398,12 +398,12 @@ function buildMenu() {
   const { intent: lidIntent, active: lidActive } = lidGuard.state();
   const template = [
     ...(isMac ? [{ label: APP_NAME, submenu: [
-      { role: 'about', label: M('关于 CodexBox', 'About CodexBox') },
+      { role: 'about', label: M('关于 Mado', 'About Mado') },
       { label: M('检查更新…', 'Check for Updates…'), click: () => checkUpdate({ manual: true }) },
       { type: 'separator' },
-      { role: 'hide', label: M('隐藏 CodexBox', 'Hide CodexBox') }, { role: 'hideOthers', label: M('隐藏其他', 'Hide Others') }, { role: 'unhide', label: M('全部显示', 'Show All') },
+      { role: 'hide', label: M('隐藏 Mado', 'Hide Mado') }, { role: 'hideOthers', label: M('隐藏其他', 'Hide Others') }, { role: 'unhide', label: M('全部显示', 'Show All') },
       { type: 'separator' },
-      { role: 'quit', label: M('退出 CodexBox', 'Quit CodexBox') },
+      { role: 'quit', label: M('退出 Mado', 'Quit Mado') },
     ] }] : []),
     { label: M('文件', 'File'), submenu: [
       ...(isMac ? [] : [{ label: M('检查更新…', 'Check for Updates…'), click: () => checkUpdate({ manual: true }) }, { type: 'separator' }]),

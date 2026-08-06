@@ -1,30 +1,30 @@
 <!--
 [INPUT]: 依赖仓库内 assets 产品视觉资源、GitHub Releases 和当前构建运行方式
-[OUTPUT]: 对外提供 CodexBox 产品介绍、安装方式、功能说明和开发指南
-[POS]: 项目根目录的公开说明文档，是用户与贡献者了解 CodexBox 的首要入口
+[OUTPUT]: 对外提供 Mado 产品介绍、安装方式、功能说明和开发指南
+[POS]: 项目根目录的公开说明文档，是用户与贡献者了解 Mado 的首要入口
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
 -->
 <div align="center">
 
-# 📦 CodexBox
+# 📦 Mado
 
-<img src="assets/codexbox-banner.png" alt="CodexBox · local desktop cockpit for Codex" width="100%">
+<img src="assets/mado-banner.png" alt="Mado · local desktop cockpit for Codex" width="100%">
 
 <br><br>
 
-> *"AI 帮你一个下午起十个项目，然后它们就再也找不到了。CodexBox 帮你把它们找回来。"*
-> *"AI spins up ten projects in an afternoon. CodexBox helps you find them again."*
+> *"AI 帮你一个下午起十个项目，然后它们就再也找不到了。Mado 帮你把它们找回来。"*
+> *"AI spins up ten projects in an afternoon. Mado helps you find them again."*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/Tit1e/codexbox?label=Release&color=blue)](https://github.com/Tit1e/codexbox/releases/latest)
-[![Platform](https://img.shields.io/badge/macOS-Apple%20Silicon-black?logo=apple)](https://github.com/Tit1e/codexbox/releases/latest)
+[![Release](https://img.shields.io/github/v/release/Tit1e/mado?label=Release&color=blue)](https://github.com/Tit1e/mado/releases/latest)
+[![Platform](https://img.shields.io/badge/macOS-Apple%20Silicon-black?logo=apple)](https://github.com/Tit1e/mado/releases/latest)
 [![Windows](https://img.shields.io/badge/Windows-community%20port-lightgrey?logo=windows)](#install)
 [![Runtime](https://img.shields.io/badge/Runtime-no--build-blueviolet)](#architecture)
 
 <br>
 
-**CodexBox：Codex 的本地桌面驾驶舱。让 Codex 在本地干活，看清它碰过的每个文件、改过的每一行，随时接手。**<br>
-**CodexBox — the local desktop cockpit for Codex: run Codex, see every file and line it changes, and take over anytime.**
+**Mado：Codex 的本地桌面驾驶舱。让 Codex 在本地干活，看清它碰过的每个文件、改过的每一行，随时接手。**<br>
+**Mado — the local desktop cockpit for Codex: run Codex, see every file and line it changes, and take over anytime.**
 
 <br>
 
@@ -36,34 +36,34 @@ Every time Codex writes a file, its row lights up: *find files → run Codex →
 
 <br>
 
-[⬇ 下载 dmg / Download dmg](https://github.com/Tit1e/codexbox/releases/latest) · [Screenshots / 截图](#three-skins) · [Features / 功能](#what-it-does) · [Install / 安装](#install) · [Credits / 致谢](#credits)
+[⬇ 下载 dmg / Download dmg](https://github.com/Tit1e/mado/releases/latest) · [Screenshots / 截图](#three-skins) · [Features / 功能](#what-it-does) · [Install / 安装](#install) · [Credits / 致谢](#credits)
 
 </div>
 
 ---
 
 <p align="center">
-  <img src="assets/screenshot-volt.png" alt="CodexBox · Volt skin · file browser on the left, README preview at the bottom, embedded terminal on the right" width="100%">
+  <img src="assets/screenshot-volt.png" alt="Mado · Volt skin · file browser on the left, README preview at the bottom, embedded terminal on the right" width="100%">
 </p>
 
 <p align="center"><sub>▲ 实时 App 截图：列表浏览本地文件，README 原地预览，内嵌终端同屏运行。<br>Live app capture: local files in the list, README previewed in place, and the embedded terminal running alongside.</sub></p>
 
 ---
 
-<a id="why-codexbox"></a>
-## Why CodexBox · 为什么要做 CodexBox
+<a id="why-mado"></a>
+## Why Mado · 为什么要做 Mado
 
 Codex 帮你一个下午起十个项目，但它们散在各处、名字认不出、改了啥看不见。每天的真实流程是：Finder 里翻半天 → 切到 iTerm 启 Codex → 再切浏览器看效果，三个窗口来回跳。
 
 Codex helps you start ten projects in an afternoon — then they scatter everywhere, the names stop making sense, and you can't see what got changed. The daily reality: dig through Finder → switch to iTerm to launch Codex → switch to the browser to check results. Three windows, endless hopping.
 
-CodexBox 把这条链路收进一个窗口：**左边文件 × 右边/下边终端 × 原地预览**，一个有机整体。它不跟 Finder 拼文件操作，不跟 VS Code 拼编辑，专注「找回 + 预览 + 轻改 + 指挥 Codex」这一条链路做到顺手。
+Mado 把这条链路收进一个窗口：**左边文件 × 右边/下边终端 × 原地预览**，一个有机整体。它不跟 Finder 拼文件操作，不跟 VS Code 拼编辑，专注「找回 + 预览 + 轻改 + 指挥 Codex」这一条链路做到顺手。
 
-CodexBox folds that loop into one window: **files on the left × terminal on the right/bottom × preview in place**. It doesn't compete with Finder on file ops or VS Code on editing. It does one chain well: *find → preview → light edits → command Codex*.
+Mado folds that loop into one window: **files on the left × terminal on the right/bottom × preview in place**. It doesn't compete with Finder on file ops or VS Code on editing. It does one chain well: *find → preview → light edits → command Codex*.
 
-CodexBox 自身不要求云端账号，也没有远程后端，文件浏览与配置都在本机完成。内嵌终端中的 Codex CLI 仍按它自己的账号与网络配置工作。
+Mado 自身不要求云端账号，也没有远程后端，文件浏览与配置都在本机完成。内嵌终端中的 Codex CLI 仍按它自己的账号与网络配置工作。
 
-CodexBox itself has no cloud account or remote backend. File browsing and configuration stay local. The Codex CLI in the embedded terminal still follows its own account and network settings.
+Mado itself has no cloud account or remote backend. File browsing and configuration stay local. The Codex CLI in the embedded terminal still follows its own account and network settings.
 
 <a id="three-skins"></a>
 ## Three skins · 三套皮肤
@@ -118,8 +118,8 @@ The three skins are not simple color swaps: palette, typography, icons, code hig
   Save commands such as `npm run dev` in any folder and let child folders inherit the nearest rule. Services run in the configured folder, with top-bar controls and a project-list status dot; open their output only when needed.
 - **拖文件进终端 / Drag files in** — 从文件列表拖文件/文件夹进终端，自动插入路径喂给 Codex 当上下文。
   Drop a file or folder into the terminal to insert its path as Codex context.
-- **路径可点击 / Clickable paths** — 终端里出现的文件路径直接点击在 CodexBox 打开；带空格的 macOS 截屏名、中文文件名、折行的长路径都能识别（空格边界由文件系统 stat 验证，不靠猜）。
-  File paths appearing in terminal output open in CodexBox on click; macOS screenshot names with spaces, Chinese filenames and wrapped long paths are all recognized (space boundaries verified by stat, not guessed).
+- **路径可点击 / Clickable paths** — 终端里出现的文件路径直接点击在 Mado 打开；带空格的 macOS 截屏名、中文文件名、折行的长路径都能识别（空格边界由文件系统 stat 验证，不靠猜）。
+  File paths appearing in terminal output open in Mado on click; macOS screenshot names with spaces, Chinese filenames and wrapped long paths are all recognized (space boundaries verified by stat, not guessed).
 - **选中即甩给终端 / Send selection** — 预览里选一段文字，一键以「文件出处 + 围栏」格式发进终端（bracketed paste 包裹，不会被逐行误执行）。  
   Select text in a preview and fling it into the terminal with file provenance + fencing (bracketed paste, never executed line by line).
 - **态势感知 / Situational awareness** — 标签圆点显示 Codex 运行/空闲/退出；Codex 把球踢回给你时终端边缘呼吸提示「轮到你」，长任务完成发系统通知。
@@ -131,9 +131,9 @@ The three skins are not simple color swaps: palette, typography, icons, code hig
 - **安全重跑命令 / Safe command rerun**，`⌘⇧R` 先停止当前标签的前台任务，确认 Shell 恢复后再执行原命令，适合重启 `npm run dev`、`pnpm dev` 等服务。
   `⌘⇧R` stops the active tab's foreground task, waits for the shell to return, then runs the same command again. It is useful for restarting services such as `npm run dev` or `pnpm dev`.
 - **任务恢复 / Task recovery**，退出应用时会确认仍在运行的任务，并保存能够识别的命令；下次启动可选择恢复其中一项或全部恢复。
-  When quitting, CodexBox confirms active tasks and saves commands it can identify. On the next launch, restore selected tasks or all of them.
-- **合盖继续运行 / Keep running with the lid closed**，可在应用菜单中选择让 Mac 在仍有内嵌终端标签时保持运行；关闭全部终端或退出 CodexBox 后恢复正常休眠。首次开启需要管理员授权。
-  An optional app-menu setting keeps the Mac awake while embedded terminal sessions remain open. Normal sleep returns after all terminal tabs close or CodexBox quits. The first activation requires administrator authorization.
+  When quitting, Mado confirms active tasks and saves commands it can identify. On the next launch, restore selected tasks or all of them.
+- **合盖继续运行 / Keep running with the lid closed**，可在应用菜单中选择让 Mac 在仍有内嵌终端标签时保持运行；关闭全部终端或退出 Mado 后恢复正常休眠。首次开启需要管理员授权。
+  An optional app-menu setting keeps the Mac awake while embedded terminal sessions remain open. Normal sleep returns after all terminal tabs close or Mado quits. The first activation requires administrator authorization.
 
 ### Editing · WYSIWYG / 编辑 · 所见即所得
 
@@ -151,9 +151,9 @@ The three skins are not simple color swaps: palette, typography, icons, code hig
 
 ### 桌面版（推荐）/ Desktop (recommended)
 
-从 [**Releases**](https://github.com/Tit1e/codexbox/releases/latest) 下载最新 `.dmg`，拖进「应用程序」即可。Apple Silicon (arm64) 原生。
+从 [**Releases**](https://github.com/Tit1e/mado/releases/latest) 下载最新 `.dmg`，拖进「应用程序」即可。Apple Silicon (arm64) 原生。
 
-Download the latest `.dmg` from [**Releases**](https://github.com/Tit1e/codexbox/releases/latest) and drag it into Applications. Native Apple Silicon (arm64).
+Download the latest `.dmg` from [**Releases**](https://github.com/Tit1e/mado/releases/latest) and drag it into Applications. Native Apple Silicon (arm64).
 
 > 已用 Apple Development 证书签名 + hardened runtime。首次打开若提示「未验证的开发者」：**右键 → 打开 → 确认**即可。  
 > Signed with an Apple Development certificate + hardened runtime. If macOS warns about an unverified developer on first launch: **right-click → Open → confirm**.
@@ -163,11 +163,11 @@ Download the latest `.dmg` from [**Releases**](https://github.com/Tit1e/codexbox
 
 ### Windows（社区移植，非官方）/ Windows (community ports, unofficial)
 
-我自己没有 Windows 电脑，没法稳定验证 Windows 版的体验，也不了解 Windows 用户的操作习惯，所以**官方不出 Windows 版**。但社区里有同学基于 CodexBox 拓展了 Windows 版本，想在 Windows 上体验的朋友可以试试，谢谢他们的工作 🙏。
+我自己没有 Windows 电脑，没法稳定验证 Windows 版的体验，也不了解 Windows 用户的操作习惯，所以**官方不出 Windows 版**。但社区里有同学基于 Mado 拓展了 Windows 版本，想在 Windows 上体验的朋友可以试试，谢谢他们的工作 🙏。
 
 > ⚠️ 这些都不是我的改造，我没有参与开发、也没法对它们的体验和安全负责。请自行评估后使用。
 
-I don't own a Windows machine and can't reliably verify a Windows build or judge what Windows users need, so **there is no official Windows version**. The community has built Windows ports of CodexBox — if you're on Windows, give one a try, and thanks to the maintainers 🙏.
+I don't own a Windows machine and can't reliably verify a Windows build or judge what Windows users need, so **there is no official Windows version**. The community has built Windows ports of Mado — if you're on Windows, give one a try, and thanks to the maintainers 🙏.
 
 > ⚠️ These are not my builds. I'm not involved in their development and can't vouch for their experience or security. Use at your own discretion.
 
@@ -198,7 +198,7 @@ npm run app          # electron . 启动完整桌面版 / full desktop app
 npm run dist         # 打包签名 .dmg（产物在 dist/，不入 git）/ build & sign the .dmg (output in dist/)
 ```
 
-开发入口 `npm start` 和 `npm run app` 默认跑 `http://localhost:4577`（预览服务 `4578`），正式打包版默认跑 `http://localhost:4567`（预览服务 `4568`），避免本机同时开正式版和开发版时端口冲突。开发环境需要手动指定时使用 `CODEXBOX_DEV_PORT=xxxx npm start` 或 `CODEXBOX_DEV_PORT=xxxx npm run app`；正式环境继续使用 `CODEXBOX_PORT`。
+开发入口 `npm start` 和 `npm run app` 默认跑 `http://localhost:4577`（预览服务 `4578`），正式打包版默认跑 `http://localhost:4567`（预览服务 `4568`），避免本机同时开正式版和开发版时端口冲突。开发环境需要手动指定时使用 `MADO_DEV_PORT=xxxx npm start` 或 `MADO_DEV_PORT=xxxx npm run app`；正式环境继续使用 `MADO_PORT`。
 
 `npm run dev` 监听 `src-ui/` 和 `public/`，保存后自动构建并刷新界面；监听 `server/`、`electron/`、`server.js` 和 `port-config.js`，保存后自动重启 Electron。若已有内嵌终端，刷新或重启前会先确认，避免静默终止任务。
 
@@ -224,10 +224,10 @@ npm run dist         # 打包签名 .dmg（产物在 dist/，不入 git）/ buil
 <a id="privacy"></a>
 ## Privacy & security · 隐私与安全
 
-- CodexBox 后端只监听本机回环地址，并校验 Host 与写请求 Origin。文件浏览、收藏、最近记录和应用配置不会上传到 CodexBox 的远程服务。内嵌的 Codex CLI 有独立的联网行为。<br>
-  The CodexBox backend listens on loopback only and validates the Host header and write-request Origin. File browsing, favorites, recent items and app configuration are not uploaded to a CodexBox service. The embedded Codex CLI has its own network behavior.
-- 浏览器运行所需的前端依赖都随应用放在 `public/`，界面字体使用本机系统字体。CodexBox 的文件浏览与预览可离线使用；检查和下载更新时会访问 GitHub。<br>
-  Browser-side dependencies ship with the app under `public/`, while the UI uses local system fonts. CodexBox file browsing and previews work offline; update checks and downloads connect to GitHub.
+- Mado 后端只监听本机回环地址，并校验 Host 与写请求 Origin。文件浏览、收藏、最近记录和应用配置不会上传到 Mado 的远程服务。内嵌的 Codex CLI 有独立的联网行为。<br>
+  The Mado backend listens on loopback only and validates the Host header and write-request Origin. File browsing, favorites, recent items and app configuration are not uploaded to a Mado service. The embedded Codex CLI has its own network behavior.
+- 浏览器运行所需的前端依赖都随应用放在 `public/`，界面字体使用本机系统字体。Mado 的文件浏览与预览可离线使用；检查和下载更新时会访问 GitHub。<br>
+  Browser-side dependencies ship with the app under `public/`, while the UI uses local system fonts. Mado file browsing and previews work offline; update checks and downloads connect to GitHub.
 - HTML 预览由独立端口上的只读 `/` 服务提供，并在沙箱 iframe 中渲染。预览服务限制在用户主目录内且拒绝隐藏路径，页面无法访问主应用 API 或终端桥接。<br>
   HTML previews come from a read-only `/` service on a separate port and render inside a sandboxed iframe. The preview service is limited to non-hidden paths under the home directory, and pages cannot access the main app API or terminal bridge.
 - 配置更新使用串行读改写与原子落盘（temp + fsync + rename），避免并发更新互相覆盖或留下截断 JSON。<br>
@@ -249,13 +249,13 @@ The project used a five-role product review method during its early development.
 <a id="credits"></a>
 ## Standing on the shoulders of giants · 建在巨人肩膀上
 
-CodexBox 的核心能力来自这些出色的开源项目：
+Mado 的核心能力来自这些出色的开源项目：
 
-CodexBox's core capabilities come from these excellent open-source projects:
+Mado's core capabilities come from these excellent open-source projects:
 
-CodexBox 基于 [alchaincyf/fanbox](https://github.com/alchaincyf/fanbox) 修改而来，感谢原作者花叔开源 FanBox 的基础工作。本 fork 由 Tit1e 维护，继续沿用 MIT 许可；原项目与本项目的版权声明见 [LICENSE](LICENSE)。
+Mado 基于 [alchaincyf/fanbox](https://github.com/alchaincyf/fanbox) 修改而来，感谢原作者花叔开源 FanBox 的基础工作。本 fork 由 Tit1e 维护，继续沿用 MIT 许可；原项目与本项目的版权声明见 [LICENSE](LICENSE)。
 
-CodexBox is based on [alchaincyf/fanbox](https://github.com/alchaincyf/fanbox). Thanks to the original author, Huashu, for open-sourcing the FanBox foundation. This fork is maintained by Tit1e and stays under MIT; see [LICENSE](LICENSE) for both copyright notices.
+Mado is based on [alchaincyf/fanbox](https://github.com/alchaincyf/fanbox). Thanks to the original author, Huashu, for open-sourcing the FanBox foundation. This fork is maintained by Tit1e and stays under MIT; see [LICENSE](LICENSE) for both copyright notices.
 
 | 项目 / Project | 用在哪 / Used for | License |
 |---|---|---|
@@ -290,7 +290,7 @@ Browser-side dependencies ship with the app under `public/`, so file browsing, p
 <summary>项目结构 / Project layout</summary>
 
 ```
-codexbox/
+mado/
 ├── server.js               # 零依赖 Node 后端装配入口 / Backend composition root
 ├── server/                 # HTTP、文件、媒体、配置和 Codex 会话领域服务
 │                           # HTTP, file, media, config and Codex session services
@@ -320,7 +320,7 @@ codexbox/
 
 <div align="center">
 
-**Finder** 帮你管理文件。**IDE** 帮你写代码。**CodexBox** 帮你看清 AI 在你机器上干了什么。<br>
-**Finder** manages your files. **IDEs** write your code. **CodexBox** shows you what AI did on your machine.
+**Finder** 帮你管理文件。**IDE** 帮你写代码。**Mado** 帮你看清 AI 在你机器上干了什么。<br>
+**Finder** manages your files. **IDEs** write your code. **Mado** shows you what AI did on your machine.
 
 </div>

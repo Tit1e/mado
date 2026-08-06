@@ -357,9 +357,9 @@ function igniteRow(top, count) {
 }
 
 // pty 数据回流（全局一次）
-if (window.codexboxPty) {
-  window.codexboxPty.onData(({ id, data }) => { const s = term.sessions.find((x) => x.id === id); if (s) { s.xterm.write(data); term.markBusy(s); } });
-  window.codexboxPty.onExit(({ id }) => {
+if (window.madoPty) {
+  window.madoPty.onData(({ id, data }) => { const s = term.sessions.find((x) => x.id === id); if (s) { s.xterm.write(data); term.markBusy(s); } });
+  window.madoPty.onExit(({ id }) => {
     const s = term.sessions.find((x) => x.id === id);
     if (s) {
       s.dead = true; s.status = 'dead';
@@ -373,7 +373,7 @@ if (window.codexboxPty) {
   });
 }
 // 文件变化 → 自动刷新列表（看着 agent 干活）；编辑中不动预览，避免吞掉未保存内容
-if (window.codexboxFs) {
+if (window.madoFs) {
   let rt = null;
   state.changed = new Map(); // 顶层名 → { count, files:Set, ts }
   let sweep = null;
@@ -386,7 +386,7 @@ if (window.codexboxFs) {
       if (dirty) renderFiles();
     }, 1000); // 单一清理定时器，避免大批量变更时堆积成千上万个 timer
   };
-  window.codexboxFs.onChanged(({ dir, filename }) => {
+  window.madoFs.onChanged(({ dir, filename }) => {
     // 系统/构建噪声（~/Library 缓存、node_modules 等 macOS 后台不停写）直接丢弃：
     // 既不点亮文件行、不触发文件跟随，也不刷新列表，否则 Library 会永远显示「被修改」。
     if (filename && isNoisyChange(filename)) return;

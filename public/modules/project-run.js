@@ -11,7 +11,7 @@ export function createProjectRunController(deps) {
   const pendingRoots = new Map();
   let latestStates = [];
 
-  const enabled = () => !!(window.codexboxEnv?.isDesktopApp && term.available());
+  const enabled = () => !!(window.madoEnv?.isDesktopApp && term.available());
   const ruleIsRunning = (rule) => context.running && context.rule?.id === rule.id;
 
   function button(className, label, icon, handler, disabled = false) {

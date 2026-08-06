@@ -13,7 +13,7 @@ function showGuide(markGuided = false) {
   ov.className = 'guide-overlay';
   ov.innerHTML = `<div class="guide-card">
     <div class="guide-logo">${svgWrap(SVG.box, 'currentColor', 46, true)}</div>
-    <h2>欢迎用 CodexBox</h2>
+    <h2>欢迎用 Mado</h2>
     <p class="guide-lead">从找项目、运行 Codex 到核对改动，常用能力都在这一个窗口。</p>
     <h3>核心工作流</h3>
     <ul class="guide-features">
@@ -41,13 +41,13 @@ function showGuide(markGuided = false) {
   </div>`;
   document.body.appendChild(ov);
   $('#guide-ok').onclick = () => {
-    if (markGuided) localStorage.setItem('codexbox_guided', '1');
+    if (markGuided) localStorage.setItem('mado_guided', '1');
     ov.remove();
   };
   return true;
 }
 function maybeShowGuide() {
-  if (localStorage.getItem('codexbox_guided')) return false;
+  if (localStorage.getItem('mado_guided')) return false;
   return showGuide(true);
 }
 
@@ -69,8 +69,8 @@ function bindResizer() {
   window.addEventListener('mouseup', () => {
     if (!dragging) return;
     dragging = false; handle.classList.remove('dragging'); document.body.style.userSelect = '';
-    localStorage.setItem('codexbox_preview_w', state.previewW);
-    localStorage.setItem('codexbox_preview_h', state.previewH || 340);
+    localStorage.setItem('mado_preview_w', state.previewW);
+    localStorage.setItem('mado_preview_h', state.previewH || 340);
   });
 }
 
@@ -125,15 +125,15 @@ function bindTerminalResizer() {
     if (raf) { cancelAnimationFrame(raf); raf = null; }
     apply(); fitNow();
     const panel = $('#terminal-panel');
-    localStorage.setItem('codexbox_term_squeeze', squeeze ? '1' : '0');
-    if (term.dock === 'bottom') localStorage.setItem('codexbox_term_h', parseInt(panel.style.height, 10) || 280);
-    else localStorage.setItem('codexbox_term_w', parseInt(panel.style.width, 10) || 480);
+    localStorage.setItem('mado_term_squeeze', squeeze ? '1' : '0');
+    if (term.dock === 'bottom') localStorage.setItem('mado_term_h', parseInt(panel.style.height, 10) || 280);
+    else localStorage.setItem('mado_term_w', parseInt(panel.style.width, 10) || 480);
   });
 }
 
 // ---------- Codex 快速启动与终端设置 ----------
 function codexResumeLast() {
-  try { return localStorage.getItem('codexbox_codex_resume_last') !== '0'; } catch { return true; }
+  try { return localStorage.getItem('mado_codex_resume_last') !== '0'; } catch { return true; }
 }
 function syncCodexLaunchHint() {
   const btn = $('#term-codex');
@@ -163,7 +163,7 @@ const terminalSettingsPop = {
         <span>Codex 提示音</span>
       </label>
       <label class="tsp-row" title="长时间中文输出偶发乱码时可关掉：改用兼容渲染（DOM），立即生效，稍慢但稳">
-        <input type="checkbox" data-setting="webgl" ${(() => { try { return localStorage.getItem('codexbox.noWebgl') === '1' ? '' : 'checked'; } catch { return 'checked'; } })()}>
+        <input type="checkbox" data-setting="webgl" ${(() => { try { return localStorage.getItem('mado.noWebgl') === '1' ? '' : 'checked'; } catch { return 'checked'; } })()}>
         <span>WebGL 加速渲染</span>
       </label>`;
     document.body.appendChild(pop);
@@ -173,13 +173,13 @@ const terminalSettingsPop = {
     pop.style.right = Math.max(8, Math.round(window.innerWidth - r.right - 8)) + 'px';
     this.el = pop;
     pop.querySelector('[data-setting="resume-last"]').onchange = (ev) => {
-      localStorage.setItem('codexbox_codex_resume_last', ev.target.checked ? '1' : '0');
+      localStorage.setItem('mado_codex_resume_last', ev.target.checked ? '1' : '0');
       syncCodexLaunchHint();
       toast(ev.target.checked ? '一键启动将继续最近 Codex 会话' : '一键启动将创建新的 Codex 会话');
     };
     pop.querySelector('[data-setting="chime"]').onchange = (ev) => {
       state.muted = !ev.target.checked;
-      localStorage.setItem('codexbox_muted', state.muted ? '1' : '0');
+      localStorage.setItem('mado_muted', state.muted ? '1' : '0');
       if (!state.muted) playChime('tick');
       toast(state.muted ? 'Codex 提示音已关闭' : 'Codex 提示音已开启');
     };
@@ -240,7 +240,7 @@ function bindEvents() {
   const tp = $('#terminal-panel');
   tp.addEventListener('dragover', (ev) => {
     const t = ev.dataTransfer.types;
-    if (!t.includes('Files') && !t.includes('application/x-codexbox-path') && !t.includes('text/plain')) return;
+    if (!t.includes('Files') && !t.includes('application/x-mado-path') && !t.includes('text/plain')) return;
     ev.preventDefault(); ev.dataTransfer.dropEffect = 'copy'; tp.classList.add('term-drop');
   });
   tp.addEventListener('dragleave', (ev) => { if (!tp.contains(ev.relatedTarget)) tp.classList.remove('term-drop'); });
@@ -248,18 +248,18 @@ function bindEvents() {
     ev.preventDefault(); tp.classList.remove('term-drop');
     // 系统拖入（Finder 文件 / 截图浮窗缩略图）：有真实路径直接用；file-promise 没路径就落盘临时目录
     const files = ev.dataTransfer.files ? [...ev.dataTransfer.files] : [];
-    if (files.length && window.codexboxDrop) {
+    if (files.length && window.madoDrop) {
       for (const f of files) {
-        let p = window.codexboxDrop.pathForFile(f);
+        let p = window.madoDrop.pathForFile(f);
         if (!p) {
-          const r = await window.codexboxDrop.saveTemp(f.name, await f.arrayBuffer()).catch(() => null);
+          const r = await window.madoDrop.saveTemp(f.name, await f.arrayBuffer()).catch(() => null);
           if (r && r.ok) p = r.path;
         }
         if (p) term.insertPath(p);
       }
       return;
     }
-    const p = ev.dataTransfer.getData('application/x-codexbox-path') || ev.dataTransfer.getData('text/plain');
+    const p = ev.dataTransfer.getData('application/x-mado-path') || ev.dataTransfer.getData('text/plain');
     if (p) term.insertPath(p);
   });
   // 全局兜底：文件拖到窗口其它区域松手时，阻止 Electron 导航到 file:// 顶掉整个界面
@@ -281,9 +281,9 @@ function bindEvents() {
   $('#file-area').addEventListener('contextmenu', blankMenu);
   // 拖入文件区 = 存进当前目录；拖到某文件夹图标上 = 存进那个文件夹（截图浮窗、Finder 文件都行）。
   // 接两类：①「外部文件」拖入（dataTransfer 里有 Files）；② app 内/外部图片拖入（带 text/uri-list 的 <img>，如预览里的图）。
-  // codexbox 内部路径拖拽（带 application/x-codexbox-path，拖去终端用）排除在外，不受影响。
+  // mado 内部路径拖拽（带 application/x-mado-path，拖去终端用）排除在外，不受影响。
   const fileArea = $('#file-area');
-  const droppableTypes = (t) => t.includes('Files') || (t.includes('text/uri-list') && !t.includes('application/x-codexbox-path'));
+  const droppableTypes = (t) => t.includes('Files') || (t.includes('text/uri-list') && !t.includes('application/x-mado-path'));
   const clearDropHi = () => { fileArea.classList.remove('area-drop'); fileArea.querySelectorAll('.row.drop-into').forEach((x) => x.classList.remove('drop-into')); };
   fileArea.addEventListener('dragover', (ev) => {
     if (!droppableTypes(ev.dataTransfer.types)) return;
@@ -298,7 +298,7 @@ function bindEvents() {
   fileArea.addEventListener('drop', async (ev) => {
     const dt = ev.dataTransfer;
     const hasFiles = dt.files && dt.files.length;
-    const url = (!hasFiles && dt.types.includes('text/uri-list') && !dt.types.includes('application/x-codexbox-path')) ? dt.getData('text/uri-list') : '';
+    const url = (!hasFiles && dt.types.includes('text/uri-list') && !dt.types.includes('application/x-mado-path')) ? dt.getData('text/uri-list') : '';
     if (!hasFiles && !url) return;
     ev.preventDefault(); clearDropHi();
     const row = ev.target.closest('.row[data-idx]');
@@ -312,7 +312,7 @@ function bindEvents() {
   $('#scope-toggle').onclick = () => cmdk.toggleScope();
 
   $('#toggle-hidden').checked = state.showHidden;
-  $('#toggle-hidden').onchange = (e) => { state.showHidden = e.target.checked; localStorage.setItem('codexbox_hidden', state.showHidden ? '1' : '0'); renderFiles(); };
+  $('#toggle-hidden').onchange = (e) => { state.showHidden = e.target.checked; localStorage.setItem('mado_hidden', state.showHidden ? '1' : '0'); renderFiles(); };
 
   $('#cmdk-input').oninput = (e) => cmdk.search(e.target.value);
   $('#cmdk').onclick = (e) => { if (e.target.id === 'cmdk') cmdk.close(); };
@@ -330,7 +330,7 @@ function bindEvents() {
       return;
     }
     if (lbOpen) { if (e.key === 'Escape') document.querySelector('.lightbox').remove(); return; }
-    const primaryShortcut = window.codexboxEnv?.platform === 'darwin' ? e.metaKey : (e.ctrlKey || e.metaKey);
+    const primaryShortcut = window.madoEnv?.platform === 'darwin' ? e.metaKey : (e.ctrlKey || e.metaKey);
     const terminalTabShortcut = primaryShortcut && !e.shiftKey && !e.altKey && /^[1-9]$/.test(e.key);
     if (terminalTabShortcut && !document.querySelector('.input-overlay')) {
       e.preventDefault();
@@ -366,7 +366,7 @@ function applyTheme(skin, rerender = true) {
   if (!['terminal', 'warm', 'editorial'].includes(skin)) skin = 'terminal';
   state.theme = skin;
   document.documentElement.dataset.theme = skin;
-  localStorage.setItem('codexbox_theme', skin);
+  localStorage.setItem('mado_theme', skin);
   const link = document.getElementById('hljs-theme');
   if (link) link.href = '/vendor/hljs/styles/' + (skin === 'terminal' ? 'github-dark' : 'github') + '.min.css';
   setThemeControlValue(skin);

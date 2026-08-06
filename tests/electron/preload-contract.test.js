@@ -33,7 +33,7 @@ test('语言切换可通过受控桥接即时重建原生菜单', async () => {
   const root = path.resolve(__dirname, '..', '..');
   const main = await fsp.readFile(path.join(root, 'electron', 'main.js'), 'utf8');
   const preload = await fsp.readFile(path.join(root, 'electron', 'preload.js'), 'utf8');
-  assert.match(preload, /codexboxLocale[\s\S]*refreshMenu:\s*\(\) => ipcRenderer\.invoke\('locale:refresh-menu'\)/);
+  assert.match(preload, /madoLocale[\s\S]*refreshMenu:\s*\(\) => ipcRenderer\.invoke\('locale:refresh-menu'\)/);
   assert.match(main, /ipcMain\.handle\('locale:refresh-menu', \(\) => \{\s*buildMenu\(\)/);
 });
 

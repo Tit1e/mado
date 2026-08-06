@@ -40,7 +40,7 @@ function createSystemFileService({ app, nativeImage, clipboard }) {
   }
   function save({ name, buf }) {
     try {
-      const dir = path.join(app.getPath('temp'), 'codexbox-drops');
+      const dir = path.join(app.getPath('temp'), 'mado-drops');
       fs.mkdirSync(dir, { recursive: true });
       const safe = safeDropName(name, '拖入文件.png');
       const bytes = safeBuffer(buf);

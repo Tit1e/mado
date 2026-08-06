@@ -14,7 +14,7 @@ const test = require('node:test');
 const { createFileWatchService } = require('../../electron/file-watch-service');
 
 test('文件监听服务维护目录集合并可靠清理', async () => {
-  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-watch-'));
+  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-watch-'));
   const first = path.join(root, 'first');
   const second = path.join(root, 'second');
   await Promise.all([fsp.mkdir(first), fsp.mkdir(second)]);

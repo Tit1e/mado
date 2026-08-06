@@ -31,12 +31,12 @@ async function navigate(p, pushHistory = true) {
 }
 // 汇总当前要监听的目录：浏览目录 + 每个终端会话的项目目录，发给主进程做增量监听
 function updateWatches() {
-  if (!window.codexboxFs) return;
+  if (!window.madoFs) return;
   const dirs = new Set();
   if (state.cwd) dirs.add(state.cwd);
   if (typeof term !== 'undefined') term.sessions.forEach((s) => { if (s.startDir) dirs.add(s.startDir); });
-  if (window.codexboxFs.watchSet) window.codexboxFs.watchSet([...dirs]);
-  else window.codexboxFs.watch(state.cwd); // 旧版主进程兜底
+  if (window.madoFs.watchSet) window.madoFs.watchSet([...dirs]);
+  else window.madoFs.watch(state.cwd); // 旧版主进程兜底
 }
 // shell 单引号转义（用于把路径塞进终端 cd 命令）
 function shQuote(s) { return `'${String(s).replace(/'/g, `'\\''`)}'`; }
@@ -121,7 +121,7 @@ function renderFiles() {
 }
 function dragItem(event, entry) {
   event.dataTransfer.setData('text/plain', entry.path);
-  event.dataTransfer.setData('application/x-codexbox-path', entry.path);
+  event.dataTransfer.setData('application/x-mado-path', entry.path);
   // 图片拖进 Markdown 时传原始路径，不能把缩略图 URL 写入文档。
   if (entry.kind === 'image') event.dataTransfer.setData('text/html', `<img src="${escapeHtml(encodeURI(entry.path))}" alt="${escapeHtml(entry.name)}">`);
   event.dataTransfer.effectAllowed = 'copy';
@@ -129,15 +129,15 @@ function dragItem(event, entry) {
 // 把系统拖入的文件（Finder 文件 / 截图浮窗缩略图）存进目标目录：
 // 有真实路径就复制进去，没路径（file-promise）就把字节直接写进去。仿终端那套口径。
 async function dropFilesInto(fileList, dir) {
-  if (!window.codexboxDrop || !dir) { toast('该环境不支持拖入保存', true); return; }
+  if (!window.madoDrop || !dir) { toast('该环境不支持拖入保存', true); return; }
   const files = [...(fileList || [])];
   if (!files.length) return;
   let saved = 0, lastPath = null;
   for (const f of files) {
-    const src = window.codexboxDrop.pathForFile(f);
+    const src = window.madoDrop.pathForFile(f);
     let r;
-    if (src) r = await window.codexboxDrop.copyInto(src, dir).catch(() => null);
-    else r = await window.codexboxDrop.saveInto(dir, f.name, await f.arrayBuffer()).catch(() => null);
+    if (src) r = await window.madoDrop.copyInto(src, dir).catch(() => null);
+    else r = await window.madoDrop.saveInto(dir, f.name, await f.arrayBuffer()).catch(() => null);
     if (r && r.ok) { saved++; lastPath = r.path; }
   }
   if (!saved) { toast('存入失败', true); return; }
@@ -148,7 +148,7 @@ async function dropFilesInto(fileList, dir) {
 // 拖入 app 内/外部的图片（预览里的图等都是 <img>，拖动带的是图片 URL 而非系统文件）：
 // 取 URL → fetch 出字节 → 存进目标目录。只收图片，非图片忽略。
 async function dropUrlInto(url, dir) {
-  if (!window.codexboxDrop || !dir) { toast('该环境不支持拖入保存', true); return; }
+  if (!window.madoDrop || !dir) { toast('该环境不支持拖入保存', true); return; }
   url = (String(url || '').split(/[\r\n]/).find((l) => l && !l.trim().startsWith('#')) || '').trim(); // uri-list 可能多行/含 # 注释
   if (!url) return;
   let blob;
@@ -159,7 +159,7 @@ async function dropUrlInto(url, dir) {
   let name = '';
   try { name = baseOf(decodeURIComponent(new URL(url, location.href).pathname)); } catch { /* blob:/data: 无 pathname */ }
   if (!name || !/\.[a-z0-9]+$/i.test(name)) name = `image-${Date.now()}.${e}`;
-  const r = await window.codexboxDrop.saveInto(dir, name, await blob.arrayBuffer()).catch(() => null);
+  const r = await window.madoDrop.saveInto(dir, name, await blob.arrayBuffer()).catch(() => null);
   if (!r || !r.ok) { toast('存入失败', true); return; }
   const where = dir === state.cwd ? '' : '「' + baseOf(dir) + '」';
   toast(`已存入${where} ${baseOf(r.path)}`);
@@ -170,7 +170,7 @@ function makeDraggablePath(el, p) {
   el.draggable = true;
   el.addEventListener('dragstart', (ev) => {
     ev.dataTransfer.setData('text/plain', p);
-    ev.dataTransfer.setData('application/x-codexbox-path', p);
+    ev.dataTransfer.setData('application/x-mado-path', p);
     ev.dataTransfer.effectAllowed = 'copy';
   });
 }

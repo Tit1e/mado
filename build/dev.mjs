@@ -34,7 +34,7 @@ function startElectron() {
   log('启动 Electron');
   electron = spawn(electronBinary, ['.'], {
     cwd: ROOT,
-    env: { ...process.env, CODEXBOX_DEV_WATCH: '1' },
+    env: { ...process.env, MADO_DEV_WATCH: '1' },
     stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
   });
   electron.on('close', (code) => {
@@ -58,7 +58,7 @@ function queue(mode, file) {
     pendingMode = null;
     if (!electron || electron.killed || !electron.connected) return;
     log(`${file || '源码'} 已更新，请求${next === 'restart' ? '重启应用' : '刷新界面'}`);
-    electron.send({ type: 'codexbox-dev', action: next });
+    electron.send({ type: 'mado-dev', action: next });
   }, 180);
 }
 

@@ -10,7 +10,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const PREFIX = '\x1b]777;codexbox;';
+const PREFIX = '\x1b]777;mado;';
 const SUFFIX = '\x07';
 
 function isIntegrationDir(candidate, currentDir) {
@@ -19,34 +19,34 @@ function isIntegrationDir(candidate, currentDir) {
   if (!path.normalize(candidate).endsWith(path.join('shell-integration', 'zsh'))) return false;
   try {
     const rc = fs.readFileSync(path.join(candidate, '.zshrc'), 'utf8');
-    return rc.includes('_codexbox_preexec()') && rc.includes('codexbox;start;');
+    return rc.includes('_mado_preexec()') && rc.includes('mado;start;');
   } catch { return false; }
 }
 
 function createZshIntegration(userData, env = process.env) {
   const dir = path.join(userData, 'shell-integration', 'zsh');
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
-  const originalZdotdir = [env.CODEXBOX_ORIGINAL_ZDOTDIR, env.ZDOTDIR, os.homedir()]
+  const originalZdotdir = [env.MADO_ORIGINAL_ZDOTDIR, env.ZDOTDIR, os.homedir()]
     .find((candidate) => candidate && !isIntegrationDir(candidate, dir)) || os.homedir();
-  const source = (name) => `[[ -r \"$CODEXBOX_ORIGINAL_ZDOTDIR/${name}\" ]] && source \"$CODEXBOX_ORIGINAL_ZDOTDIR/${name}\"\n`;
+  const source = (name) => `[[ -r \"$MADO_ORIGINAL_ZDOTDIR/${name}\" ]] && source \"$MADO_ORIGINAL_ZDOTDIR/${name}\"\n`;
   fs.writeFileSync(path.join(dir, '.zshenv'), source('.zshenv') + `export ZDOTDIR=${JSON.stringify(dir)}\n`, { mode: 0o600 });
   fs.writeFileSync(path.join(dir, '.zprofile'), source('.zprofile'), { mode: 0o600 });
   fs.writeFileSync(path.join(dir, '.zlogin'), source('.zlogin'), { mode: 0o600 });
   fs.writeFileSync(path.join(dir, '.zlogout'), source('.zlogout'), { mode: 0o600 });
   fs.writeFileSync(path.join(dir, '.zshrc'), source('.zshrc') + [
     'autoload -Uz add-zsh-hook',
-    'typeset -g _codexbox_shell_token="$CODEXBOX_SHELL_TOKEN"',
-    'typeset +x _codexbox_shell_token',
-    'unset CODEXBOX_SHELL_TOKEN',
-    'typeset -gr _codexbox_shell_token',
-    '_codexbox_preexec() {',
+    'typeset -g _mado_shell_token="$MADO_SHELL_TOKEN"',
+    'typeset +x _mado_shell_token',
+    'unset MADO_SHELL_TOKEN',
+    'typeset -gr _mado_shell_token',
+    '_mado_preexec() {',
     '  local encoded',
     '  encoded=$(printf %s "$1" | /usr/bin/base64 | /usr/bin/tr -d "\\n")',
-    `  printf '${PREFIX}start;%s;%s${SUFFIX}' "$_codexbox_shell_token" "$encoded"`,
+    `  printf '${PREFIX}start;%s;%s${SUFFIX}' "$_mado_shell_token" "$encoded"`,
     '}',
-    `_codexbox_precmd() { printf '${PREFIX}end;%s${SUFFIX}' "$_codexbox_shell_token" }`,
-    'add-zsh-hook preexec _codexbox_preexec',
-    'add-zsh-hook precmd _codexbox_precmd',
+    `_mado_precmd() { printf '${PREFIX}end;%s${SUFFIX}' "$_mado_shell_token" }`,
+    'add-zsh-hook preexec _mado_preexec',
+    'add-zsh-hook precmd _mado_precmd',
     '',
   ].join('\n'), { mode: 0o600 });
   return { dir, originalZdotdir };

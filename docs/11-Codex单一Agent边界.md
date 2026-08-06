@@ -1,12 +1,12 @@
 <!--
-[INPUT]: 依赖 Codex CLI、~/.codex/sessions 会话目录和 CodexBox 内嵌终端
-[OUTPUT]: 对外提供 CodexBox 只集成 Codex 的产品与技术边界
+[INPUT]: 依赖 Codex CLI、~/.codex/sessions 会话目录和 Mado 内嵌终端
+[OUTPUT]: 对外提供 Mado 只集成 Codex 的产品与技术边界
 [POS]: docs 的 Codex 单一 Agent 边界文档，约束启动、项目发现、文件联动和旧配置兼容策略
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
 -->
 # Codex 单一 Agent 边界
 
-> 状态：自 2026-07 起，CodexBox 的第一方 Agent 能力只支持 Codex。
+> 状态：自 2026-07 起，Mado 的第一方 Agent 能力只支持 Codex。
 
 ## 当前能力
 
@@ -16,11 +16,11 @@
 
 ## 通用终端边界
 
-内嵌终端仍是真实 shell。用户可以手动运行 `git`、`vim`、构建命令和其他普通程序；Codex-only 约束的是 CodexBox 主动提供的 Agent 集成，不是给 shell 增加命令黑名单。
+内嵌终端仍是真实 shell。用户可以手动运行 `git`、`vim`、构建命令和其他普通程序；Codex-only 约束的是 Mado 主动提供的 Agent 集成，不是给 shell 增加命令黑名单。
 
 ## 兼容处理
 
-`~/.codexbox/config.json` 里的 `enabledAgents`、`agents` 和 `organizeEngine` 字段不再读取。CodexBox 保存其他配置时仍按未知字段原样保留。
+`~/.mado/config.json` 里的 `enabledAgents`、`agents` 和 `organizeEngine` 字段不再读取。Mado 保存其他配置时仍按未知字段原样保留。
 
 ## 不做
 

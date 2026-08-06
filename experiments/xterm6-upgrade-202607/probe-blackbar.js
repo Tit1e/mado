@@ -9,16 +9,16 @@ const { _electron } = require('playwright-core');
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '../..');
-const HOME = '/tmp/codexbox-verify-xterm6-home-bar';
+const HOME = '/tmp/mado-verify-xterm6-home-bar';
 setTimeout(() => { console.error('watchdog 超时'); process.exit(2); }, 90000);
 
 (async () => {
   for (const d of ['Desktop', 'Documents', 'Downloads']) fs.mkdirSync(path.join(HOME, d), { recursive: true });
-  const app = await _electron.launch({ executablePath: require(path.join(ROOT, 'node_modules/electron')), args: [ROOT], cwd: ROOT, env: { ...process.env, HOME, CODEXBOX_DEV_PORT: '4643' } });
+  const app = await _electron.launch({ executablePath: require(path.join(ROOT, 'node_modules/electron')), args: [ROOT], cwd: ROOT, env: { ...process.env, HOME, MADO_DEV_PORT: '4643' } });
   const win = await app.firstWindow();
   await app.evaluate(({ BrowserWindow }) => { const w = BrowserWindow.getAllWindows()[0]; w.setSize(1400, 900); w.center(); });
   await win.waitForTimeout(2200);
-  await win.evaluate(() => { localStorage.setItem('codexbox_guided', '1'); localStorage.setItem('codexbox_term_open', '1'); localStorage.setItem('codexbox_term_dock', 'bottom'); });
+  await win.evaluate(() => { localStorage.setItem('mado_guided', '1'); localStorage.setItem('mado_term_open', '1'); localStorage.setItem('mado_term_dock', 'bottom'); });
   await win.evaluate(() => location.reload()).catch(() => {});
   await win.waitForTimeout(2500);
 
@@ -54,7 +54,7 @@ setTimeout(() => { console.error('watchdog 超时'); process.exit(2); }, 90000);
   fs.mkdirSync(path.join(__dirname, 'shots'), { recursive: true });
   await win.screenshot({ path: path.join(__dirname, 'shots', 'blackbar-after-css.png') });
 
-  await win.evaluate(() => term.sessions.slice().forEach((s) => { try { window.codexboxPty.kill(s.id); } catch { /* */ } }));
+  await win.evaluate(() => term.sessions.slice().forEach((s) => { try { window.madoPty.kill(s.id); } catch { /* */ } }));
   await win.waitForTimeout(400);
   await app.close().catch(() => {});
   setTimeout(() => process.exit(0), 800);

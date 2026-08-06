@@ -49,7 +49,7 @@ function request(port, route, options = {}) {
 function workflowServer(home, trashCommands) {
   const { resolvePath } = createPathService(home);
   const browser = createBrowserService({ platform: process.platform, resolvePath, kindOf, projectOf, ext, ignoreDirs: IGNORE_DIRS });
-  const configFile = path.join(home, '.codexbox', 'config.json');
+  const configFile = path.join(home, '.mado', 'config.json');
   const config = createConfigStore(configFile);
   const files = createFileService({
     home, platform: process.platform, resolvePath, textExt: TEXT_EXT, ext,
@@ -71,7 +71,7 @@ function workflowServer(home, trashCommands) {
 }
 
 test('HTTP 文件工作流从创建到废纸篓保持数据和配置一致', async () => {
-  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-http-'));
+  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-http-'));
   const trashCommands = [];
   const { server, configFile } = workflowServer(home, trashCommands);
   const port = await listen(server);
@@ -81,14 +81,14 @@ test('HTTP 文件工作流从创建到废纸篓保持数据和配置一致', asy
     const created = await request(port, '/api/create', { method: 'POST', body: { path: workspace, name: '草稿.txt', type: 'file' } });
     assert.equal(created.data.ok, true);
     const file = created.data.path;
-    assert.equal((await request(port, '/api/write', { method: 'POST', body: { path: file, content: 'CodexBox 工作流' } })).data.ok, true);
-    assert.equal((await request(port, `/api/read?path=${encodeURIComponent(file)}`)).data.content, 'CodexBox 工作流');
+    assert.equal((await request(port, '/api/write', { method: 'POST', body: { path: file, content: 'Mado 工作流' } })).data.ok, true);
+    assert.equal((await request(port, `/api/read?path=${encodeURIComponent(file)}`)).data.content, 'Mado 工作流');
 
     const renamed = await request(port, '/api/rename', { method: 'POST', body: { path: file, newName: '说明.txt' } });
     const targetDir = path.join(workspace, '归档');
     await request(port, '/api/create', { method: 'POST', body: { path: workspace, name: '归档', type: 'dir' } });
     const moved = await request(port, '/api/move', { method: 'POST', body: { src: renamed.data.path, dstDir: targetDir } });
-    assert.equal(await fsp.readFile(moved.data.path, 'utf8'), 'CodexBox 工作流');
+    assert.equal(await fsp.readFile(moved.data.path, 'utf8'), 'Mado 工作流');
     const listed = await request(port, `/api/list?path=${encodeURIComponent(targetDir)}`);
     assert.ok(listed.data.entries.some((item) => item.name === '说明.txt'));
 

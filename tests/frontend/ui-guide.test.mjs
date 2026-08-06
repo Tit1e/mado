@@ -36,9 +36,9 @@ test('首次使用显示指南并在确认后记录完成状态', () => {
       '找文件与预览', '启动 Codex', '跟踪与核对改动', '多终端工作', '找回历史任务',
     ]);
     assert.equal(document.querySelector('#guide-ok').textContent, '开始使用');
-    assert.equal(localStorage.getItem('codexbox_guided'), null);
+    assert.equal(localStorage.getItem('mado_guided'), null);
     document.querySelector('#guide-ok').click();
-    assert.equal(localStorage.getItem('codexbox_guided'), '1');
+    assert.equal(localStorage.getItem('mado_guided'), '1');
     assert.equal(document.querySelector('.guide-overlay'), null);
     assert.equal(ui.maybeShowGuide(), false);
   } finally { dom.cleanup(); }
@@ -53,7 +53,7 @@ test('手动打开指南不改首次状态且不会叠加弹窗', () => {
     assert.equal(document.querySelectorAll('.guide-overlay').length, 1);
     assert.equal(document.querySelector('#guide-ok').textContent, '关闭指南');
     document.querySelector('#guide-ok').click();
-    assert.equal(localStorage.getItem('codexbox_guided'), null);
+    assert.equal(localStorage.getItem('mado_guided'), null);
   } finally { dom.cleanup(); }
 });
 
@@ -79,7 +79,7 @@ test('使用指南的全部中文文案都有英文词条', async () => {
     const texts = [...document.querySelectorAll(selectors)].map((item) => item.textContent.trim());
     texts.push('开始使用');
     texts.filter((text) => /[\u3400-\u9fff]/.test(text)).forEach((text) => {
-      assert.equal(typeof context.window.CODEXBOX_DICT[text], 'string', `缺少英文词条：${text}`);
+      assert.equal(typeof context.window.MADO_DICT[text], 'string', `缺少英文词条：${text}`);
     });
   } finally { dom.cleanup(); }
 });

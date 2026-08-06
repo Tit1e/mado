@@ -1,10 +1,10 @@
 <!--
-[INPUT]: 依赖 CodexBox 当前产品定位、桌面技术架构和核心文件工作流
+[INPUT]: 依赖 Mado 当前产品定位、桌面技术架构和核心文件工作流
 [OUTPUT]: 对外提供产品范围、功能需求、交互约束和验收口径
 [POS]: docs 的产品需求基线，连接用户研究与具体实现
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
 -->
-# CodexBox — 产品需求文档 (PRD)
+# Mado — 产品需求文档 (PRD)
 
 版本 v1.0 · 2026-06-09
 
@@ -24,7 +24,7 @@ vibe coding 的本地文件指挥中心。在浏览器里查看、搜索、预�
 
 - **零依赖**：纯 Node 内置模块（http / fs / child_process），不装任何 npm 包。
 - **零配置**：`node server.js` 一条命令，自动打开浏览器。
-- **本地优先**：只绑定回环地址，数据不出本机；收藏/最近记录存 `~/.codexbox/config.json`。
+- **本地优先**：只绑定回环地址，数据不出本机；收藏/最近记录存 `~/.mado/config.json`。
 - **跨平台**：macOS / Windows / Linux 的「打开」命令分别适配（open / start / xdg-open）。
 
 ## 3. 功能需求
@@ -65,7 +65,7 @@ vibe coding 的本地文件指挥中心。在浏览器里查看、搜索、预�
 
 ### 3.5 收藏与最近 (P1)
 - 任意文件/文件夹可收藏，侧边栏常驻，持久化到本地。
-- 「最近打开」：记录通过 CodexBox 打开过的文件，侧边栏快速重开。
+- 「最近打开」：记录通过 Mado 打开过的文件，侧边栏快速重开。
 
 ### 3.6 项目识别 (P1)
 - 进入目录时自动识别项目类型（package.json→NODE，index.html→WEB，pyproject→PYTHON，Cargo.toml→RUST，go.mod→GO，.git→GIT），面包屑旁显示徽章。

@@ -11,8 +11,8 @@ const test = require('node:test');
 const { createPtyService, decodeLsofPath, foregroundProcessByPid } = require('../../electron/pty-service');
 
 const SHELL_TOKEN = 'test-shell-token';
-const commandStart = (command, token = SHELL_TOKEN) => `\x1b]777;codexbox;start;${token};${Buffer.from(command).toString('base64')}\x07`;
-const commandEnd = (token = SHELL_TOKEN) => `\x1b]777;codexbox;end;${token}\x07`;
+const commandStart = (command, token = SHELL_TOKEN) => `\x1b]777;mado;start;${token};${Buffer.from(command).toString('base64')}\x07`;
+const commandEnd = (token = SHELL_TOKEN) => `\x1b]777;mado;end;${token}\x07`;
 
 test('PTY 服务管理完整生命周期并转发数据与退出事件', async () => {
   const sent = [];
@@ -95,12 +95,12 @@ test('运行任务快照包含 Shell 集成捕获的原始顶层命令', async (
   const service = createPtyService({
     pty,
     foregroundProcess: async () => ({ ok: true, running: true }),
-    cwdLookup: async () => '/tmp/codexbox-project',
+    cwdLookup: async () => '/tmp/mado-project',
     createShellToken: () => SHELL_TOKEN,
   });
   service.spawn({ id: 'tracked', cwd: process.cwd() });
   terminal.dataHandler(commandStart('npm run dev'));
-  assert.deepEqual(await service.runningTaskSnapshots(), [{ running: true, cwd: '/tmp/codexbox-project', command: 'npm run dev', title: 'codexbox-project' }]);
+  assert.deepEqual(await service.runningTaskSnapshots(), [{ running: true, cwd: '/tmp/mado-project', command: 'npm run dev', title: 'mado-project' }]);
   terminal.dataHandler(commandEnd());
   assert.equal((await service.runningTaskSnapshots())[0].command, '');
 });
@@ -114,13 +114,13 @@ test('运行服务快照保留规则标识，恢复时不会与同目录其他�
   const service = createPtyService({
     pty,
     foregroundProcess: async () => ({ ok: true, running: true }),
-    cwdLookup: async () => '/tmp/codexbox-project',
+    cwdLookup: async () => '/tmp/mado-project',
     createShellToken: () => SHELL_TOKEN,
   });
   assert.equal(service.spawn({ id: 'service_1', cwd: process.cwd(), kind: 'service', serviceKey: 'rule_12345678' }).ok, true);
   terminal.dataHandler(commandStart('pnpm dev'));
   assert.deepEqual(await service.runningTaskSnapshots(), [{
-    running: true, cwd: '/tmp/codexbox-project', command: 'pnpm dev', title: 'codexbox-project', kind: 'service', serviceKey: 'rule_12345678',
+    running: true, cwd: '/tmp/mado-project', command: 'pnpm dev', title: 'mado-project', kind: 'service', serviceKey: 'rule_12345678',
   }]);
   assert.deepEqual(service.spawn({ id: 'service_2', cwd: process.cwd(), kind: 'service', serviceKey: '../bad' }), { ok: false, error: '运行服务标识非法' });
 });

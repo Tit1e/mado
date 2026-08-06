@@ -73,17 +73,17 @@ function createPtyService({ pty, send = () => {}, onCountChange = () => {}, fore
     const shellPath = process.env.SHELL || (process.platform === 'win32' ? 'powershell.exe' : '/bin/zsh');
     const startCwd = validDirectory(cwd, fs) ? path.resolve(cwd) : os.homedir();
     const size = normalizeTerminalSize(cols, rows);
-    const env = { ...process.env, TERM: 'xterm-256color', CODEXBOX: '1' };
+    const env = { ...process.env, TERM: 'xterm-256color', MADO: '1' };
     const markerToken = createShellToken();
-    delete env.CODEXBOX_SHELL_TOKEN;
+    delete env.MADO_SHELL_TOKEN;
     if (zshIntegration && path.basename(shellPath) === 'zsh') {
       env.ZDOTDIR = zshIntegration.dir;
-      env.CODEXBOX_ORIGINAL_ZDOTDIR = zshIntegration.originalZdotdir;
-      env.CODEXBOX_SHELL_TOKEN = markerToken;
+      env.MADO_ORIGINAL_ZDOTDIR = zshIntegration.originalZdotdir;
+      env.MADO_SHELL_TOKEN = markerToken;
     }
-    delete env.CODEXBOX_PORT;
-    delete env.CODEXBOX_DEV_PORT;
-    delete env.CODEXBOX_NO_OPEN;
+    delete env.MADO_PORT;
+    delete env.MADO_DEV_PORT;
+    delete env.MADO_NO_OPEN;
     if (!/UTF-8/i.test(env.LC_ALL || env.LC_CTYPE || env.LANG || '')) env.LANG = 'zh_CN.UTF-8';
     let terminal;
     try {

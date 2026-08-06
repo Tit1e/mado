@@ -10,7 +10,7 @@ preload.js: contextBridge 安全桥接层，向渲染进程暴露终端、Codex 
 power-service.js: 合盖运行状态服务，以用户意图和终端数量驱动系统休眠开关并处理失败回退
 pty-service.js: PTY 领域服务，管理终端与带规则标识的隐藏服务会话、顶层命令追踪、安全重启、前台进程检测、运行任务快照与销毁
 quit-service.js: 应用退出守卫，以 PTY 真实前台任务快照决定退出确认，并在确认后保存可恢复命令
-shell-integration.js: zsh 隔离启动配置与 OSC 标记解析，安全继承嵌套 CodexBox 的原始 ZDOTDIR 并追踪顶层命令生命周期
+shell-integration.js: zsh 隔离启动配置与 OSC 标记解析，安全继承嵌套 Mado 的原始 ZDOTDIR 并追踪顶层命令生命周期
 terminal-recovery-store.js: 终端恢复 JSON 仓储，保留隐藏服务规则标识并提供安全校验、去重、目录检查、一次性取出与清空
 system-file-service.js: 系统文件领域服务，处理图片/文件剪贴板和拖入文件安全落盘与复制
 

@@ -30,7 +30,7 @@ function createFileService({ home, platform, resolvePath, textExt, ext, searchFi
         const error = new Error(missing ? '文件已被外部删除' : '文件已被外部修改'); error.conflict = true; throw error;
       }
     }
-    const tmp = `${file}.codexbox-tmp-${process.pid}-${Date.now()}`;
+    const tmp = `${file}.mado-tmp-${process.pid}-${Date.now()}`;
     try {
       const fh = await fsp.open(tmp, 'w');
       try { await fh.writeFile(content, 'utf8'); await fh.sync(); } finally { await fh.close(); }
@@ -54,7 +54,7 @@ function createFileService({ home, platform, resolvePath, textExt, ext, searchFi
       execCommand(command, (error) => {
         if (!error) return resolve({ ok: true });
         let message = error.message;
-        if (platform === 'darwin' && /-1743|-600|not allowed|authoriz/i.test(message)) message = '需在「系统设置 → 隐私与安全性 → 自动化」里允许 CodexBox 控制 Finder（首次删除会弹授权）';
+        if (platform === 'darwin' && /-1743|-600|not allowed|authoriz/i.test(message)) message = '需在「系统设置 → 隐私与安全性 → 自动化」里允许 Mado 控制 Finder（首次删除会弹授权）';
         resolve({ ok: false, error: message });
       });
     });
@@ -148,7 +148,7 @@ function createFileService({ home, platform, resolvePath, textExt, ext, searchFi
     if (!match) throw new Error('无效图片数据');
     let dest = resolvePath(target);
     if (newName) { if (!validName(newName)) throw new Error('文件名不合法'); dest = path.join(path.dirname(dest), newName); if (fs.existsSync(dest)) throw new Error('已存在同名文件'); }
-    const tmp = `${dest}.codexbox-tmp-${process.pid}-${Date.now()}`;
+    const tmp = `${dest}.mado-tmp-${process.pid}-${Date.now()}`;
     try { const fh = await fsp.open(tmp, 'w'); try { await fh.writeFile(Buffer.from(match[1], 'base64')); await fh.sync(); } finally { await fh.close(); } await fsp.rename(tmp, dest); }
     catch (error) { await fsp.unlink(tmp).catch(() => {}); throw error; }
     return { ok: true, path: dest, size: (await fsp.stat(dest)).size };

@@ -15,7 +15,7 @@ const { createFileService } = require('../../server/file-service');
 const { createPathService } = require('../../server/path-service');
 
 async function fixture(t, overrides = {}) {
-  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-file-service-'));
+  const home = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-file-service-'));
   t.after(() => fsp.rm(home, { recursive: true, force: true }));
   const { resolvePath } = createPathService(home);
   const service = createFileService({
@@ -39,7 +39,7 @@ test('文本写入原子落盘并拒绝覆盖外部修改', async (t) => {
   const result = await service.writeTextFile(file, 'new', before.mtimeMs);
   assert.equal(result.ok, true);
   assert.equal(await fsp.readFile(file, 'utf8'), 'new');
-  assert.equal((await fsp.readdir(home)).some((name) => name.includes('.codexbox-tmp-')), false);
+  assert.equal((await fsp.readdir(home)).some((name) => name.includes('.mado-tmp-')), false);
 
   const future = new Date(Date.now() + 10_000);
   await fsp.utimes(file, future, future);

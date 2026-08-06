@@ -13,7 +13,7 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 function setup({ rule: initialRule, cwd = '/repo/src', states = [] } = {}) {
   const dom = installDom('<div id="project-run-actions"></div>');
-  window.codexboxEnv = { isDesktopApp: true };
+  window.madoEnv = { isDesktopApp: true };
   let rule = initialRule;
   const calls = { api: [], apiPost: [], dialogs: [], menus: [], started: [], runningRoots: [] };
   const term = {

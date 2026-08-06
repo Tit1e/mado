@@ -84,11 +84,11 @@ const crepe = {
     if (this._p) return this._p;
     if (window.__noCrepe) return Promise.resolve(null);
     this._p = new Promise((resolve) => {
-      if (window.CodexBoxCrepe) { resolve(window.CodexBoxCrepe); return; }
+      if (window.MadoCrepe) { resolve(window.MadoCrepe); return; }
       const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = '/vendor/milkdown/milkdown.css';
       document.head.appendChild(link);
       const s = document.createElement('script'); s.src = '/vendor/milkdown/milkdown.js';
-      s.onload = () => resolve(window.CodexBoxCrepe || null);
+      s.onload = () => resolve(window.MadoCrepe || null);
       s.onerror = () => { window.__noCrepe = 1; resolve(null); };
       document.head.appendChild(s);
     });

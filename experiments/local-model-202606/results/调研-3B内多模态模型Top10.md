@@ -1,5 +1,5 @@
 <!--
-[INPUT]: 依赖公开模型资料、Ollama 实测数据和 CodexBox 本地模型使用场景
+[INPUT]: 依赖公开模型资料、Ollama 实测数据和 Mado 本地模型使用场景
 [OUTPUT]: 对外提供 3B 以下视觉语言模型的排序、证据与实测建议
 [POS]: experiments/local-model-202606 的外部模型调研结果
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
@@ -7,7 +7,7 @@
 # ≤3B 开源视觉-语言小模型调研报告（截至 2026 年 6 月）
 
 > 由独立调研 agent 完成（36 次检索），所有关键数据带来源；查不到的明确标注，无编造。
-> 场景：macOS 桌面应用（CodexBox）内置本地 VLM，截图打标 + 图片描述辅助搜索（OCR + UI 理解 + 中文），Apple Silicon + Ollama。
+> 场景：macOS 桌面应用（Mado）内置本地 VLM，截图打标 + 图片描述辅助搜索（OCR + UI 理解 + 中文），Apple Silicon + Ollama。
 
 ## 一、结论
 

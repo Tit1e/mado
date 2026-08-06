@@ -16,15 +16,15 @@ const { ensureNodePtyHelpersExecutable } = require('../../build/after-pack');
 const packageJson = require('../../package.json');
 
 test('打包钩子恢复所有 macOS spawn-helper 可执行位', async () => {
-  const out = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-pack-'));
-  const prebuilds = path.join(out, 'CodexBox.app', 'Contents', 'Resources', 'app.asar.unpacked', 'node_modules', 'node-pty', 'prebuilds');
+  const out = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-pack-'));
+  const prebuilds = path.join(out, 'Mado.app', 'Contents', 'Resources', 'app.asar.unpacked', 'node_modules', 'node-pty', 'prebuilds');
   try {
     for (const arch of ['darwin-arm64', 'darwin-x64']) {
       const dir = path.join(prebuilds, arch);
       await fsp.mkdir(dir, { recursive: true });
       await fsp.writeFile(path.join(dir, 'spawn-helper'), 'binary', { mode: 0o644 });
     }
-    const helpers = ensureNodePtyHelpersExecutable(out, 'CodexBox');
+    const helpers = ensureNodePtyHelpersExecutable(out, 'Mado');
     assert.equal(helpers.length, 2);
     helpers.forEach((file) => assert.equal(fs.statSync(file).mode & 0o111, 0o111));
   } finally {
@@ -35,11 +35,11 @@ test('打包钩子恢复所有 macOS spawn-helper 可执行位', async () => {
 test('打包与本地安装配置均启用权限修复且缺少辅助程序时立即失败', async () => {
   assert.equal(packageJson.build.afterPack, 'build/after-pack.js');
   assert.equal(packageJson.scripts.postinstall, 'node build/prepare-electron.mjs && node build/prepare-node-pty.js');
-  const out = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-pack-empty-'));
-  const prebuilds = path.join(out, 'CodexBox.app', 'Contents', 'Resources', 'app.asar.unpacked', 'node_modules', 'node-pty', 'prebuilds');
+  const out = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-pack-empty-'));
+  const prebuilds = path.join(out, 'Mado.app', 'Contents', 'Resources', 'app.asar.unpacked', 'node_modules', 'node-pty', 'prebuilds');
   try {
     await fsp.mkdir(prebuilds, { recursive: true });
-    assert.throws(() => ensureNodePtyHelpersExecutable(out, 'CodexBox'), /spawn-helper 不存在/);
+    assert.throws(() => ensureNodePtyHelpersExecutable(out, 'Mado'), /spawn-helper 不存在/);
   } finally {
     await fsp.rm(out, { recursive: true, force: true });
   }

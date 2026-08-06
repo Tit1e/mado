@@ -14,7 +14,7 @@ const test = require('node:test');
 const { createTerminalRecoveryStore } = require('../../electron/terminal-recovery-store');
 
 test('合并记录时去重并跳过以空格开头的隐私命令', (t) => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'codexbox-recovery-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mado-recovery-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const cwd = fs.mkdtempSync(path.join(root, 'project-'));
   const store = createTerminalRecoveryStore(root);
@@ -26,7 +26,7 @@ test('合并记录时去重并跳过以空格开头的隐私命令', (t) => {
 });
 
 test('选择恢复后只移除有效且被选中的记录', (t) => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'codexbox-recovery-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mado-recovery-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const cwd = fs.mkdtempSync(path.join(root, 'project-'));
   const missing = path.join(root, 'missing');
@@ -40,7 +40,7 @@ test('选择恢复后只移除有效且被选中的记录', (t) => {
 });
 
 test('运行服务恢复记录保留规则标识', (t) => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'codexbox-recovery-'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mado-recovery-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const cwd = fs.mkdtempSync(path.join(root, 'project-'));
   const store = createTerminalRecoveryStore(root);

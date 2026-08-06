@@ -14,7 +14,7 @@ const test = require('node:test');
 const { createSystemFileService } = require('../../electron/system-file-service');
 
 test('拖入文件安全落盘且同名目标不覆盖', async () => {
-  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'codexbox-drop-'));
+  const root = await fsp.mkdtemp(path.join(os.tmpdir(), 'mado-drop-'));
   const copiedImages = [];
   const service = createSystemFileService({
     app: { getPath: () => root },

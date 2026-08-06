@@ -12,7 +12,7 @@ const path = require('path');
 const { createPathService, kindOf, projectOf, MIME } = require('../../server/path-service');
 
 test('路径服务处理主目录、相对路径和空字节', () => {
-  const home = path.resolve('/tmp/codexbox-home');
+  const home = path.resolve('/tmp/mado-home');
   const { resolvePath } = createPathService(home);
   assert.equal(resolvePath('~/demo'), path.join(home, 'demo'));
   assert.equal(resolvePath('demo/../work'), path.join(home, 'work'));

@@ -1,9 +1,9 @@
 {
-  "name": "codexbox",
+  "name": "mado",
   "version": "2.8.2",
-  "description": "CodexBox — the local desktop cockpit for Codex. Run Codex, watch every file and line it changes, and take over anytime.",
+  "description": "Mado — the local desktop cockpit for Codex. Run Codex, watch every file and line it changes, and take over anytime.",
   "bin": {
-    "codexbox": "server.js"
+    "mado": "server.js"
   },
   "main": "electron/main.js",
   "scripts": {
@@ -22,8 +22,8 @@
     "dist:x64": "npm run build:svelte && PTY_ARCH=x64 npm run rebuild:pty && electron-builder --mac --x64 && PTY_ARCH=arm64 npm run rebuild:pty"
   },
   "build": {
-    "appId": "com.huashu.codexbox",
-    "productName": "CodexBox",
+    "appId": "com.huashu.mado",
+    "productName": "Mado",
     "directories": {
       "buildResources": "build",
       "output": "dist"
@@ -51,7 +51,7 @@
       ]
     },
     "dmg": {
-      "title": "CodexBox",
+      "title": "Mado",
       "writeUpdateInfo": false
     }
   },

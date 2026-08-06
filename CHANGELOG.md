@@ -1,6 +1,6 @@
 <!--
 [INPUT]: 依赖每个版本已经合并的用户可见变更和语义化版本规则
-[OUTPUT]: 对外提供 CodexBox 未发布变更与历史版本记录
+[OUTPUT]: 对外提供 Mado 未发布变更与历史版本记录
 [POS]: 项目根目录的发布记录，是 GitHub Release 说明的内容来源
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
 -->
@@ -16,6 +16,9 @@
 - GitHub Release 的发布说明直接复制对应版本的段落
 
 ## [Unreleased]
+
+### Changed
+- **应用更名为 Mado**：npm 包名、CLI、bundle ID、配置目录、环境变量、渲染桥接、拖拽 MIME、文档与资产全部从 CodexBox 收敛为 Mado；旧配置与用户数据不迁移。
 
 ### Removed
 - **列表文件大小显示**：移除文件名后的大小后缀与状态栏的文件大小汇总；列表仅显示名称、修改时间与收藏，状态栏仅保留条目数与文件夹/文件计数。
@@ -66,7 +69,7 @@
 - **重新运行当前终端命令快捷键**：按 `⌘⇧R` 先向当前标签的前台任务发送 `Ctrl+C`，确认 Shell 已恢复后重新执行原命令；没有运行任务、重复触发或 8 秒内未停止时不会启动第二份进程。
 
 ### Fixed
-- **CodexBox 终端内启动开发环境出现 zsh 递归报错**：嵌套启动时优先继承真实的 `CODEXBOX_ORIGINAL_ZDOTDIR`，并阻止集成目录 source 自身，不再出现 `job table full or recursion limit exceeded`。
+- **Mado 终端内启动开发环境出现 zsh 递归报错**：嵌套启动时优先继承真实的 `MADO_ORIGINAL_ZDOTDIR`，并阻止集成目录 source 自身，不再出现 `job table full or recursion limit exceeded`。
 
 
 ## [2.6.13] - 2026-07-14
@@ -108,19 +111,19 @@
 ## [2.6.6] - 2026-07-11
 
 ### Changed
-- **项目完整更名为 CodexBox**：npm 包、CLI、bundle ID、配置目录、环境变量、渲染桥接、临时资源、文档和测试统一使用 `codexbox` 命名，GitHub 仓库迁移至 `Tit1e/codexbox`。
+- **项目完整更名为 Mado**：npm 包、CLI、bundle ID、配置目录、环境变量、渲染桥接、临时资源、文档和测试统一使用 `mado` 命名，GitHub 仓库迁移至 `Tit1e/mado`。
 
 ### Fixed
-- **正式应用终端启动开发版仍撞正式端口**：开发环境改用独立的 `CODEXBOX_DEV_PORT`，不再读取正式环境的 `CODEXBOX_PORT`；开发版使用独立用户数据目录，内嵌终端也不再继承主进程端口变量，因此可以与正式应用同时运行在 `4577/4578`。
+- **正式应用终端启动开发版仍撞正式端口**：开发环境改用独立的 `MADO_DEV_PORT`，不再读取正式环境的 `MADO_PORT`；开发版使用独立用户数据目录，内嵌终端也不再继承主进程端口变量，因此可以与正式应用同时运行在 `4577/4578`。
 
 
 ## [2.6.6] - 2026-07-11
 
 ### Changed
-- **项目完整更名为 CodexBox**：npm 包、CLI、bundle ID、配置目录、环境变量、渲染桥接、临时资源、文档和测试统一使用 `codexbox` 命名，GitHub 仓库迁移至 `Tit1e/codexbox`。
+- **项目完整更名为 Mado**：npm 包、CLI、bundle ID、配置目录、环境变量、渲染桥接、临时资源、文档和测试统一使用 `mado` 命名，GitHub 仓库迁移至 `Tit1e/mado`。
 
 ### Fixed
-- **正式应用终端启动开发版仍撞正式端口**：开发环境改用独立的 `CODEXBOX_DEV_PORT`，不再读取正式环境的 `CODEXBOX_PORT`；开发版使用独立用户数据目录，内嵌终端也不再继承主进程端口变量，因此可以与正式应用同时运行在 `4577/4578`。
+- **正式应用终端启动开发版仍撞正式端口**：开发环境改用独立的 `MADO_DEV_PORT`，不再读取正式环境的 `MADO_PORT`；开发版使用独立用户数据目录，内嵌终端也不再继承主进程端口变量，因此可以与正式应用同时运行在 `4577/4578`。
 
 
 ## [2.6.5] - 2026-07-10

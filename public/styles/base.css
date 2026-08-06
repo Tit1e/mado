@@ -6,7 +6,7 @@
  */
 /**
  * [INPUT]: 依赖 index.html 的 DOM 结构与 app.js 注入的状态类名
- * [OUTPUT]: 对外提供 CodexBox 三套主题、页面布局、文件预览、终端和通用弹层样式
+ * [OUTPUT]: 对外提供 Mado 三套主题、页面布局、文件预览、终端和通用弹层样式
  * [POS]: public 模块的统一样式入口，约束渲染层视觉与响应式行为
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
