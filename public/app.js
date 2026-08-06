@@ -87,7 +87,8 @@ function fmtTime(ms) {
   if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`;
   if (diff < 604800000) return `${Math.floor(diff / 86400000)} 天前`;
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  // ≥7 天：两位年份 + 不补零的月/日，斜杠分隔（如 26/7/7）
+  return `${String(d.getFullYear()).slice(-2)}/${d.getMonth() + 1}/${d.getDate()}`;
 }
 // 跨平台路径处理：用服务端返回的分隔符
 function dirOf(p) { const i = p.lastIndexOf(state.sep); return i > 0 ? p.slice(0, i) : p; }
