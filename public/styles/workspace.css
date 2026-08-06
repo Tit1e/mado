@@ -120,7 +120,7 @@
 /* 文件列表 */
 .list { display: flex; flex-direction: column; }
 .list .row {
-  display: grid; grid-template-columns: 30px 1fr 80px 26px; align-items: center; gap: 10px;
+  display: grid; grid-template-columns: 30px 1fr 60px 26px; align-items: center; gap: 10px;
   padding: 7px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; position: relative;
 }
 .list .row:hover { background: var(--bg-2); }
