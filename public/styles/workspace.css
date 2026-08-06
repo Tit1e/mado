@@ -134,9 +134,6 @@
 .list .row .meta { color: var(--text-faint); font-size: 12px; }
 .list-head { color: var(--text-faint); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; cursor: default; }
 .list-head:hover { background: none; }
-/* 文件区被压窄时列让位（#49）：名称优先，先藏「修改时间」 */
-#file-area.fa-narrow .list .row { grid-template-columns: 30px 1fr 26px; }
-#file-area.fa-narrow .list .row > :nth-child(3) { display: none; }
 
 /* 收藏按钮（悬停出现，可直接收藏，无需先预览） */
 .fav-btn { position: absolute; opacity: 0; transition: 0.12s; cursor: pointer; color: var(--text-faint); font-size: 15px; }

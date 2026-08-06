@@ -207,12 +207,6 @@ function bindEvents() {
     tb.classList.toggle('tb-xs', w < 880);
     tb.classList.toggle('tb-min', w < 660);
   }).observe(tb);
-  // 文件区被终端/预览压窄时，列表列让位：名称优先，先藏「修改时间」（#49；大小已并进名称）
-  const fa = $('#file-area');
-  new ResizeObserver((es) => {
-    const w = es[0].contentRect.width;
-    fa.classList.toggle('fa-narrow', w < 620);
-  }).observe(fa);
   // ←/↑ 顶栏按钮已删（与面包屑功能重复、且和 macOS 红绿灯冲突）；后退/上一级保留 ⌘[ 和 Backspace 快捷键
   $('#preview-close').onclick = closePreview;
   $('#cmdk-trigger').onclick = () => cmdk.open();
