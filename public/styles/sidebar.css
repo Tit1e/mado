@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 index.html 的 DOM 结构与 base.css 定义的主题变量
- * [OUTPUT]: 对外提供侧边栏、1px 高亮分割线、目录树与手动项目列表样式
+ * [OUTPUT]: 对外提供品牌图标、侧边栏、1px 高亮分割线、目录树与手动项目列表样式
  * [POS]: public/styles 的侧边栏、目录树与项目列表样式分片，按 index.html 声明顺序参与级联
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -24,7 +24,8 @@
 #sidebar-resizer:hover, #sidebar-resizer.dragging { opacity: 0.55; }
 #app.sidebar-collapsed #sidebar-resizer { display: none; }
 .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 16px; }
-.brand .logo { font-size: 26px; }
+.brand .logo { width: 28px; height: 28px; display: inline-flex; flex: 0 0 28px; }
+.brand .logo img { width: 100%; height: 100%; display: block; object-fit: contain; }
 .brand-name { font-weight: 700; font-size: 17px; letter-spacing: 1px; }
 .brand-sub { font-size: 11px; color: var(--text-faint); letter-spacing: 2px; }
 
@@ -50,7 +51,6 @@ kbd {
 }
 #project-add:hover { color: var(--accent); border-color: var(--border); background: var(--bg-3); }
 #project-add:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.brand .logo { display: inline-flex; }
 .ct-label { display: inline-flex; align-items: center; gap: 7px; }
 .nav-list { list-style: none; }
 .nav-list li {
@@ -72,7 +72,6 @@ kbd {
 .nav-list li .twirl { flex-shrink: 0; width: 13px; margin-right: -4px; text-align: center; font-size: 9px; color: var(--text-faint); border-radius: 3px; }
 .nav-list li .twirl:hover { color: var(--accent); background: var(--bg-3); }
 .nav-sub { padding-left: 15px; }
-.brand .logo { color: var(--accent); }
 .theme-switch { margin-top: auto; padding: 12px 8px 6px; border-top: 1px solid var(--border); }
 .theme-switch-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 7px; }
 .sidebar-foot { padding: 10px 8px 0; font-size: 11px; color: var(--text-faint); }

@@ -25,6 +25,6 @@ segmented-control.test.mjs: Svelte 通用按钮组测试，覆盖受控值、点
 terminal-agent-status.test.mjs: Agent 状态子控制器测试，覆盖输出摘要过滤和隐藏服务未读隔离
 terminal-close.test.mjs: 终端快捷键与关闭测试，覆盖 Codex/Pi 固定启动命令、通用继续设置、命令重启、前台进程关闭确认和桌面事件绑定
 topbar-controls.test.mjs: 顶栏控件测试，覆盖隐藏文件复选框的原生语义、键盘焦点和三套主题视觉契约
-ui-guide.test.mjs: 使用指南测试，覆盖核心工作流与快捷键双语内容、首次状态、手动重开、重复打开保护、终端按钮右侧位置和顶栏事件链
+ui-guide.test.mjs: 品牌与使用指南测试，覆盖无背景左上角 Logo、应用图标、旧资产备份、双语状态与事件链
 
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md

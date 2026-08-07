@@ -305,7 +305,7 @@ function setupControllers() {
   } = createUiController({
     $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview,
     toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename,
-    popupMenu, mona, svgWrap, SVG, openWith,
+    popupMenu, mona, openWith,
     playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax,
     setPreviewMax, moveCursor, cursorEnter, toggleFav,
     setThemeControlValue: (value) => themeControl?.setValue(value), addProject, addProjectPath,

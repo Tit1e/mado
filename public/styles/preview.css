@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 index.html 的 DOM 结构与 base.css 定义的主题变量
- * [OUTPUT]: 对外提供预览浮层（覆盖终端面板）、Git 变更弹层、双行文件状态栏、命令面板与内容查看器样式
+ * [OUTPUT]: 对外提供预览浮层、Git 变更弹层、双行文件状态栏、使用指南品牌图标、命令面板与内容查看器样式
  * [POS]: public/styles 的预览浮层与内容查看器样式分片，按 index.html 声明顺序参与级联
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -287,7 +287,8 @@
 /* 首次引导 */
 .guide-overlay { position: fixed; inset: 0; padding: 20px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 400; }
 .guide-card { width: 620px; max-width: 94vw; max-height: calc(100vh - 40px); overflow-y: auto; background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px; box-shadow: var(--shadow); }
-.guide-logo { height: 46px; display: flex; align-items: center; justify-content: center; color: var(--accent); }
+.guide-logo { height: 46px; display: flex; align-items: center; justify-content: center; }
+.guide-logo img { width: 46px; height: 46px; display: block; object-fit: contain; }
 .guide-card h2 { text-align: center; margin: 5px 0 7px; font-size: 20px; }
 .guide-card .guide-lead { color: var(--text-dim); margin: 0 0 18px; text-align: center; font-size: 13px; }
 .guide-card h3 { margin: 0 0 9px; color: var(--text); font-size: 12px; font-weight: 700; }

@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 happy-dom 测试环境、public/index.html 与 public/modules/ui-controller.js
- * [OUTPUT]: 验证使用指南的完整双语内容、首次判断、手动重开、重复打开保护和顶栏按钮事件链
+ * [OUTPUT]: 验证无背景左上角 Logo、应用图标、使用指南、首次判断、手动重开和顶栏事件链
  * [POS]: tests/frontend 的使用指南回归测试，保证首次状态与常驻帮助入口互不干扰
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -16,12 +16,42 @@ function createController() {
   const noop = () => {};
   const deps = new Proxy({
     $: (selector) => document.querySelector(selector),
-    state: {}, follow: {}, runtime: {}, SVG: { box: '' }, svgWrap: () => '',
+    state: {}, follow: {}, runtime: {},
   }, {
     get(target, key) { return key in target ? target[key] : noop; },
   });
   return createUiController(deps);
 }
+
+test('左上角使用无背景 Logo，网页与指南使用应用图标，并保留旧资产备份', async () => {
+  const root = new URL('../../', import.meta.url);
+  const [index, controller, icons, publicIcon, publicLogo, buildIcon, dockIcon, icns, ...backups] = await Promise.all([
+    readFile(new URL('public/index.html', root), 'utf8'),
+    readFile(new URL('public/modules/ui-controller.js', root), 'utf8'),
+    readFile(new URL('public/modules/icons.js', root), 'utf8'),
+    readFile(new URL('public/assets/mado-icon.png', root)),
+    readFile(new URL('public/assets/mado-logo.png', root)),
+    readFile(new URL('build/icon-1024.png', root)),
+    readFile(new URL('build/icon.png', root)),
+    readFile(new URL('build/icon.icns', root)),
+    readFile(new URL('build/icon-1024.legacy-box.png', root)),
+    readFile(new URL('build/icon.legacy-box.png', root)),
+    readFile(new URL('build/icon.legacy-box.icns', root)),
+    readFile(new URL('build/icon-design.legacy-box.html', root)),
+    readFile(new URL('build/logo.legacy-box.svg', root)),
+  ]);
+  assert.match(index, /rel="icon"[^>]+mado-icon\.png/);
+  assert.match(index, /class="logo"><img src="\/assets\/mado-logo\.png" alt=""/);
+  assert.match(controller, /class="guide-logo"><img src="\/assets\/mado-icon\.png" alt=""/);
+  assert.doesNotMatch(icons, /\bbox:\s*'<path/);
+  assert.equal(publicIcon.compare(buildIcon), 0);
+  assert.deepEqual([publicLogo.readUInt32BE(16), publicLogo.readUInt32BE(20)], [128, 128]);
+  assert.equal(publicLogo[25], 6);
+  assert.deepEqual([buildIcon.readUInt32BE(16), buildIcon.readUInt32BE(20)], [1024, 1024]);
+  assert.deepEqual([dockIcon.readUInt32BE(16), dockIcon.readUInt32BE(20)], [512, 512]);
+  assert.equal(icns.toString('ascii', 0, 4), 'icns');
+  backups.forEach((backup) => assert.ok(backup.length > 0));
+});
 
 test('首次使用显示指南并在确认后记录完成状态', () => {
   const dom = installDom();

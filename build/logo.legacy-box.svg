@@ -1,0 +1,11 @@
+<!--
+[INPUT]: 依赖旧版 Mado 盒子品牌路径
+[OUTPUT]: 对外提供更换前的侧边栏与使用指南单色 Logo 备份
+[POS]: build 的历史品牌资产，仅用于回溯，不参与当前应用构建
+[PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 24 24" fill="currentColor" fill-opacity="0.13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+  <polyline points="3.3 7 12 12 20.7 7"/>
+  <line x1="12" y1="22" x2="12" y2="12"/>
+</svg>

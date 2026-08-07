@@ -1,6 +1,12 @@
 # Mado - Codex 与 Pi 的本地桌面驾驶舱
 Electron 33.4.11 + Node.js >=22 + Svelte 5.56.4 + xterm.js 6.0.0 + node-pty 1.1.0 + HTML/CSS/JavaScript
 
+<naming>
+Mado 源自日语「窓（まど）」，意为窗户。它代表用户观察 Agent 在本机工作的那扇窗：左侧查看文件，右侧或下方运行终端，预览覆盖其上并可随时接手。
+使用 Mado 这个中性名称，是为了摆脱 FanBox/CodexBox 的盒子意象和单一 Codex 绑定，让产品自然容纳 Codex、Pi 及后续 Agent，同时保持“看清本机变化”的核心定位。
+品牌图标与视觉语言应优先表达窗、窗格、可见性和工作状态，避免重新使用盒子、机器人头像或绑定单一 Agent 的符号。
+</naming>
+
 <directory>
 assets/ - README 与宣传页使用的产品截图和横幅
 build/ - macOS 应用图标、权限与签名资源
@@ -16,6 +22,8 @@ tests/ - Node 内置自动化测试，覆盖服务端高风险逻辑与渲染层
 </directory>
 
 <config>
+.icon.html - 当前 Mado 1024 像素应用图标的本地预览页
+.gitignore - 构建产物忽略规则及当前/历史品牌图标资产入库白名单
 .gitattributes - 生成 Svelte 模块的差异检查规则，保留运行时有意的空白字符字面量
 package.json - Mado 桌面入口、依赖版本、二进制依赖安装许可、测试检查和构建发布脚本
 package-lock.json - npm 依赖锁文件

@@ -1,18 +1,18 @@
 /**
- * [INPUT]: 依赖共享 state、Svelte 按钮组同步回调、手动项目添加、终端/命令面板控制器及文件和预览动作
+ * [INPUT]: 依赖共享 state、Mado 品牌图标、Svelte 按钮组、手动项目、终端/命令面板及文件预览动作
  * [OUTPUT]: 对外提供 createUiController，管理全局事件、文件区空白菜单、主题、拖拽尺寸、Codex/Pi 启动、首次引导和手动重开指南
  * [POS]: public/modules 的界面编排控制器，被应用启动入口消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createUiController(deps) {
-  const { $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview, toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename, popupMenu, mona, svgWrap, SVG, openWith, playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax, setPreviewMax, moveCursor, cursorEnter, toggleFav, setThemeControlValue, addProject, addProjectPath } = deps;
+  const { $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview, toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename, popupMenu, mona, openWith, playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax, setPreviewMax, moveCursor, cursorEnter, toggleFav, setThemeControlValue, addProject, addProjectPath } = deps;
 // ---------- 使用指南 ----------
 function showGuide(markGuided = false) {
   if (document.querySelector('.guide-overlay')) return false;
   const ov = document.createElement('div');
   ov.className = 'guide-overlay';
   ov.innerHTML = `<div class="guide-card">
-    <div class="guide-logo">${svgWrap(SVG.box, 'currentColor', 46, true)}</div>
+    <div class="guide-logo"><img src="/assets/mado-icon.png" alt=""></div>
     <h2>欢迎用 Mado</h2>
     <p class="guide-lead">从找项目、运行 Agent 到核对改动，常用能力都在这一个窗口。</p>
     <h3>核心工作流</h3>
