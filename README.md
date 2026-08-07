@@ -6,7 +6,7 @@
 -->
 <div align="center">
 
-# 📦 Mado
+# Mado
 
 <img src="assets/mado-banner.png" alt="Mado · local desktop cockpit for Codex and Pi" width="100%">
 
@@ -240,9 +240,9 @@ npm run dist         # 打包签名 .dmg（产物在 dist/，不入 git）/ buil
 <a id="design"></a>
 ## Design & verification · 设计与验证
 
-三套皮肤分别围绕终端、档案和编辑索引建立完整的视觉体系。图标采用暖色陶土箱体加米纸 squircle，从 SVG 生成到 icns。
+三套皮肤分别围绕终端、档案和编辑索引建立完整的视觉体系。应用图标以文件窗格和终端窗口为核心，由 Apple Icon Composer 设计并导出为兼容 macOS 的 ICNS。
 
-The three skins build complete visual systems around the terminal, archive and editorial-index concepts. The icon is a terracotta archive box on a rice-paper squircle, generated from SVG through icns.
+The three skins build complete visual systems around the terminal, archive, and editorial-index concepts. The app icon combines a file pane with a terminal window, designed in Apple Icon Composer and exported as a macOS-compatible ICNS.
 
 项目早期使用五角色方法做过多轮产品验收，历史标准与结果保存在 `docs/05-验收角色与评分标准.md`。当前代码变更以 `npm run check` 为本地检查入口，并由 GitHub Actions 在 Node.js 22 上重复执行。
 

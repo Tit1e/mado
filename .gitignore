@@ -5,10 +5,15 @@ dist/
 build/*
 !build/icon.icns
 !build/icon.png
+!build/Mado.icon/
+!build/Mado.icon/**
 !build/icon-1024.png
 !build/icon-1024.legacy-box.png
+!build/icon-1024.legacy-v2.12.1.png
 !build/icon.legacy-box.png
 !build/icon.legacy-box.icns
+!build/icon.legacy-v2.12.1.png
+!build/icon.legacy-v2.12.1.icns
 !build/icon-design.legacy-box.html
 !build/logo.legacy-box.svg
 !build/entitlements.mac.plist

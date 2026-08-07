@@ -4,9 +4,13 @@
 ## 成员清单
 after-pack.js: electron-builder macOS 打包后钩子，在签名前恢复 node-pty spawn-helper 可执行位并拒绝缺失产物
 entitlements.mac.plist: macOS hardened runtime 权限配置，允许 node-pty 原生模块按签名策略运行
-icon-1024.png: 当前 macOS 应用图标的 1024 像素源图，由用户提供的 Mado 窗格终端图生成
-icon.icns: electron-builder 使用的当前 macOS ICNS 应用图标
-icon.png: Electron 开发模式 Dock 使用的当前 512 像素 PNG 图标
+Mado.icon/: 当前应用图标的 Apple Icon Composer 2.0 设计源包，使用 macOS Default rendition 导出
+icon-1024.png: 从 Mado.icon 导出的当前 1024 像素 RGBA 应用图标
+icon.icns: 由当前导出图生成、供 electron-builder 使用的 macOS ICNS 应用图标
+icon.png: 由当前导出图缩放、供 Electron 开发模式 Dock 使用的 512 像素 PNG 图标
+icon-1024.legacy-v2.12.1.png: v2.12.1 发布时的 1024 像素应用图标备份，不参与构建
+icon.legacy-v2.12.1.png: v2.12.1 发布时的 512 像素 Dock 图标备份，不参与构建
+icon.legacy-v2.12.1.icns: v2.12.1 发布时的 macOS ICNS 备份，不参与构建
 icon-1024.legacy-box.png: 更换前的 1024 像素盒子图标备份，不参与构建
 icon.legacy-box.png: 更换前的 512 像素 Dock 盒子图标备份，不参与构建
 icon.legacy-box.icns: 更换前的 macOS 盒子 ICNS 备份，不参与构建

@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 happy-dom 测试环境、public/index.html 与 public/modules/ui-controller.js
- * [OUTPUT]: 验证无背景左上角 Logo、应用图标、使用指南、首次判断、手动重开和顶栏事件链
+ * [OUTPUT]: 验证左上角 Logo 的原始分辨率与 36px 显示尺寸、Icon Composer 图标、历史备份、指南与事件链
  * [POS]: tests/frontend 的使用指南回归测试，保证首次状态与常驻帮助入口互不干扰
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -23,12 +23,13 @@ function createController() {
   return createUiController(deps);
 }
 
-test('左上角使用无背景 Logo，网页与指南使用应用图标，并保留旧资产备份', async () => {
+test('左上角 Logo 保留原始分辨率并显示为 36px，网页与指南使用 Icon Composer 图标', async () => {
   const root = new URL('../../', import.meta.url);
-  const [index, controller, icons, publicIcon, publicLogo, buildIcon, dockIcon, icns, ...backups] = await Promise.all([
+  const [index, controller, icons, sidebarCss, publicIcon, publicLogo, buildIcon, dockIcon, icns, ...backups] = await Promise.all([
     readFile(new URL('public/index.html', root), 'utf8'),
     readFile(new URL('public/modules/ui-controller.js', root), 'utf8'),
     readFile(new URL('public/modules/icons.js', root), 'utf8'),
+    readFile(new URL('public/styles/sidebar.css', root), 'utf8'),
     readFile(new URL('public/assets/mado-icon.png', root)),
     readFile(new URL('public/assets/mado-logo.png', root)),
     readFile(new URL('build/icon-1024.png', root)),
@@ -39,13 +40,23 @@ test('左上角使用无背景 Logo，网页与指南使用应用图标，并保
     readFile(new URL('build/icon.legacy-box.icns', root)),
     readFile(new URL('build/icon-design.legacy-box.html', root)),
     readFile(new URL('build/logo.legacy-box.svg', root)),
+    readFile(new URL('build/icon-1024.legacy-v2.12.1.png', root)),
+    readFile(new URL('build/icon.legacy-v2.12.1.png', root)),
+    readFile(new URL('build/icon.legacy-v2.12.1.icns', root)),
   ]);
+  const sourceConfig = JSON.parse(await readFile(new URL('build/Mado.icon/icon.json', root), 'utf8'));
+  const sourceImageName = sourceConfig.groups[0].layers[0]['image-name'];
+  const sourceImage = await readFile(new URL(`build/Mado.icon/Assets/${sourceImageName}`, root));
   assert.match(index, /rel="icon"[^>]+mado-icon\.png/);
   assert.match(index, /class="logo"><img src="\/assets\/mado-logo\.png" alt=""/);
   assert.match(controller, /class="guide-logo"><img src="\/assets\/mado-icon\.png" alt=""/);
+  assert.match(sidebarCss, /\.brand \.logo \{ width: 36px; height: 36px;[^}]+flex: 0 0 36px;/);
   assert.doesNotMatch(icons, /\bbox:\s*'<path/);
   assert.equal(publicIcon.compare(buildIcon), 0);
-  assert.deepEqual([publicLogo.readUInt32BE(16), publicLogo.readUInt32BE(20)], [128, 128]);
+  assert.equal(sourceConfig.fill.solid.startsWith('display-p3:'), true);
+  assert.equal(sourceConfig.groups[0].translucency.enabled, true);
+  assert.ok(sourceImage.length > 0);
+  assert.deepEqual([publicLogo.readUInt32BE(16), publicLogo.readUInt32BE(20)], [1024, 1024]);
   assert.equal(publicLogo[25], 6);
   assert.deepEqual([buildIcon.readUInt32BE(16), buildIcon.readUInt32BE(20)], [1024, 1024]);
   assert.deepEqual([dockIcon.readUInt32BE(16), dockIcon.readUInt32BE(20)], [512, 512]);
