@@ -12,7 +12,7 @@ dom-environment.mjs: happy-dom 全局环境安装与清理辅助工具，覆盖�
 editor-guard.test.mjs: 自动保存、未保存确认、预览关闭与编辑器资源释放测试
 file-follow.test.mjs: 文件跟随启停、终端绑定与手动导航接管测试
 favorites-list.test.mjs: Svelte 收藏列表测试，覆盖空态、目录/文件渲染、活动高亮、预览与移除动作
-file-area-drop.test.mjs: 文件区与项目入口交互测试，覆盖项目添加按钮、目录行拖放目标与单行键盘移动
+file-area-drop.test.mjs: 文件区与项目入口交互测试，覆盖空白/文件夹右键添加项目、普通文件排除、拖放与键盘移动
 file-list.test.mjs: Svelte 主文件列表测试，覆盖唯一列表视图、Git 在上数量在下的双行状态栏、媒体缩略图回退、选择、变更标记与交互转发
 git-panel.test.mjs: Svelte Git 常驻分支、按需汇总、静默刷新并发保护、非仓库提示与 Diff 跳转测试
 i18n.test.mjs: 国际化原地双向切换、动态界面翻译、终端内容隔离与原生菜单同步测试
@@ -20,7 +20,7 @@ navigation.test.mjs: 文件浏览排序过滤与命令面板导航测试
 project-run.test.mjs: 项目运行命令顶栏、继承规则与删除配置回归测试
 resizer-style.test.mjs: 侧边栏、文件预览与终端分割线样式契约测试，覆盖命中区、方向映射与 1px 悬停线
 roots-list.test.mjs: Svelte 快速入口测试，覆盖根目录渲染、活动高亮、目录展开与导航
-sidebar.test.mjs: 手动项目读取、目录选择、添加取消、浏览器降级与安全移除业务测试
+sidebar.test.mjs: 手动项目读取、目录选择/右键路径添加、重复与并发保护、浏览器降级和安全移除业务测试
 segmented-control.test.mjs: Svelte 通用按钮组测试，覆盖受控值、点击切换、方向键与无障碍状态
 terminal-agent-status.test.mjs: Agent 状态子控制器测试，覆盖输出摘要过滤和隐藏服务未读隔离
 terminal-close.test.mjs: 终端快捷键与关闭测试，覆盖 Codex/Pi 固定启动命令、通用继续设置、命令重启、前台进程关闭确认和桌面事件绑定

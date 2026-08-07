@@ -59,6 +59,7 @@ test('所有渲染层控制器工厂可独立装配并保持公开接口', async
     assert.equal(typeof createPreviewController(deps).openPreview, 'function');
     assert.equal(typeof createSidebarController(deps).loadProjects, 'function');
     assert.equal(typeof createSidebarController(deps).addProject, 'function');
+    assert.equal(typeof createSidebarController(deps).addProjectPath, 'function');
     const terminal = createTerminalController(deps);
     assert.equal(typeof terminal.openInDir, 'function');
     assert.equal(typeof terminal.newTerminal, 'function');

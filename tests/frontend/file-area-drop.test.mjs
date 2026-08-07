@@ -1,6 +1,6 @@
 /**
- * [INPUT]: 依赖 happy-dom 与 public/modules/ui-controller.js 的文件区事件编排
- * [OUTPUT]: 验证项目添加按钮绑定、目录行拖放路径和列表键盘单行导航
+ * [INPUT]: 依赖 happy-dom 与文件区界面/动作控制器
+ * [OUTPUT]: 验证项目添加按钮、空白与文件夹右键添加项目、目录行拖放和列表键盘单行导航
  * [POS]: tests/frontend 的文件区列表交互回归测试，保护列表成为唯一视图后的拖放与键盘行为
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -9,6 +9,7 @@ import test from 'node:test';
 import { installDom, loadRendererModule } from './dom-environment.mjs';
 
 const { createUiController } = await loadRendererModule('ui-controller');
+const { createFileActionsController } = await loadRendererModule('file-actions');
 const noop = () => {};
 
 function elementShell() {
@@ -39,6 +40,51 @@ function dispatchTransfer(window, target, type, transfer) {
   Object.defineProperty(event, 'dataTransfer', { value: transfer });
   target.dispatchEvent(event);
 }
+
+test('空白区域和文件夹右键菜单可添加项目，普通文件不显示该动作', async () => {
+  const dom = installDom(elementShell());
+  try {
+    const paths = [];
+    let menuItems = [];
+    const state = {
+      cwd: '/root', showHidden: false, muted: false,
+      visible: [{ path: '/root/folder', isDir: true }, { path: '/root/file.txt', isDir: false }],
+    };
+    const term = new Proxy({ sessions: [], dock: 'bottom', active: null }, {
+      get(target, key) { return key in target ? target[key] : noop; },
+    });
+    const shared = {
+      $: (selector) => document.querySelector(selector), state, term,
+      popupMenu: (_event, items) => { menuItems = items; },
+      addProjectPath: async (path) => paths.push(path),
+    };
+    const ui = createUiController(new Proxy({
+      ...shared,
+      cmdk: new Proxy({ active: 0 }, { get(target, key) { return key in target ? target[key] : noop; } }),
+      follow: { on: false }, runtime: { imgEditState: null }, mona: {},
+      shotTray: { init: noop }, SVG: { box: '' }, svgWrap: () => '',
+    }, { get(target, key) { return key in target ? target[key] : noop; } }));
+    ui.bindEvents();
+
+    document.querySelector('#file-area').dispatchEvent(new dom.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+    const blankAdd = menuItems.find((item) => item.label === '添加到项目');
+    assert.ok(blankAdd);
+    await blankAdd.fn();
+    assert.deepEqual(paths, ['/root']);
+
+    const actions = createFileActionsController(new Proxy({
+      ...shared, closeContextMenu: noop, isFav: () => false,
+    }, { get(target, key) { return key in target ? target[key] : noop; } }));
+    actions.showContextMenu(new dom.window.MouseEvent('contextmenu', { cancelable: true }), { path: '/root/folder', isDir: true, kind: 'dir' });
+    const folderAdd = menuItems.find((item) => item.label === '添加到项目');
+    assert.ok(folderAdd);
+    await folderAdd.fn();
+    assert.deepEqual(paths, ['/root', '/root/folder']);
+
+    actions.showContextMenu(new dom.window.MouseEvent('contextmenu', { cancelable: true }), { path: '/root/file.txt', isDir: false, kind: 'text' });
+    assert.equal(menuItems.some((item) => item.label === '添加到项目'), false);
+  } finally { dom.cleanup(); }
+});
 
 test('项目添加按钮已绑定，列表目录行接收拖放且键盘每次只移动一行', async () => {
   const dom = installDom(elementShell());

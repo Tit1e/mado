@@ -1,11 +1,11 @@
 /**
- * [INPUT]: 依赖文件 API、Svelte 通用弹窗与上下文菜单、共享编辑运行态、终端代理以及导航和预览动作代理
- * [OUTPUT]: 对外提供 createFileActionsController，管理编辑、文件操作、工具面板和上下文菜单
+ * [INPUT]: 依赖文件 API、Svelte 通用弹窗与上下文菜单、共享编辑运行态、终端代理、手动项目及导航和预览动作代理
+ * [OUTPUT]: 对外提供 createFileActionsController，管理编辑、文件操作、工具面板和含文件夹项目添加的上下文菜单
  * [POS]: public/modules 的文件动作领域控制器，被预览、文件列表、侧边栏和事件层消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createFileActionsController(deps) {
-  const { $, state, api, apiPost, toast, inputDialog, confirmDialog, popupMenu, closeContextMenu, loadFavorites, renderFavs, renderFiles, navigate, openPreview, setFileFollow, follow, term, mona, crepe, runtime, guardDirty, dirOf, fmtSize, escapeHtml, ic, svgWrap, SVG, showPreviewPanel, renderPreviewFoot, renderPreviewActions, isFav, renderBreadcrumb, renderTextPreview, isMdName, closePreview, lightbox, enterImageEdit, refreshGitStatus } = deps;
+  const { $, state, api, apiPost, toast, inputDialog, confirmDialog, popupMenu, closeContextMenu, loadFavorites, renderFavs, renderFiles, navigate, openPreview, setFileFollow, follow, term, mona, crepe, runtime, guardDirty, dirOf, fmtSize, escapeHtml, ic, svgWrap, SVG, showPreviewPanel, renderPreviewFoot, renderPreviewActions, isFav, renderBreadcrumb, renderTextPreview, isMdName, closePreview, lightbox, enterImageEdit, addProjectPath, refreshGitStatus } = deps;
 // ---------- 操作 ----------
 // macOS 打开文件时 LaunchServices 会写 com.apple.lastuseddate#PS 扩展属性，FSEvents 据此连发事件——
 // 内容没动却会点亮「改」徽标。自己发起的打开记下路径，3 秒内该文件的变更事件按噪声丢弃
@@ -407,6 +407,7 @@ function showContextMenu(ev, e) {
   items.push({ label: '在编辑器打开', fn: () => openWith(e.path, 'editor') });
   items.push({ label: '在 Finder 显示', fn: () => openWith(e.path, 'reveal') });
   items.push({ label: '复制路径', fn: () => copyPath(e.path) });
+  if (e.isDir) items.push({ label: '添加到项目', fn: () => addProjectPath(e.path) });
   items.push({ sep: true });
   items.push({ label: isFav(e.path) ? '取消收藏' : '收藏', fn: () => toggleFav(e) });
   items.push({ label: '重命名…', fn: () => doRename(e) });

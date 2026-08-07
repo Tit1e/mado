@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 API、共享 state、导航、通用弹层回调与 Svelte 根目录/收藏/手动项目列表服务
- * [OUTPUT]: 对外提供 createSidebarController，管理根目录、收藏和用户项目业务
+ * [OUTPUT]: 对外提供 createSidebarController，管理根目录、收藏、目录选择与按路径添加用户项目业务
  * [POS]: public/modules 的侧边栏领域控制器，三个列表渲染委托 Svelte 服务
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -48,21 +48,33 @@ export function createSidebarController(deps) {
   }
 
   let projectActionPending = false;
+  function canAddProjects() {
+    if (window.madoProjects?.chooseDirectory) return true;
+    toast('请在 Mado 桌面版添加项目', true);
+    return false;
+  }
+  async function persistProject(path, { navigateAfter = false } = {}) {
+    const result = await apiPost('/api/projects/add', { path });
+    if (!result.ok) { toast(result.error || '添加项目失败', true); return result; }
+    renderProjects(result.projects);
+    toast(result.added ? '已添加到项目' : '项目已存在');
+    if (navigateAfter) await navigate(path);
+    return result;
+  }
+  async function addProjectPath(path) {
+    if (!path || projectActionPending || !canAddProjects()) return;
+    projectActionPending = true;
+    try { return await persistProject(path); }
+    catch { toast('添加项目失败', true); }
+    finally { projectActionPending = false; }
+  }
   async function addProject() {
-    if (projectActionPending) return;
-    if (!window.madoProjects?.chooseDirectory) {
-      toast('请在 Mado 桌面版添加项目', true);
-      return;
-    }
+    if (projectActionPending || !canAddProjects()) return;
     projectActionPending = true;
     try {
       const path = await window.madoProjects.chooseDirectory();
       if (!path) return;
-      const result = await apiPost('/api/projects/add', { path });
-      if (!result.ok) { toast(result.error || '添加项目失败', true); return; }
-      renderProjects(result.projects);
-      if (!result.added) toast('项目已存在');
-      await navigate(path);
+      return await persistProject(path, { navigateAfter: true });
     } catch { toast('添加项目失败', true); }
     finally { projectActionPending = false; }
   }
@@ -90,6 +102,6 @@ export function createSidebarController(deps) {
 
   return {
     loadRoots, renderRootsActive, loadFavorites, renderFavs, openFavoriteFile,
-    loadProjects, addProject, showProjectMenu, showUnavailableProject,
+    loadProjects, addProject, addProjectPath, showProjectMenu, showUnavailableProject,
   };
 }

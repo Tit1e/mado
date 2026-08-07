@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 happy-dom 与侧边栏控制器
- * [OUTPUT]: 验证手动项目读取、目录选择、添加、取消、浏览器降级和仅配置移除调用链
+ * [OUTPUT]: 验证手动项目读取、目录选择与右键路径添加、重复/并发保护、浏览器降级和仅配置移除调用链
  * [POS]: tests/frontend 的用户项目侧边栏业务测试
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -72,13 +72,54 @@ test('原生目录选择成功后添加项目并导航，取消时不调用 API'
   } finally { dom.cleanup(); }
 });
 
+test('右键路径添加立即刷新项目列表且不改变当前目录', async () => {
+  const dom = installDom('');
+  try {
+    window.madoProjects = { chooseDirectory: async () => null };
+    const harness = createHarness();
+    await harness.controller.addProjectPath('/workspace/folder');
+    assert.deepEqual(harness.calls.find((call) => call[0] === 'post'), ['post', '/api/projects/add', { path: '/workspace/folder' }]);
+    assert.deepEqual(harness.calls.find((call) => call[0] === 'render'), ['render', [PROJECT], '/workspace']);
+    assert.deepEqual(harness.calls.find((call) => call[0] === 'toast'), ['toast', '已添加到项目', false]);
+    assert.equal(harness.calls.some((call) => call[0] === 'navigate'), false);
+
+    const duplicate = createHarness({ add: { ok: true, added: false, projects: [PROJECT] } });
+    await duplicate.controller.addProjectPath('/workspace/demo');
+    assert.deepEqual(duplicate.calls.find((call) => call[0] === 'toast'), ['toast', '项目已存在', false]);
+
+    const failed = createHarness({ add: { ok: false, error: '最多添加 50 个项目' } });
+    await failed.controller.addProjectPath('/workspace/overflow');
+    assert.deepEqual(failed.calls.find((call) => call[0] === 'toast'), ['toast', '最多添加 50 个项目', true]);
+    assert.equal(failed.calls.some((call) => call[0] === 'render' || call[0] === 'navigate'), false);
+  } finally { dom.cleanup(); }
+});
+
+test('快速重复添加同一路径只发送一次请求', async () => {
+  const dom = installDom('');
+  try {
+    window.madoProjects = { chooseDirectory: async () => null };
+    let resolveAdd;
+    const pending = new Promise((resolve) => { resolveAdd = resolve; });
+    const harness = createHarness({ add: pending });
+    const first = harness.controller.addProjectPath('/workspace/demo');
+    const second = harness.controller.addProjectPath('/workspace/demo');
+    assert.equal(harness.calls.filter((call) => call[0] === 'post').length, 1);
+    resolveAdd({ ok: true, added: true, projects: [PROJECT] });
+    await Promise.all([first, second]);
+  } finally { dom.cleanup(); }
+});
+
 test('浏览器模式明确提示必须使用桌面版', async () => {
   const dom = installDom('');
   try {
     const harness = createHarness();
     delete window.madoProjects;
     await harness.controller.addProject();
-    assert.deepEqual(harness.calls.find((call) => call[0] === 'toast'), ['toast', '请在 Mado 桌面版添加项目', true]);
+    await harness.controller.addProjectPath('/workspace/demo');
+    assert.deepEqual(harness.calls.filter((call) => call[0] === 'toast'), [
+      ['toast', '请在 Mado 桌面版添加项目', true],
+      ['toast', '请在 Mado 桌面版添加项目', true],
+    ]);
     assert.equal(harness.calls.some((call) => call[0] === 'post'), false);
   } finally { dom.cleanup(); }
 });

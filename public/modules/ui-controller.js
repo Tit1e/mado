@@ -1,11 +1,11 @@
 /**
- * [INPUT]: 依赖共享 state、Svelte 按钮组同步回调、手动项目动作、终端/命令面板控制器及文件和预览动作
- * [OUTPUT]: 对外提供 createUiController，管理全局事件、主题、拖拽尺寸、Codex/Pi 启动、首次引导和手动重开指南
+ * [INPUT]: 依赖共享 state、Svelte 按钮组同步回调、手动项目添加、终端/命令面板控制器及文件和预览动作
+ * [OUTPUT]: 对外提供 createUiController，管理全局事件、文件区空白菜单、主题、拖拽尺寸、Codex/Pi 启动、首次引导和手动重开指南
  * [POS]: public/modules 的界面编排控制器，被应用启动入口消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createUiController(deps) {
-  const { $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview, toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename, popupMenu, mona, svgWrap, SVG, openWith, playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax, setPreviewMax, moveCursor, cursorEnter, toggleFav, setThemeControlValue, addProject } = deps;
+  const { $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview, toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename, popupMenu, mona, svgWrap, SVG, openWith, playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax, setPreviewMax, moveCursor, cursorEnter, toggleFav, setThemeControlValue, addProject, addProjectPath } = deps;
 // ---------- 使用指南 ----------
 function showGuide(markGuided = false) {
   if (document.querySelector('.guide-overlay')) return false;
@@ -257,6 +257,7 @@ function bindEvents() {
       { sep: true },
       { label: '在 Finder 显示', fn: () => openWith(state.cwd, 'reveal') },
       { label: '在终端打开', fn: () => term.openInDir(state.cwd) },
+      { label: '添加到项目', fn: () => addProjectPath(state.cwd) },
     ]);
   };
   $('#file-area').addEventListener('dblclick', blankMenu);

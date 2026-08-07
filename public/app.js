@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 index.html DOM、generated/ui.mjs Svelte 界面岛、HTTP/Git API、xterm/Monaco/Milkdown 和 Electron PTY/恢复桥与快捷动作
- * [OUTPUT]: 对外提供文件管理、手动项目、Git 查看、预览编辑、Codex/Pi 内嵌终端及选择性命令恢复、命令重启和全局交互
+ * [OUTPUT]: 对外提供文件管理、目录选择与右键添加手动项目、Git 查看、预览编辑、Codex/Pi 内嵌终端、选择性命令恢复、命令重启和全局交互
  * [POS]: public 模块的渲染层主入口，集中编排页面状态、视图和桌面能力
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -133,7 +133,7 @@ let animateLayout, restoreFileAreaIfHidden, showPreviewPanel, setPreviewMax, isP
 let selfOpened, openWith, copyPath, recordRecent, toggleFav, refresh, enterEditMode, mdEditor;
 let doRename, doTrash, doCreate, inputDialog, confirmDialog;
 let showContextMenu, popupMenu, shotTray;
-let loadRoots, renderRootsActive, loadFavorites, renderFavs, loadProjects, addProject, showProjectMenu, showUnavailableProject, openFavoriteFile;
+let loadRoots, renderRootsActive, loadFavorites, renderFavs, loadProjects, addProject, addProjectPath, showProjectMenu, showUnavailableProject, openFavoriteFile;
 let cmdk;
 let term;
 let gitPanel;
@@ -231,6 +231,7 @@ function setupControllers() {
     renderTextPreview: (...args) => renderTextPreview(...args), isMdName,
     closePreview: (...args) => closePreview(...args), lightbox: (...args) => lightbox(...args),
     enterImageEdit: (...args) => enterImageEdit(...args),
+    addProjectPath: (...args) => addProjectPath(...args),
     refreshGitStatus: (...args) => gitPanel?.load(...args),
   }));
   ({
@@ -282,7 +283,7 @@ function setupControllers() {
     baseOf, refresh, runtime,
   }));
   ({
-    loadRoots, renderRootsActive, loadFavorites, renderFavs, loadProjects, addProject, showProjectMenu, showUnavailableProject, openFavoriteFile,
+    loadRoots, renderRootsActive, loadFavorites, renderFavs, loadProjects, addProject, addProjectPath, showProjectMenu, showUnavailableProject, openFavoriteFile,
   } = createSidebarController({
     $, api, apiPost, state, dirOf, navigate,
     openPreview, renderFiles, toast, popupMenu,
@@ -306,7 +307,7 @@ function setupControllers() {
     popupMenu, mona, svgWrap, SVG, openWith,
     playChime, shotTray, dropFilesInto, dropUrlInto, runtime, undoImage, isPreviewMax,
     setPreviewMax, moveCursor, cursorEnter, toggleFav,
-    setThemeControlValue: (value) => themeControl?.setValue(value), addProject,
+    setThemeControlValue: (value) => themeControl?.setValue(value), addProject, addProjectPath,
   }));
   setupSegmentedControls();
 }

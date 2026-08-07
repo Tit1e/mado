@@ -14,6 +14,8 @@ window.MADO_DICT = {
   '收藏': 'Favorites',
   '项目': 'Projects',
   '添加项目': 'Add project',
+  '添加到项目': 'Add to projects',
+  '已添加到项目': 'Added to projects',
   '点击右上角 ＋ 添加项目': 'Click + at the top right to add a project',
   '移除项目': 'Remove project',
   '目录不存在或无法访问': 'Folder is missing or unavailable',
