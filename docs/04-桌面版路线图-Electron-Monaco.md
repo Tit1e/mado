@@ -1,5 +1,5 @@
 <!--
-[INPUT]: 依赖 Electron、node-pty、xterm.js 和 Codex TUI 工作流
+[INPUT]: 依赖 Electron、node-pty、xterm.js 和 Codex/Pi TUI 工作流
 [OUTPUT]: 对外提供 Mado 桌面版阶段路线、项目运行命令与产品边界
 [POS]: docs 的桌面架构路线图，确定终端与文件联动优先级
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
@@ -13,7 +13,7 @@
 
 > Mado 不是文件管理器，也不是 IDE。它是 **vibe coding 的驾驶舱**。
 
-花叔一下午用 Codex 起十个项目。痛点：Codex 会话散在十个终端窗口、文件散在各处、改了啥要来回切。Mado 把「**看文件 / 验成果**」和「**终端里的 Codex**」收进同一界面并联动。
+花叔一下午用 Agent 起十个项目。痛点：会话散在十个终端窗口、文件散在各处、改了啥要来回切。Mado 把「**看文件 / 验成果**」和「**终端里的 Codex 或 Pi**」收进同一界面并联动。
 
 **自用优先**是最高准则——一切取舍以花叔真实工作流为准星，满足不了自己就毫无意义。
 
@@ -28,7 +28,7 @@
 Electron
 ├─ 主进程 main
 │   ├─ 复用 server.js 的文件能力（list/search/read/write/trash/rename/create/open）
-│   └─ node-pty：为每个终端开真 PTY，承载 Codex TUI
+│   └─ node-pty：为每个终端开真 PTY，承载 Codex/Pi TUI
 └─ 渲染进程 renderer：现有 public/ UI ＋ xterm.js 终端 ＋（后续）Monaco
         三栏：左 文件树/导航 · 中 预览/编辑 · 右(或下) 终端
         联动：三方共享 cwd；agent 改文件 → fs.watch → 预览自动刷新
@@ -44,7 +44,7 @@ Electron
 ### 阶段 1 · Electron 壳 + 内嵌终端 MVP（约 2–3 天）★核心
 - Electron 套壳，加载现有 UI（方式 a）。
 - 右侧（或底部）面板嵌 `xterm.js`，主进程 `node-pty` 起真 shell。
-- 能在界面里开终端、跑起 Codex TUI，输入输出顺滑、支持 resize、颜色正确。
+- 能在界面里开终端、跑起 Codex/Pi TUI，输入输出顺滑、支持 resize、颜色正确。
 - 终端默认 cwd = 当前浏览目录（第一层联动）。
 - 交付：**在 Mado 里开终端、跑起 agent、左边看文件**——核心爽点立现。
 

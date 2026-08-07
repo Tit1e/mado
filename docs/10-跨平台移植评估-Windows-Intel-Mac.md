@@ -48,7 +48,7 @@ Electron 和 Node 的系统 API 在两种 Mac 架构上基本一致，关键差�
 
 ### 4. 上游 CLI 是不可控项
 
-Codex 在 Windows 的安装、凭据和会话行为由上游决定。应先用目标版本做最小真机探针；如果 CLI 自身不稳定，Mado 只能如实降级，不能在应用层掩盖。
+Codex 与 Pi 在 Windows 的安装、凭据和会话行为都由各自上游决定。应分别用目标版本做最小真机探针；如果 CLI 自身不稳定，Mado 只能如实降级，不能在应用层掩盖。
 
 ---
 
@@ -65,7 +65,7 @@ Codex 在 Windows 的安装、凭据和会话行为由上游决定。应先用�
 
 ## 四、Windows 移植清单
 
-1. 先验证目标版本的 Codex 与 node-pty/ConPTY 基础链路。
+1. 先分别验证目标版本的 Codex、Pi 与 node-pty/ConPTY 基础链路。
 2. 为 `server/file-service.js` 收敛系统文件操作的平台适配层。
 3. 补齐打开、废纸篓、剪贴板、截图和电源管理的 Windows 实现或明确降级。
 4. 覆盖中文路径、空格路径、IME、resize、长输出和进程退出。

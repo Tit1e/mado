@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 Electron 窗口/菜单/IPC 能力、PTY/Shell 集成/恢复/退出/开发刷新等领域服务、../server.js 与端口配置
- * [OUTPUT]: 对外提供 Mado 桌面主进程、PTY/恢复与项目目录选择/文件/剪贴板/更新/菜单语言 IPC、Codex 新会话与命令重启快捷键、开发热重载、菜单和窗口生命周期
+ * [OUTPUT]: 对外提供 Mado 桌面主进程、PTY/恢复与项目目录选择/文件/剪贴板/更新/菜单语言 IPC、Codex/Pi 启动与命令重启快捷动作、开发热重载、菜单和窗口生命周期
  * [POS]: electron 模块的主进程编排器，与 preload.js 和开发监督脚本协作连接渲染层、本地服务和操作系统
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -423,14 +423,22 @@ function buildMenu() {
         click: () => send('terminal:new'),
       },
       {
-        label: M('新建 Codex 终端', 'New Codex Terminal'),
+        label: M('启动 Codex', 'Launch Codex'),
         accelerator: 'CmdOrCtrl+Shift+T',
-        click: () => send('terminal:launch-codex'),
+        click: () => send('terminal:launch-agent', { agent: 'codex', action: 'preferred' }),
       },
       {
         label: M('新建 Codex 会话', 'Start New Codex Session'),
         accelerator: 'CmdOrCtrl+Shift+N',
-        click: () => send('terminal:launch-codex-new'),
+        click: () => send('terminal:launch-agent', { agent: 'codex', action: 'new' }),
+      },
+      {
+        label: M('启动 Pi', 'Launch Pi'),
+        click: () => send('terminal:launch-agent', { agent: 'pi', action: 'preferred' }),
+      },
+      {
+        label: M('新建 Pi 会话', 'Start New Pi Session'),
+        click: () => send('terminal:launch-agent', { agent: 'pi', action: 'new' }),
       },
       {
         label: M('重新运行当前命令', 'Rerun Active Command'),

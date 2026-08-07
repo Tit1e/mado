@@ -1,6 +1,6 @@
 <!--
   [INPUT]: 依赖 styles/ 样式分片、app.js、i18n.js 和本地 vendor 浏览器资源
-  [OUTPUT]: 对外提供 Mado 单页应用的手动项目入口、文件区、主题化隐藏文件控件、使用指南、Svelte 界面岛挂载点、终端区（含预览浮层）与通用弹层 DOM 骨架
+  [OUTPUT]: 对外提供 Mado 单页应用的手动项目入口、文件区、Codex/Pi 快速启动、使用指南、Svelte 界面岛挂载点、终端区（含预览浮层）与通用弹层 DOM 骨架
   [POS]: public 模块的页面入口，定义渲染层组件挂载点与脚本加载顺序
   [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
 -->
@@ -92,9 +92,10 @@
           <header class="term-head">
             <div class="term-tabs" id="term-tabs"></div>
             <div class="term-actions">
-              <button id="term-codex" class="codex-launch" title="启动 Codex：始终在左侧当前目录新建终端标签"><img src="/assets/codex.svg" alt=""></button>
+              <button id="term-codex" class="agent-launch" title="在左侧当前目录继续最近会话" aria-label="启动 Codex"><img src="/assets/codex.svg" alt=""></button>
+              <button id="term-pi" class="agent-launch" title="在左侧当前目录继续最近会话" aria-label="启动 Pi"><img src="/assets/pi.svg" alt=""></button>
               <button id="term-settings" title="终端设置"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></button>
-              <button id="file-follow" title="文件跟随：跟着当前终端 tab 的 Codex，它改哪个文件，文件区和预览就跟到哪；html/md 边写边出实时预览（手动浏览即自动停）"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+              <button id="file-follow" title="文件跟随：跟着当前终端 tab 的 Agent，它改哪个文件，文件区和预览就跟到哪；html/md 边写边出实时预览（手动浏览即自动停）"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
               <button id="term-newtab" title="新终端">＋</button>
               <button id="term-max" title="终端铺满"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
               <button id="term-dock" title="切换 上下 / 左右 布局">⇆</button>

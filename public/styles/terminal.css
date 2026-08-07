@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 依赖 index.html 的 DOM 结构与 base.css 定义的主题变量
- * [OUTPUT]: 对外提供内嵌终端、停靠布局、拖放与桌面窗口适配样式
- * [POS]: public/styles 的内嵌终端、停靠布局、拖放与桌面窗口适配样式分片，按 index.html 声明顺序参与级联
+ * [OUTPUT]: 对外提供内嵌终端、Codex/Pi 启动按钮、停靠布局、拖放与桌面窗口适配样式
+ * [POS]: public/styles 的终端与 Agent 启动样式分片，按 index.html 声明顺序参与级联
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 /* ---------- 内嵌终端面板 ---------- */
@@ -88,13 +88,14 @@
 .term-actions { display: flex; gap: 2px; flex: 0 0 auto; align-items: center; }
 .term-actions button { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 2px 7px; border-radius: 5px; line-height: 1; }
 .term-actions button:hover { color: var(--text); background: var(--bg-3); }
-/* Codex 一键启动 */
-.term-actions .codex-launch { display: inline-flex; align-items: center; justify-content: center; padding: 3px 6px; color: var(--text); }
-.term-actions .codex-launch:hover { background: var(--bg-3); }
-.term-actions .codex-launch svg, .term-actions .codex-launch img { display: block; flex: none; width: 15px; height: 15px; }
-.term-actions .codex-launch + #term-settings { margin-left: 2px; }
+/* Codex / Pi 一键启动 */
+.term-actions .agent-launch { display: inline-flex; align-items: center; justify-content: center; padding: 3px 6px; color: var(--text); }
+.term-actions .agent-launch:hover { background: var(--bg-3); }
+.term-actions .agent-launch img { display: block; flex: none; width: 15px; height: 15px; }
+[data-theme="terminal"] .term-actions .agent-launch img { filter: invert(1); }
+.term-actions .agent-launch + #term-settings { margin-left: 2px; }
 
-/* 终端设置统一承载 Codex 启动、提示音和渲染偏好 */
+/* 终端设置统一承载 Agent 启动、提示音和渲染偏好 */
 .terminal-settings-pop { position: fixed; z-index: 200; width: 240px; display: flex; flex-direction: column; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,0.32); overflow: hidden; }
 .terminal-settings-pop .tsp-head { padding: 9px 12px; font-size: 12px; font-weight: 600; color: var(--text-dim); border-bottom: 1px solid var(--border); }
 .terminal-settings-pop .tsp-row { display: flex; align-items: center; gap: 9px; padding: 9px 12px; cursor: pointer; font-size: 13px; color: var(--text); }

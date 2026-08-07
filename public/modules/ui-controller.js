@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖共享 state、Svelte 按钮组同步回调、手动项目动作、终端/命令面板控制器及文件和预览动作
- * [OUTPUT]: 对外提供 createUiController，管理全局事件、主题、拖拽尺寸、首次引导和手动重开指南
+ * [OUTPUT]: 对外提供 createUiController，管理全局事件、主题、拖拽尺寸、Codex/Pi 启动、首次引导和手动重开指南
  * [POS]: public/modules 的界面编排控制器，被应用启动入口消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -14,12 +14,12 @@ function showGuide(markGuided = false) {
   ov.innerHTML = `<div class="guide-card">
     <div class="guide-logo">${svgWrap(SVG.box, 'currentColor', 46, true)}</div>
     <h2>欢迎用 Mado</h2>
-    <p class="guide-lead">从找项目、运行 Codex 到核对改动，常用能力都在这一个窗口。</p>
+    <p class="guide-lead">从找项目、运行 Agent 到核对改动，常用能力都在这一个窗口。</p>
     <h3>核心工作流</h3>
     <ul class="guide-features">
       <li><b>找文件与预览</b><span>全局搜索文件与内容，单击预览、双击系统打开；Markdown、代码和图片都可直接编辑。</span></li>
-      <li><b>启动 Codex</b><span>按终端设置继续最近会话，或新开无参数会话；把文件或文件夹拖进终端即可加入上下文。</span></li>
-      <li><b>跟踪与核对改动</b><span>开启文件跟随后，文件区和预览会追踪当前 Codex；Git 状态可直接打开工作区 Diff。</span></li>
+      <li><b>启动 Agent</b><span>终端工具栏可一键启动 Codex 或 Pi，终端设置可统一选择继续最近会话或新建会话；把文件或文件夹拖进终端即可加入上下文。</span></li>
+      <li><b>跟踪与核对改动</b><span>开启文件跟随后，文件区和预览会追踪当前终端中的 Agent；Git 状态可直接打开工作区 Diff。</span></li>
       <li><b>多终端工作</b><span>用数字键快速切换标签；重新运行会先停止当前服务，等 Shell 就绪后再执行原命令。</span></li>
       <li><b>管理项目</b><span>左侧项目列表由你手动添加，与具体 Agent 无关；退出时保存的运行命令，可在下次启动时选择恢复。</span></li>
     </ul>
@@ -108,15 +108,19 @@ function bindTerminalResizer() {
   });
 }
 
-// ---------- Codex 快速启动与终端设置 ----------
-function codexResumeLast() {
-  try { return localStorage.getItem('mado_codex_resume_last') !== '0'; } catch { return true; }
+// ---------- Codex / Pi 快速启动与终端设置 ----------
+function agentResumeLast() {
+  try {
+    const value = localStorage.getItem('mado_agent_resume_last');
+    return value === null ? localStorage.getItem('mado_codex_resume_last') !== '0' : value !== '0';
+  } catch { return true; }
 }
-function syncCodexLaunchHint() {
-  const btn = $('#term-codex');
-  if (btn) btn.title = codexResumeLast()
-    ? '在左侧当前目录新建终端标签并继续最近的 Codex 会话'
-    : '在左侧当前目录新建终端标签并启动新的 Codex 会话';
+function syncAgentLaunchHints() {
+  const title = agentResumeLast()
+    ? '在左侧当前目录继续最近会话'
+    : '在左侧当前目录启动新会话';
+  if ($('#term-codex')) $('#term-codex').title = title;
+  if ($('#term-pi')) $('#term-pi').title = title;
 }
 const terminalSettingsPop = {
   el: null,
@@ -131,13 +135,13 @@ const terminalSettingsPop = {
     const pop = document.createElement('div');
     pop.className = 'terminal-settings-pop';
     pop.innerHTML = `<div class="tsp-head">终端设置</div>
-      <label class="tsp-row" title="一键启动时继续左侧当前目录最近的 Codex 会话">
-        <input type="checkbox" data-setting="resume-last" ${codexResumeLast() ? 'checked' : ''}>
-        <span>继续最近 Codex 会话</span>
+      <label class="tsp-row" title="一键启动时继续左侧当前目录最近的会话">
+        <input type="checkbox" data-setting="agent-resume-last" ${agentResumeLast() ? 'checked' : ''}>
+        <span>继续最近会话</span>
       </label>
-      <label class="tsp-row" title="Codex 等待确认或任务完成时播放提示音">
+      <label class="tsp-row" title="Agent 等待确认或任务完成时播放提示音">
         <input type="checkbox" data-setting="chime" ${state.muted ? '' : 'checked'}>
-        <span>Codex 提示音</span>
+        <span>Agent 提示音</span>
       </label>
       <label class="tsp-row" title="长时间中文输出偶发乱码时可关掉：改用兼容渲染（DOM），立即生效，稍慢但稳">
         <input type="checkbox" data-setting="webgl" ${(() => { try { return localStorage.getItem('mado.noWebgl') === '1' ? '' : 'checked'; } catch { return 'checked'; } })()}>
@@ -149,16 +153,16 @@ const terminalSettingsPop = {
     pop.style.top = Math.round(r.bottom + 6) + 'px';
     pop.style.right = Math.max(8, Math.round(window.innerWidth - r.right - 8)) + 'px';
     this.el = pop;
-    pop.querySelector('[data-setting="resume-last"]').onchange = (ev) => {
-      localStorage.setItem('mado_codex_resume_last', ev.target.checked ? '1' : '0');
-      syncCodexLaunchHint();
-      toast(ev.target.checked ? '一键启动将继续最近 Codex 会话' : '一键启动将创建新的 Codex 会话');
+    pop.querySelector('[data-setting="agent-resume-last"]').onchange = (ev) => {
+      localStorage.setItem('mado_agent_resume_last', ev.target.checked ? '1' : '0');
+      syncAgentLaunchHints();
+      toast(ev.target.checked ? '一键启动将继续最近会话' : '一键启动将创建新会话');
     };
     pop.querySelector('[data-setting="chime"]').onchange = (ev) => {
       state.muted = !ev.target.checked;
       localStorage.setItem('mado_muted', state.muted ? '1' : '0');
       if (!state.muted) playChime('tick');
-      toast(state.muted ? 'Codex 提示音已关闭' : 'Codex 提示音已开启');
+      toast(state.muted ? 'Agent 提示音已关闭' : 'Agent 提示音已开启');
     };
     pop.querySelector('[data-setting="webgl"]').onchange = (ev) => {
       term.setWebgl(ev.target.checked);
@@ -169,9 +173,10 @@ const terminalSettingsPop = {
   },
 };
 
-function bindCodexControls() {
-  syncCodexLaunchHint();
-  $('#term-codex').onclick = () => term.launchCodex();
+function bindAgentControls() {
+  syncAgentLaunchHints();
+  $('#term-codex').onclick = () => term.launchAgent('codex');
+  $('#term-pi').onclick = () => term.launchAgent('pi');
   $('#term-settings').onclick = () => terminalSettingsPop.toggle();
 }
 
@@ -190,7 +195,7 @@ function bindEvents() {
   $('#btn-guide').onclick = () => showGuide();
   $('#project-add').onclick = () => addProject();
   $('#btn-terminal').onclick = () => term.toggle();
-  bindCodexControls();
+  bindAgentControls();
   shotTray.init();
   $('#term-newtab').onclick = () => term.newTerminal();
   $('#term-max').onclick = () => term.toggleMax();
@@ -359,5 +364,5 @@ function applyTheme(skin, rerender = true) {
   }
 }
 
-  return { showGuide, maybeShowGuide, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, applyTheme };
+  return { showGuide, maybeShowGuide, bindTerminalResizer, agentResumeLast, bindAgentControls, bindEvents, applyTheme };
 }

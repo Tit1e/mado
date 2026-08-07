@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 index.html DOM、generated/ui.mjs Svelte 界面岛、HTTP/Git API、xterm/Monaco/Milkdown 和 Electron PTY/恢复桥与快捷动作
- * [OUTPUT]: 对外提供文件管理、手动项目、Git 查看、预览编辑、内嵌终端及选择性命令恢复、命令重启和全局交互
+ * [OUTPUT]: 对外提供文件管理、手动项目、Git 查看、预览编辑、Codex/Pi 内嵌终端及选择性命令恢复、命令重启和全局交互
  * [POS]: public 模块的渲染层主入口，集中编排页面状态、视图和桌面能力
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -11,6 +11,8 @@ import { createEditors } from './modules/editors.js';
 import { createSidebarController } from './modules/sidebar.js';
 import { createCommandPalette } from './modules/command-palette.js';
 import { createTerminalController } from './modules/terminal.js';
+import { resolveAgentLaunch } from './modules/agent-launcher.js';
+import { createTerminalAgentStatus } from './modules/terminal-agent-status.js';
 import { createTerminalShortcutActions } from './modules/terminal-shortcuts.js';
 import { createFileFollowController } from './modules/file-follow.js';
 import { createImageEditor } from './modules/image-editor.js';
@@ -137,7 +139,7 @@ let term;
 let gitPanel;
 let projectRun;
 
-let maybeShowGuide, bindTerminalResizer, codexResumeLast, bindCodexControls, bindEvents, applyTheme;
+let maybeShowGuide, bindTerminalResizer, agentResumeLast, bindAgentControls, bindEvents, applyTheme;
 let undoImage;
 
 
@@ -264,8 +266,8 @@ function setupControllers() {
     $, state, follow, openWith, applyPreviewSize, animateLayout, updateWatches, escapeHtml, ic,
     baseOf, dirOf, navigate, renderBreadcrumb, playChime, toast, TERM_LINK_RE_BARE, api, apiPost,
     shQuote, applySelection, openPreview, recordRecent,
-    codexResumeLast: (...args) => codexResumeLast(...args), setPreviewMax, isMdName, isHtmlName,
-    popupMenu, rippleFileArea, confirmDialog, createTerminalShortcutActions,
+    agentResumeLast: (...args) => agentResumeLast(...args), setPreviewMax, isMdName, isHtmlName,
+    popupMenu, rippleFileArea, confirmDialog, resolveAgentLaunch, createTerminalAgentStatus, createTerminalShortcutActions,
   });
   term.bindDesktopEvents();
   ({ setFileFollow, rememberFollowChange, followChange } = createFileFollowController({
@@ -296,8 +298,8 @@ function setupControllers() {
     openPreview, renderFiles,
   });
   ({
-    maybeShowGuide, bindTerminalResizer, bindCodexControls, bindEvents,
-    applyTheme, codexResumeLast,
+    maybeShowGuide, bindTerminalResizer, bindAgentControls, bindEvents,
+    applyTheme, agentResumeLast,
   } = createUiController({
     $, state, term, cmdk, toast, goBack, goUp, renderFiles, openPreview, closePreview,
     toggleSidebar, applyPreviewSize, setFileFollow, follow, doCreate, doTrash, doRename,

@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖终端控制器、Electron PTY/窗口桥接、确认弹窗与轻提示
- * [OUTPUT]: 对外提供 createTerminalShortcutActions，统一处理当前终端关闭、命令重启和桌面快捷事件绑定
+ * [OUTPUT]: 对外提供 createTerminalShortcutActions，统一处理当前终端关闭、命令重启和 Codex/Pi 桌面启动事件绑定
  * [POS]: public/modules 的终端快捷动作边界，被 terminal.js 装配并复用其标签生命周期能力
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -40,8 +40,9 @@ export function createTerminalShortcutActions({ term, pty, win, confirmDialog, t
 
   function bindDesktopEvents() {
     if (win?.onNewTerminal && !removers.newTerminal) removers.newTerminal = win.onNewTerminal(() => term.newTerminal());
-    if (win?.onLaunchCodex && !removers.launchCodex) removers.launchCodex = win.onLaunchCodex(() => term.launchCodex());
-    if (win?.onLaunchNewCodex && !removers.launchNewCodex) removers.launchNewCodex = win.onLaunchNewCodex(() => term.launchCodex({ resume: false }));
+    if (win?.onLaunchAgent && !removers.launchAgent) removers.launchAgent = win.onLaunchAgent(({ agent, action } = {}) => {
+      term.launchAgent(agent, action === 'preferred' ? undefined : { action });
+    });
     if (win?.onRestartActiveCommand && !removers.restartActive) removers.restartActive = win.onRestartActiveCommand(() => term.restartActive());
     if (win?.onCloseActiveTerminal && !removers.closeActive) removers.closeActive = win.onCloseActiveTerminal(() => term.closeActive());
   }

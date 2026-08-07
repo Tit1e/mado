@@ -19,6 +19,8 @@ const { createImageEditor } = await loadRendererModule('image-editor');
 const { createPreviewController } = await loadRendererModule('preview');
 const { createSidebarController } = await loadRendererModule('sidebar');
 const { createTerminalController } = await loadRendererModule('terminal');
+const { resolveAgentLaunch } = await loadRendererModule('agent-launcher');
+const { createTerminalAgentStatus } = await loadRendererModule('terminal-agent-status');
 const { createTerminalShortcutActions } = await loadRendererModule('terminal-shortcuts');
 const { createUiController } = await loadRendererModule('ui-controller');
 
@@ -42,7 +44,7 @@ function dependencyBag(overrides = {}) {
 test('所有渲染层控制器工厂可独立装配并保持公开接口', async () => {
   const dom = installDom();
   try {
-    const deps = dependencyBag({ createTerminalShortcutActions });
+    const deps = dependencyBag({ resolveAgentLaunch, createTerminalAgentStatus, createTerminalShortcutActions });
     const { createGitPanel } = await import(new URL(`../../public/generated/ui.mjs?contract=${Date.now()}`, import.meta.url));
     const icons = createIcons(deps.state);
     assert.equal(typeof icons.iconSvg, 'function');
@@ -60,6 +62,7 @@ test('所有渲染层控制器工厂可独立装配并保持公开接口', async
     const terminal = createTerminalController(deps);
     assert.equal(typeof terminal.openInDir, 'function');
     assert.equal(typeof terminal.newTerminal, 'function');
+    assert.equal(typeof terminal.launchAgent, 'function');
     assert.equal(typeof terminal.closeActive, 'function');
     assert.equal(typeof terminal.restartActive, 'function');
     assert.equal(typeof terminal.bindDesktopEvents, 'function');

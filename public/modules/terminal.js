@@ -1,15 +1,12 @@
 /**
- * [INPUT]: 依赖 Electron PTY/恢复桥、xterm 浏览器资源、terminal-shortcuts.js 工厂、共享 state/follow 与文件导航回调
- * [OUTPUT]: 对外提供 createTerminalController，管理多终端标签、带规则标识的隐藏服务会话、命令恢复、Codex 启动、命令重启、状态、拖放和布局
+ * [INPUT]: 依赖 Electron PTY/恢复桥、xterm 浏览器资源、Agent 启动/状态/快捷子控制器、共享 state/follow 与文件导航回调
+ * [OUTPUT]: 对外提供 createTerminalController，管理多终端标签、隐藏服务会话、命令恢复、Codex/Pi 启动、拖放和布局
  * [POS]: public/modules 的终端领域控制器，被应用事件层和文件跟随模块消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createTerminalController(deps) {
-  const { $, state, follow, openWith, applyPreviewSize, animateLayout, updateWatches, escapeHtml, ic, baseOf, dirOf, navigate, renderBreadcrumb, playChime, toast, TERM_LINK_RE_BARE, api, apiPost, shQuote, applySelection, openPreview, recordRecent, codexResumeLast, setPreviewMax, isMdName, isHtmlName, popupMenu, rippleFileArea, createTerminalShortcutActions } = deps;
+  const { $, state, follow, openWith, applyPreviewSize, animateLayout, updateWatches, escapeHtml, ic, baseOf, dirOf, navigate, renderBreadcrumb, playChime, toast, TERM_LINK_RE_BARE, api, apiPost, shQuote, applySelection, openPreview, recordRecent, agentResumeLast, setPreviewMax, isMdName, isHtmlName, popupMenu, rippleFileArea, resolveAgentLaunch, createTerminalAgentStatus, createTerminalShortcutActions } = deps;
 // ---------- 内嵌终端（仅桌面 app；浏览器版优雅降级）----------
-// Codex「等你拍板」界面特征，宁缺勿滥：
-// 不命中只是退化成「任务完成」标题，不会漏响）
-const TERM_ASK_RE = /(Do you want to (proceed|continue|make this edit|allow|use this)|Would you like to proceed|Ready to code\?|created or one you trust\?|tell Codex what to do differently|Yes, and don't ask again|Allow Codex to (run|apply|create)|Codex wants to|[❯›][ \t]*1\.[ \t]*Yes)/;
 const term = {
   sessions: [], seq: 0, active: null, maximized: false,
   dock: localStorage.getItem('mado_term_dock') || 'right',
@@ -48,7 +45,7 @@ const term = {
     else this.fitActive();
     $('#btn-terminal').classList.add('active');
     localStorage.setItem('mado_term_open', '1');
-    if (!localStorage.getItem('mado_term_draghint')) { localStorage.setItem('mado_term_draghint', '1'); setTimeout(() => toast('提示：把左侧文件 / 文件夹拖进终端，即插入路径喂给 Codex'), 700); }
+    if (!localStorage.getItem('mado_term_draghint')) { localStorage.setItem('mado_term_draghint', '1'); setTimeout(() => toast('提示：把左侧文件 / 文件夹拖进终端，即插入路径喂给 Agent'), 700); }
   },
   close() {
     if (this.maximized) this.toggleMax(false); // 铺满状态下收起终端，term-max 不清会把文件区一起藏没
@@ -92,14 +89,14 @@ const term = {
     this.fitActive();
   },
   // 在指定目录开终端（新标签）；浏览器版降级到系统终端。返回新 session（spawn 完成后）
-  openInDir(dir) {
+  openInDir(dir, options = {}) {
     if (!this.available()) { openWith(dir, 'terminal'); return null; }
     $('#terminal-panel').classList.remove('hidden');
     $('#terminal-resizer').classList.remove('hidden');
     this.applyDock();
     $('#btn-terminal').classList.add('active');
     localStorage.setItem('mado_term_open', '1'); // 右键/一键开终端也记住开合，和 open/close 对称
-    return this.newTab(dir);
+    return this.newTab(dir, options);
   },
   // 拖拽文件/文件夹进来：把 shell 转义后的路径插入活动终端（作为 agent 上下文）
   insertPath(p) {
@@ -109,16 +106,18 @@ const term = {
     const write = () => { if (this.active) this.input(this.active, shQuote(p) + ' '); const s = this.sessions.find((x) => x.id === this.active); if (s) s.xterm.focus(); };
     if (wasHidden) setTimeout(write, 280); else write();
   },
-  // 一键启动 Codex：始终在左侧当前目录新建标签，避免复用终端时沿用错误目录
-  async launchCodex({ resume = codexResumeLast() } = {}) {
-    if (!this.available()) { openWith(state.cwd, 'terminal'); return; } // 网页版降级到系统终端
-    const sess = await this.openInDir(state.cwd); // 等 spawn 完，拿确切 session 写入
-    if (sess && !sess.dead) {
-      this.input(sess.id, (resume ? 'codex resume --last' : 'codex') + '\r');
-      sess.xterm.focus();
-      toast(resume ? '正在继续最近 Codex 会话' : '已在终端启动新的 Codex 会话');
-    }
-    else toast('终端启动失败', true);
+  // 第一方 Agent 一键启动：只接受固定 Agent/动作，始终在左侧当前目录新建标签。
+  async launchAgent(agent, { action } = {}) {
+    const resolvedAction = action || (agentResumeLast() ? 'continue' : 'new');
+    const launch = resolveAgentLaunch(agent, resolvedAction);
+    if (!launch) { toast('不支持的 Agent 启动方式', true); return false; }
+    if (!this.available()) { openWith(state.cwd, 'terminal'); return false; }
+    const session = await this.openInDir(state.cwd, { agent });
+    if (!session || session.dead) { toast('终端启动失败', true); return false; }
+    this.input(session.id, launch.command + '\r');
+    session.xterm.focus();
+    toast(launch.message);
+    return true;
   },
   // 在指定目录新开标签跑命令（续会话/发版等）：不复用别处的空闲 shell，目录必须对
   async runInDir(dir, cmd, msg) {
@@ -320,7 +319,7 @@ const term = {
     if (fit && kind !== 'service') try { fit.fit(); } catch { /* */ }
     const sess = {
       id, xterm, fit, host, webgl: wg, dead: false, status: 'idle', unread: false, startDir,
-      title: options.title || baseOf(startDir || '') || 'shell', kind,
+      title: options.title || baseOf(startDir || '') || 'shell', kind, agent: options.agent || '',
       projectRoot: kind === 'service' ? (options.projectRoot || startDir) : null,
       projectCommand: kind === 'service' ? (options.projectCommand || '') : '',
       projectRuleId: kind === 'service' ? (options.projectRuleId || '') : '',
@@ -343,7 +342,6 @@ const term = {
     });
     xterm.onResize(({ cols, rows }) => { sess.lastInput = Date.now(); window.madoPty.resize(id, cols, rows); }); // resize 引发的 TUI 重绘不算 agent 干活
     if (kind !== 'service') window.madoPty.resize(id, xterm.cols, xterm.rows); // spawn 等待期间 fit 过的 resize 事件无人监听会丢：补发一次对齐 PTY
-
     // 自定义键盘处理：macOS 用 ⌘，其它平台用 Ctrl；纯 Ctrl 按键在 macOS 交给终端程序
     xterm.attachCustomKeyEventHandler((e) => {
       if (e.type !== 'keydown') return true;
@@ -383,7 +381,6 @@ const term = {
       }
       return true;
     });
-
     // 右键菜单：复制/粘贴
     host.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -397,17 +394,13 @@ const term = {
       }});
       popupMenu(e, items);
     });
-
     // 选中即复制（iTerm2 默认行为）
     xterm.onSelectionChange(() => {
       if (xterm.hasSelection()) {
         try { navigator.clipboard.writeText(xterm.getSelection()); } catch { /* 静默失败，用户仍可右键/菜单复制 */ }
       }
     });
-
-    // 识别终端输出里的文件路径 → hover 高亮 + 点击在 Mado 打开
-    // 三层匹配：引号串（边界最可靠，文件名可含空格）> 斜杠路径 > 带已知扩展名的裸文件名；
-    // 长路径折行用逐 cell 拼回逻辑行（CJK 宽字符占两列，下标→坐标必须按 cell 算才不偏移）
+    // 终端路径链接按引号串、斜杠路径、裸文件名分层匹配，逐 cell 处理长路径折行与 CJK 坐标。
     if (xterm.registerLinkProvider) {
       xterm.registerLinkProvider({
         provideLinks: (lineNo, cb) => {
@@ -766,108 +759,6 @@ const term = {
     });
     // 通知 PTY 重新获取尺寸（fit 会触发 onResize，已经做了）
   },
-  // agent 态势感知：终端有输出→busy；静默 >2.5s→idle；进程退出→dead。
-  // 非活动标签产生输出标记未读小点；长任务（busy>4s）完成且窗口失焦/非当前标签时发系统通知。
-  markBusy(s) {
-    const now = Date.now();
-    $('#terminal-panel').classList.remove('term-awaiting'); // 又有动静了，撤掉「轮到你」呼吸
-    // 运行服务只保留输出和未读状态，不能借用 Codex 的“任务完成”通知逻辑。
-    if (s.kind === 'service') {
-      s.lastData = now;
-      if (s.id !== this.active && s.revealed && !s.unread) { s.unread = true; this.renderTabs(); }
-      return;
-    }
-    // 回显过滤：距上次用户输入 <400ms 的输出多半是回显/TUI 重绘，不算 agent 自主干活：
-    // 不进入 busy、不推 busyStart；已在 busy 则只续命（agent 干活时排队打字不打断）。
-    // 续命只刷新 lastData（推迟评估时机），不刷新 lastReal（任务时长只数自发输出，打字不算工时）
-    if (now - (s.lastInput || 0) < 400) { if (s.status === 'busy') s.lastData = now; return; }
-    s.lastData = now; s.lastReal = now;
-    if (s.status !== 'busy') { s.status = 'busy'; s.busyStart = now; this.renderTabs(); }
-    if (s.id !== this.active) { if (!s.unread) { s.unread = true; this.renderTabs(); } }
-    this.ensureStatusTick();
-  },
-  // 取缓冲区末尾 n 行纯文本：确认对话框和忙碌页脚都画在底部
-  tailText(s, n = 25) {
-    try {
-      const buf = s.xterm.buffer.active;
-      let t = '';
-      for (let i = Math.max(0, buf.length - n); i < buf.length; i++) { const ln = buf.getLine(i); if (ln) t += ln.translateToString(true) + '\n'; }
-      return t;
-    } catch { return ''; }
-  },
-  // 轮到你了：终端边缘呼吸几秒，余光可感（agent 干完一段、把球踢回给你）
-  awaitGlow() {
-    const p = $('#terminal-panel');
-    if (!p || p.classList.contains('hidden')) return;
-    p.classList.add('term-awaiting');
-    clearTimeout(this._awaitT);
-    this._awaitT = setTimeout(() => p.classList.remove('term-awaiting'), 6500);
-  },
-  ensureStatusTick() {
-    if (this._statusTimer) return;
-    this._statusTimer = setInterval(() => {
-      const now = Date.now(); let anyBusy = false;
-      this.sessions.forEach((s) => {
-        if (s.status !== 'busy') return;
-        this.atlasCare(now); // 忙满 5 分钟清一次图集，长中文输出中途也能自愈
-        const quiet = now - (s.lastData || 0);
-        if (quiet <= 2500) { anyBusy = true; return; } // claude/codex 忙碌心跳约 1s 一帧，容差太紧会闪断误报
-        const tail = this.tailText(s);
-        // 假静默护栏：页脚仍挂着「esc to interrupt」说明 agent 还在跑（失焦降频/网络卡顿），30s 内不判收工
-        if (quiet < 30000 && /esc to interrupt/i.test(tail)) { anyBusy = true; return; }
-        const dur = (s.lastReal || 0) - (s.busyStart || 0); // 工时只数自发输出：回显续命不算，免得打字把琐碎回显养肥成「真任务」
-        s.status = 'idle';
-        this.atlasCare(now, true); // 收工间隙兜底再清一次（距上次 >60s 才动手）
-        this.renderTabs();
-        this.refreshCwd(s); // 干完一段活，标题对齐终端真实目录
-        // 阶段性收工不报喜：底部状态行还挂着后台任务（「1 shell, 1 monitor still running」/「· 1 shell ·」），
-        // agent 跑完会被自动唤醒接着干——这会儿弹「完成」是误报。圆点照常变空闲，提醒全部按下，等真收工再响
-        const foot = this.tailText(s, 8);
-        if (/\bstill running\b/i.test(foot) || /·\s*\d+\s+(shells?|monitors?|tasks?|agents?)\b/i.test(foot)) return;
-        const ask = dur > 600 && TERM_ASK_RE.test(tail); // 停在审批/确认界面：等你拍板（不设 4s 门槛，审批常来得很快）
-        if (ask || dur > 1500) this.awaitGlow();
-        if (ask) {
-          playChime('ask'); // 非 done → 单音，和「完成」的双音区分开
-          if (!document.hasFocus() || s.id !== this.active) this.notify(s, '等待你确认 · ' + (s.title || 'shell'), this.lastReplyExcerpt(s) || (s.title || 'shell') + ' 在等你拍板');
-        } else if (dur > 4000) { // 跑了一会儿的真任务完成：文件区涟漪 + 极轻提示音 + 必要时系统通知
-          rippleFileArea();
-          playChime('done');
-          if (!document.hasFocus() || s.id !== this.active) this.notify(s, 'Codex 任务完成 · ' + (s.title || 'shell'), this.lastReplyExcerpt(s) || (s.title || 'shell') + ' 已空闲');
-        }
-      });
-      if (!anyBusy) { clearInterval(this._statusTimer); this._statusTimer = null; }
-    }, 600);
-  },
-  // 收工时从缓冲区捞 agent 最后说的话，做通知预览：剥掉 TUI 框线/输入框/页脚状态行，留正文
-  lastReplyExcerpt(s, maxLen = 160) {
-    const JUNK = /esc to interrupt|\? for shortcuts|for commands|bypass|auto-accept|accept edits|plan mode|shift\+tab|context left|tokens used|still running|·\s*\d+\s+(shells?|monitors?|tasks?|agents?)\b/i;
-    const lines = [];
-    for (const raw of this.tailText(s, 40).split('\n')) {
-      const t = raw.replace(/^[\s│┃]+|[\s│┃]+$/g, '').replace(/^[⏺●◉>]\s+/, '').trim();
-      if (!t) continue;
-      if (/^[╭╰╮╯├┤─━┄┆┈·•．.…*=_-]+$/.test(t)) continue; // 纯框线/分隔线
-      if (JUNK.test(t)) continue;
-      lines.push(t);
-    }
-    const text = lines.slice(-3).join(' ').replace(/\s+/g, ' ').trim();
-    return text.length > maxLen ? text.slice(0, maxLen) + '…' : text;
-  },
-  notify(s, title, body) {
-    try {
-      if (typeof Notification === 'undefined') return;
-      const fire = () => {
-        const n = new Notification(title, { body });
-        // 点通知：app 拉回前台 + 切到对应终端标签——多项目并行时直达要操作的那个环境
-        n.onclick = () => {
-          try { if (window.madoWin) window.madoWin.focus(); else window.focus(); } catch { /* */ }
-          if (s && this.sessions.includes(s)) { this.open(); this.activate(s.id); }
-          try { n.close(); } catch { /* */ }
-        };
-      };
-      if (Notification.permission === 'granted') fire();
-      else if (Notification.permission !== 'denied') Notification.requestPermission().then((p) => { if (p === 'granted') fire(); });
-    } catch { /* 通知不可用就算了 */ }
-  },
   renderTabs() {
     const bar = $('#term-tabs');
     bar.innerHTML = '';
@@ -876,7 +767,8 @@ const term = {
       const dotState = s.dead ? 'dead' : (s.status === 'busy' ? 'busy' : 'idle');
       const followed = follow.on && follow.sid === s.id; // 文件跟随正盯着这个 tab
       t.className = 'term-tab' + (s.id === this.active ? ' active' : '') + (s.unread ? ' unread' : '') + (followed ? ' following' : '');
-      const dotTitle = s.dead ? '进程已退出' : (s.status === 'busy' ? (s.kind === 'service' ? '服务有输出' : 'Codex 运行中') : '空闲');
+      const runningTitle = s.agent === 'pi' ? 'Pi 运行中' : (s.agent === 'codex' ? 'Codex 运行中' : '终端有输出');
+      const dotTitle = s.dead ? '进程已退出' : (s.status === 'busy' ? (s.kind === 'service' ? '服务有输出' : runningTitle) : '空闲');
       // 终端图标按项目路径染色：同项目同色，和面包屑的配对色点呼应
       const hue = this.hueOf(s.cwd || s.startDir);
       t.title = s.kind === 'service' ? '服务输出，关闭只收起视图' : (followed ? '文件跟随正盯着这个终端 · 双击跳到它所在目录' : '双击：文件区跳到该终端所在目录');
@@ -891,6 +783,11 @@ const term = {
   // try/catch 兜住 GPU 故障，别让单个 session 的渲染异常连累其它 session 或拖垮渲染进程（#35）。
   retheme() { const th = this.theme(); this.sessions.forEach((s) => { try { s.xterm.options.theme = th; s.webgl?.clearTextureAtlas?.(); } catch { /* */ } }); },
 };
+  const agentStatus = createTerminalAgentStatus({ $, term, playChime, rippleFileArea });
+  term.markBusy = agentStatus.markBusy;
+  term.tailText = agentStatus.tailText;
+  term.lastReplyExcerpt = agentStatus.lastReplyExcerpt;
+  term.notify = agentStatus.notify;
   const shortcutActions = createTerminalShortcutActions({
     term, pty: window.madoPty, win: window.madoWin, confirmDialog: deps.confirmDialog, toast,
   });

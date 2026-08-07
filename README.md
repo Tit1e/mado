@@ -8,7 +8,7 @@
 
 # 📦 Mado
 
-<img src="assets/mado-banner.png" alt="Mado · local desktop cockpit for Codex" width="100%">
+<img src="assets/mado-banner.png" alt="Mado · local desktop cockpit for Codex and Pi" width="100%">
 
 <br><br>
 
@@ -23,16 +23,16 @@
 
 <br>
 
-**Mado：Codex 的本地桌面驾驶舱。让 Codex 在本地干活，看清它碰过的每个文件、改过的每一行，随时接手。**<br>
-**Mado — the local desktop cockpit for Codex: run Codex, see every file and line it changes, and take over anytime.**
+**Mado：Codex 与 Pi 的本地桌面驾驶舱。让 Agent 在本地干活，看清它碰过的每个文件、改过的每一行，随时接手。**<br>
+**Mado — the local desktop cockpit for Codex and Pi: run an Agent, see every file and line it changes, and take over anytime.**
 
 <br>
 
-一边浏览、预览、编辑本地文件；一边在内嵌真实终端里跑 Codex。<br>
- Codex 每写一个文件，对应文件行就会亮起来，*找回文件 → 运行 Codex → 看清改了什么*，全部在一个窗口完成。<br>
+一边浏览、预览、编辑本地文件；一边在内嵌真实终端里跑 Codex 或 Pi。<br>
+Agent 每写一个文件，对应文件行就会亮起来，*找回文件 → 运行 Agent → 看清改了什么*，全部在一个窗口完成。<br>
 <br>
-Browse, preview and edit local files on one side; run Codex in a real embedded terminal on the other.<br>
-Every time Codex writes a file, its row lights up: *find files → run Codex → see what changed*, all in one window.
+Browse, preview and edit local files on one side; run Codex or Pi in a real embedded terminal on the other.<br>
+Every time an Agent writes a file, its row lights up: *find files → run an Agent → see what changed*, all in one window.
 
 <br>
 
@@ -53,17 +53,17 @@ Every time Codex writes a file, its row lights up: *find files → run Codex →
 <a id="why-mado"></a>
 ## Why Mado · 为什么要做 Mado
 
-Codex 帮你一个下午起十个项目，但它们散在各处、名字认不出、改了啥看不见。每天的真实流程是：Finder 里翻半天 → 切到 iTerm 启 Codex → 再切浏览器看效果，三个窗口来回跳。
+Coding Agent 帮你一个下午起十个项目，但它们散在各处、名字认不出、改了啥看不见。每天的真实流程是：Finder 里翻半天 → 切到 iTerm 启动 Agent → 再切浏览器看效果，三个窗口来回跳。
 
-Codex helps you start ten projects in an afternoon — then they scatter everywhere, the names stop making sense, and you can't see what got changed. The daily reality: dig through Finder → switch to iTerm to launch Codex → switch to the browser to check results. Three windows, endless hopping.
+Coding Agents help you start ten projects in an afternoon, then they scatter everywhere, the names stop making sense, and you cannot see what changed. The daily reality is digging through Finder, switching to iTerm to launch an Agent, then switching to the browser to check results.
 
-Mado 把这条链路收进一个窗口：**左边文件 × 右边/下边终端（预览以浮层覆盖其上，关闭即还原）**，一个有机整体。它不跟 Finder 拼文件操作，不跟 VS Code 拼编辑，专注「找回 + 预览 + 轻改 + 指挥 Codex」这一条链路做到顺手。
+Mado 把这条链路收进一个窗口：**左边文件 × 右边/下边终端（预览以浮层覆盖其上，关闭即还原）**，一个有机整体。它不跟 Finder 拼文件操作，不跟 VS Code 拼编辑，专注「找回 + 预览 + 轻改 + 指挥 Agent」这一条链路做到顺手。
 
-Mado folds that loop into one window: **files on the left × terminal on the right/bottom (preview floats over it and restores on close)**. It doesn't compete with Finder on file ops or VS Code on editing. It does one chain well: *find → preview → light edits → command Codex*.
+Mado folds that loop into one window: **files on the left × terminal on the right/bottom (preview floats over it and restores on close)**. It doesn't compete with Finder on file ops or VS Code on editing. It does one chain well: *find → preview → light edits → command an Agent*.
 
-Mado 自身不要求云端账号，也没有远程后端，文件浏览与配置都在本机完成。内嵌终端中的 Codex CLI 仍按它自己的账号与网络配置工作。
+Mado 自身不要求云端账号，也没有远程后端，文件浏览与配置都在本机完成。内嵌终端中的 Codex 与 Pi CLI 仍按各自的账号与网络配置工作。
 
-Mado itself has no cloud account or remote backend. File browsing and configuration stay local. The Codex CLI in the embedded terminal still follows its own account and network settings.
+Mado itself has no cloud account or remote backend. File browsing and configuration stay local. Codex and Pi in the embedded terminal keep using their own account and network settings.
 
 <a id="three-skins"></a>
 ## Three skins · 三套皮肤
@@ -96,38 +96,38 @@ The three skins are not simple color swaps: palette, typography, icons, code hig
 - **项目徽章 / Project badges** — 文件夹行标 node / web / py / rs / go 徽章，一下午起的十个项目一眼认出类型。<br>
   Folder rows show node / web / py / rs / go badges, so ten projects from one afternoon are recognizable at a glance.
 
-### Watch what Codex changed · 看 Codex 改了什么
+### Watch what Agents changed · 看 Agent 改了什么
 
-- **活的仪表盘 / A live dashboard** — Codex 每写一个文件，对应文件行当场荡开涟漪、按改动频率发光呼吸，Codex 写到哪光走到哪。
-  Every file Codex writes makes its row ripple and glow by change frequency; the light follows wherever Codex goes.
-- **跟随模式 / Follow mode** — 一键让文件视图 + 预览跟踪 Codex 正在编辑的文件：代码随新写行高亮闪烁，HTML 边写边实时渲染（双缓冲、零白闪），Markdown 实时渲染。任何手动浏览立即把控制权交还给你。
-  One click and the file view + preview track whatever Codex edits: code scrolls with freshly written lines flashing, HTML renders live as it is written (double-buffered, zero white flash), and Markdown renders live. Any manual browsing hands control back to you instantly.
-- **Git 改动 diff / Git diff** — Monaco 只读 DiffEditor 并排展示 HEAD vs 当前工作区，看清 Codex 到底改了哪几行。
+- **活的仪表盘 / A live dashboard** — Agent 每写一个文件，对应文件行当场荡开涟漪、按改动频率发光呼吸，写到哪光走到哪。
+  Every file an Agent writes makes its row ripple and glow by change frequency.
+- **跟随模式 / Follow mode** — 一键让文件视图和预览跟踪当前终端中的 Agent：代码随新写行高亮闪烁，HTML 和 Markdown 边写边实时渲染。任何手动浏览立即把控制权交还给你。
+  One click makes the file view and preview track the Agent in the current terminal. Code, HTML and Markdown update as it writes; manual browsing hands control back to you instantly.
+- **Git 改动 diff / Git diff** — Monaco 只读 DiffEditor 并排展示 HEAD 与当前工作区，看清 Agent 到底改了哪几行。
   Monaco read-only DiffEditor, HEAD vs working tree side by side.
 
-### Codex cockpit · Codex 驾驶舱
+### Agent cockpit · Agent 驾驶舱
 
 - **内置使用指南 / Built-in guide**，首次启动会介绍核心工作流和常用快捷键，之后可随时通过右上角的 `?` 按钮重新打开。
   The first launch introduces the core workflow and common shortcuts. Reopen the guide anytime from the `?` button at the top right.
-- **截图直通车 / Screenshot express** — 系统截屏落盘即浮出直通卡：喂给终端里的 Codex、收进项目 `素材/`、或先标注再发。
-  Take a system screenshot and a card pops up in the corner: feed it to Codex, file it into the project's `素材/` (assets) folder, or annotate before sending.
+- **截图直通车 / Screenshot express** — 系统截屏落盘即浮出直通卡：喂给终端里的 Agent、收进项目 `素材/`、或先标注再发。
+  Take a system screenshot and a card pops up in the corner: feed it to the Agent, file it into the project's `素材/` (assets) folder, or annotate before sending.
 
-### Terminal · command Codex / 终端 · 指挥 Codex
+### Terminal · command Agents / 终端 · 指挥 Agent
 
-- **真实内嵌终端 / A real embedded terminal** — node-pty + xterm.js（WebGL 渲染），跑 Codex / vim / htop 不花屏，中文宽字符正确。
-  node-pty + xterm.js (WebGL). Codex / vim / htop render correctly, CJK wide characters included.
+- **真实内嵌终端 / A real embedded terminal** — node-pty + xterm.js（WebGL 渲染），跑 Codex / Pi / vim / htop 不花屏，中文宽字符正确。
+  node-pty + xterm.js (WebGL). Codex / Pi / vim / htop render correctly, CJK wide characters included.
 - **项目运行命令 / Project run commands**：在任意目录保存 `npm run dev` 等命令，子目录自动继承最近规则；服务在规则目录后台运行，顶栏可运行、重启、停止或查看输出，左侧项目列表会显示状态点。
   Save commands such as `npm run dev` in any folder and let child folders inherit the nearest rule. Services run in the configured folder, with top-bar controls and a project-list status dot; open their output only when needed.
-- **拖文件进终端 / Drag files in** — 从文件列表拖文件/文件夹进终端，自动插入路径喂给 Codex 当上下文。
-  Drop a file or folder into the terminal to insert its path as Codex context.
+- **拖文件进终端 / Drag files in** — 从文件列表拖文件/文件夹进终端，自动插入路径喂给 Agent 当上下文。
+  Drop a file or folder into the terminal to insert its path as Agent context.
 - **路径可点击 / Clickable paths** — 终端里出现的文件路径直接点击在 Mado 打开；带空格的 macOS 截屏名、中文文件名、折行的长路径都能识别（空格边界由文件系统 stat 验证，不靠猜）。
   File paths appearing in terminal output open in Mado on click; macOS screenshot names with spaces, Chinese filenames and wrapped long paths are all recognized (space boundaries verified by stat, not guessed).
 - **选中即甩给终端 / Send selection** — 预览里选一段文字，一键以「文件出处 + 围栏」格式发进终端（bracketed paste 包裹，不会被逐行误执行）。  
   Select text in a preview and fling it into the terminal with file provenance + fencing (bracketed paste, never executed line by line).
-- **态势感知 / Situational awareness** — 标签圆点显示 Codex 运行/空闲/退出；Codex 把球踢回给你时终端边缘呼吸提示「轮到你」，长任务完成发系统通知。
-  Tab dots show running/idle/exited; when Codex hands the ball back, the terminal edge breathes; long tasks fire a system notification.
-- **Codex 一键启动 / Codex quick launch**，终端工具栏的 Codex 按钮始终在左侧当前目录新建终端标签，默认继续该目录最近的会话，也可在设置中改为新建会话。终端设置同时管理提示音和 WebGL 兼容开关。
-  The Codex button in the terminal toolbar always opens a new terminal tab in the current folder on the left. It continues that folder's latest session by default, or starts a new session when selected in settings. Terminal settings also control the chime and WebGL compatibility mode.
+- **态势感知 / Situational awareness** — 标签圆点显示 Agent 运行、空闲或退出；Agent 把球踢回给你时终端边缘呼吸提示「轮到你」，长任务完成发系统通知。
+  Tab dots show running, idle or exited; when an Agent hands the ball back, the terminal edge breathes and long tasks fire a system notification.
+- **Codex 与 Pi 一键启动 / Codex and Pi quick launch**，终端工具栏分别提供两个图标，始终在左侧当前目录新建终端标签。一个通用设置控制是否继续最近会话：Codex 使用 `resume --last`，Pi 使用 `-c`；关闭后均启动新会话。
+  Separate Codex and Pi buttons open a new terminal tab in the current folder. One shared setting controls whether each Agent continues its latest session or starts a new one.
 - **无参数新会话 / Clean Codex session**，`⌘⇧N` 在左侧当前目录新建终端标签并执行 `codex`，不受“继续最近会话”设置影响。
   `⌘⇧N` opens a new terminal tab in the current folder on the left and runs `codex`, regardless of the continue-latest-session setting.
 - **安全重跑命令 / Safe command rerun**，`⌘⇧R` 先停止当前标签的前台任务，确认 Shell 恢复后再执行原命令，适合重启 `npm run dev`、`pnpm dev` 等服务。
@@ -226,8 +226,8 @@ npm run dist         # 打包签名 .dmg（产物在 dist/，不入 git）/ buil
 <a id="privacy"></a>
 ## Privacy & security · 隐私与安全
 
-- Mado 后端只监听本机回环地址，并校验 Host 与写请求 Origin。文件浏览、收藏、最近记录和应用配置不会上传到 Mado 的远程服务。内嵌的 Codex CLI 有独立的联网行为。<br>
-  The Mado backend listens on loopback only and validates the Host header and write-request Origin. File browsing, favorites, recent items and app configuration are not uploaded to a Mado service. The embedded Codex CLI has its own network behavior.
+- Mado 后端只监听本机回环地址，并校验 Host 与写请求 Origin。文件浏览、收藏、最近记录和应用配置不会上传到 Mado 的远程服务。内嵌终端中的 Codex 与 Pi CLI 有各自独立的登录和联网行为。<br>
+  The Mado backend listens on loopback only and validates the Host header and write-request Origin. File browsing, favorites, recent items and app configuration are not uploaded to a Mado service. Codex and Pi in the embedded terminal have their own login and network behavior.
 - 浏览器运行所需的前端依赖都随应用放在 `public/`，界面字体使用本机系统字体。Mado 的文件浏览与预览可离线使用；检查和下载更新时会访问 GitHub。<br>
   Browser-side dependencies ship with the app under `public/`, while the UI uses local system fonts. Mado file browsing and previews work offline; update checks and downloads connect to GitHub.
 - HTML 预览由独立端口上的只读 `/` 服务提供，并在沙箱 iframe 中渲染。预览服务限制在用户主目录内且拒绝隐藏路径，页面无法访问主应用 API 或终端桥接。<br>
@@ -264,6 +264,7 @@ Mado is based on [alchaincyf/fanbox](https://github.com/alchaincyf/fanbox). Than
 | [Electron](https://www.electronjs.org/) | 桌面壳，让零依赖 Node 后端长出真实终端和原生能力<br>The desktop shell that gives a zero-dependency Node backend a real terminal and native powers | MIT |
 | [node-pty](https://github.com/microsoft/node-pty) | 伪终端，内嵌终端的「真 shell」来源<br>The pseudo-terminal behind the embedded "real shell" | MIT |
 | [xterm.js](https://xtermjs.org/) | 终端渲染（含 [addon-webgl](https://github.com/xtermjs/xterm.js) GPU 加速、addon-fit 自适应、addon-unicode11 CJK 宽字符）<br>Terminal rendering (addon-webgl GPU acceleration, addon-fit, addon-unicode11 for CJK) | MIT |
+| [Pi](https://pi.dev/) | 第一方 Agent 快速启动与用户提供的 Pi 图标<br>First-party Agent quick launch and the user-provided Pi icon | MIT |
 | [Monaco Editor](https://microsoft.github.io/monaco-editor/) | 代码/JSON 编辑与 Git diff 视图，VS Code 同款内核<br>Code/JSON editing and Git diff view, the VS Code core | MIT |
 | [Milkdown](https://milkdown.dev/)（Crepe） | Markdown 所见即所得编辑<br>Markdown WYSIWYG editing | MIT |
 | [marked](https://marked.js.org/) | Markdown 预览渲染<br>Markdown preview rendering | MIT |
@@ -294,8 +295,8 @@ Browser-side dependencies ship with the app under `public/`, so file browsing, p
 ```
 mado/
 ├── server.js               # 零依赖 Node 后端装配入口 / Backend composition root
-├── server/                 # HTTP、文件、媒体、配置和 Codex 会话领域服务
-│                           # HTTP, file, media, config and Codex session services
+├── server/                 # HTTP、文件、媒体、配置和手动项目领域服务
+│                           # HTTP, file, media, config and manual-project services
 ├── electron/
 │   ├── main.js             # 主进程装配入口 / Main-process composition root
 │   └── preload.js          # 安全渲染桥 / Secure renderer bridge

@@ -106,7 +106,7 @@ async function enterEditMode(e) {
     const r = await apiPost('/api/write', { path: e.path, content, expectedMtime: force ? 0 : baseMtime });
     if (r.conflict) {
       paused = true;
-      const ok = await confirmDialog('文件已被外部修改（可能是 Codex 改的）。覆盖会丢掉外部改动，确定覆盖？');
+      const ok = await confirmDialog('文件已被外部修改（可能是 Agent 改的）。覆盖会丢掉外部改动，确定覆盖？');
       paused = false;
       if (ok) return doSave(true);
       saving = false; statusHeld = true; setStatus('未保存：文件被外部修改');
@@ -213,7 +213,7 @@ async function mdEditor(e, data, mode = 'rich') {
     const r = await apiPost('/api/write', { path: e.path, content, expectedMtime: force ? 0 : baseMtime });
     if (r.conflict) {
       paused = true;
-      const ok = await confirmDialog('文件已被外部修改（可能是 Codex 改的）。覆盖会丢掉外部改动，确定覆盖？');
+      const ok = await confirmDialog('文件已被外部修改（可能是 Agent 改的）。覆盖会丢掉外部改动，确定覆盖？');
       paused = false;
       if (ok) return doSave(true);
       setStatus('未保存：文件被外部修改');
@@ -360,7 +360,7 @@ const shotTray = {
       <img class="shot-thumb" draggable="true" src="/api/thumb?path=${encodeURIComponent(m.path)}&w=480&v=${m.size}" title="新截图 · 可拖进终端" data-retry="0">
       <div class="shot-info"><div class="shot-name">${escapeHtml(m.name)}</div>
       <div class="shot-acts">
-        <button data-act="term" title="把路径喂给终端里的 Codex">→ 终端</button>
+        <button data-act="term" title="把路径喂给终端里的 Agent">→ 终端</button>
         <button data-act="save" title="移动到当前文件夹的 素材/ 子目录">收进素材</button>
         <button data-act="edit" title="圈重点再发">标注</button>
         <button data-act="close" title="不理它也会自己走">✕</button>

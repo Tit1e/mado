@@ -1,7 +1,7 @@
 {
   "name": "mado",
   "version": "2.10.0",
-  "description": "Mado — the local desktop cockpit for Codex. Run Codex, watch every file and line it changes, and take over anytime.",
+  "description": "Mado — the local desktop cockpit for Codex and Pi. Run Agents, watch every file and line they change, and take over anytime.",
   "bin": {
     "mado": "server.js"
   },

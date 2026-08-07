@@ -40,7 +40,7 @@ function setFileFollow(on, offMsg) {
   // 桌面有终端却没有活动 tab 时直接拒绝（否则退化成「全文件系统跟随」，正是要根治的乱源）。
   if (on && typeof term !== 'undefined' && term.available()) {
     const sid = term.sessions.some((x) => x.id === term.active) ? term.active : null;
-    if (!sid) { toast('先点开一个终端 tab，跟随才知道盯哪个 Codex 会话', true); $('#file-follow')?.classList.remove('on'); return; }
+    if (!sid) { toast('先点开一个终端 tab，跟随才知道盯哪个 Agent 会话', true); $('#file-follow')?.classList.remove('on'); return; }
     follow.sid = sid;
     const s = term.sessions.find((x) => x.id === sid);
     if (s) term.refreshCwd(s, true).catch(() => {}); // 立刻校准 cwd，scope 从第一笔就准（不靠回车后的延迟轮询）
@@ -57,7 +57,7 @@ function setFileFollow(on, offMsg) {
   follow.swapping = false; follow.swapDirty = false;
   if (typeof term !== 'undefined') term.renderTabs(); // 给绑定的 tab 标上/撤掉「跟随中」标记
   if (!on) $('#preview-title')?.querySelector('.live-badge')?.remove(); // 留住最后画面，只摘掉「跟随中」
-  toast(on ? (follow.label ? `文件跟随已开 · 盯着「${follow.label}」这个终端` : '文件跟随已开：Codex 改哪个文件就看哪个') : (offMsg || '文件跟随已停'));
+  toast(on ? (follow.label ? `文件跟随已开 · 盯着「${follow.label}」这个终端` : '文件跟随已开：Agent 改哪个文件就看哪个') : (offMsg || '文件跟随已停'));
   // 一开就有得看：5 分钟内有过范围内的变更就直接跟上，不用干等 agent 下一笔
   if (on) {
     startFollowNarration(); // 底部过程旁白：实时说 agent 在干嘛
@@ -80,7 +80,7 @@ function inFollowScope(full) {
 }
 // 归属硬化：文件事件本身不带「谁写的」，靠「绑定 tab 此刻在不在干活」消歧。
 // 别的 tab 在重叠目录里写东西时，绑定 tab 多半是空闲的，于是这笔不会被误当成它的产出。
-function boundCodexActive() {
+function boundAgentActive() {
   if (!follow.sid || typeof term === 'undefined') return true; // 没绑(浏览器降级)不设此关
   const s = term.sessions.find((x) => x.id === follow.sid);
   if (!s) return false;
@@ -98,7 +98,7 @@ function followChange(dir, sub) {
   }
   const full = dir.replace(/\/$/, '') + '/' + sub;
   if (!inFollowScope(full)) return; // 别的项目/别的 App 写的文件，不归这次跟随管
-  if (!boundCodexActive()) return;  // 绑定的 Codex 此刻没在干活——这笔多半是别的 tab 写的，不抢屏
+  if (!boundAgentActive()) return;  // 绑定的 Agent 此刻没在干活，这笔多半是别的 tab 写的，不抢屏
   if (full === follow.path) { scheduleFollowRender(); return; }
   if (runtime.dirtyCheck || runtime.autosaveFlush || runtime.imgEditState) return; // 编辑器开着就不抢屏，等用户收工
   // 已排队的目标更值得看（html/md）时，不被低优先级写入顶掉
@@ -178,7 +178,7 @@ function followArtifactCard(e) {
     `<div class="empty-state artifact-card">
       <div class="big">${iconSvg(real, 48)}</div>
       <div class="art-name">${escapeHtml(e.name)}</div>
-      <div class="art-sub">Codex 刚生成${sizeStr ? ' · ' + sizeStr : ''}</div>
+      <div class="art-sub">Agent 刚生成${sizeStr ? ' · ' + sizeStr : ''}</div>
       <div class="art-btns"><button class="ghost-btn" data-act="reveal">在访达显示</button><button class="ghost-btn" data-act="open">打开</button></div>
     </div>`;
   body.querySelector('[data-act="reveal"]').onclick = () => openWith(e.path, 'reveal');
@@ -190,12 +190,12 @@ function followBadge(e) {
   $('#preview-title').innerHTML = `<span class="live-badge${art ? ' done' : ''}"><i></i>${art ? '已生成' : '跟随中'}</span>${where}${escapeHtml(e.name)}`;
 }
 // ===== 阶段二「过程旁白」：结果是主视图，底部一行实时说 agent 此刻在干嘛 =====
-// Codex 工具调用动词 → 人话
+// Agent 工具调用动词 → 人话
 const ACTION_VERB = { Read: '读', Edit: '写', Update: '写', Write: '写', MultiEdit: '写', NotebookEdit: '写',
   Bash: '跑', Grep: '搜', Glob: '找', Search: '搜', Task: '子任务', TodoWrite: '理清单', Fetch: '抓取' };
 // 从绑定终端的输出尾巴里捞最近一条「干了什么」。尽量稳健：认 ⏺/● 圆点工具行，认 Web Search，
 // 都没有就看是不是在思考（页脚挂着 esc to interrupt）。提炼失败返回空串（旁白只显示文件侧）。
-function latestCodexAction(s) {
+function latestAgentAction(s) {
   const txt = term.tailText(s, 40);
   if (!txt) return '';
   const lines = txt.split('\n');
@@ -221,7 +221,7 @@ function renderFollowNarration() {
   if (!follow.on) { el.classList.add('hidden'); el.innerHTML = ''; return; }
   const s = follow.sid && typeof term !== 'undefined' ? term.sessions.find((x) => x.id === follow.sid) : null;
   const busy = !!(s && (s.status === 'busy' || Date.now() - (s.lastData || 0) < 8000));
-  const action = s ? latestCodexAction(s) : '';
+  const action = s ? latestAgentAction(s) : '';
   // 结果已在主视图 + 标题徽标里；这条只说「过程」：优先 agent 的终端动作，
   // 没动作就退回「在写哪个文件」，agent 闲下来则报一句平静的收尾。
   let main, live = busy;
@@ -229,10 +229,10 @@ function renderFollowNarration() {
   else if (busy && follow.path) main = (isFollowArtifact(baseOf(follow.path)) ? '生成 ' : '写 ') + baseOf(follow.path);
   else if (action && action !== '思考中…') main = action; // 刚停手，留住最后动作
   // 跟随已开但绑的终端还没写文件：明说「等待…」，别把旁白栏藏起来让用户以为跟随坏了（#30）
-  else { main = follow.path ? '停在 ' + baseOf(follow.path) : (follow.label ? `等待「${follow.label}」写文件…` : '等待 Codex 写文件…'); live = false; }
+  else { main = follow.path ? '停在 ' + baseOf(follow.path) : (follow.label ? `等待「${follow.label}」写文件…` : '等待 Agent 写文件…'); live = false; }
   if (!main) { el.classList.add('hidden'); return; }
   el.classList.remove('hidden');
-  const lead = live ? 'Codex 正在 ' : '';
+  const lead = live ? 'Agent 正在 ' : '';
   el.innerHTML = `<span class="fn-dot${live ? ' live' : ''}"></span>${escapeHtml(lead)}<span class="fn-term">${escapeHtml(main)}</span>`;
 }
 function startFollowNarration() { stopFollowNarration(); follow.timers.narr = setInterval(renderFollowNarration, 1200); renderFollowNarration(); }

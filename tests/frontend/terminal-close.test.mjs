@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 依赖 happy-dom 测试环境与 public/modules/terminal.js 终端控制器
- * [OUTPUT]: 验证桌面快捷键新建终端、新建无参数 Codex 会话、重启当前命令、关闭活动终端及隐藏服务相邻标签行为
- * [POS]: tests/frontend 的终端快捷键与关闭回归测试，保证 Cmd/Ctrl+T、Shift+N、Shift+R、W 复用终端控制器并保护运行中任务
+ * [OUTPUT]: 验证桌面快捷键新建终端、Codex/Pi 启动命令、命令重启、关闭活动终端及隐藏服务相邻标签行为
+ * [POS]: tests/frontend 的终端快捷键与关闭回归测试，保证 Agent 启动、Cmd/Ctrl+T、Shift+R、W 复用终端控制器并保护运行中任务
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 import assert from 'node:assert/strict';
@@ -9,9 +9,11 @@ import test from 'node:test';
 import { installDom, loadRendererModule } from './dom-environment.mjs';
 
 const { createTerminalController } = await loadRendererModule('terminal');
+const { resolveAgentLaunch } = await loadRendererModule('agent-launcher');
+const { createTerminalAgentStatus } = await loadRendererModule('terminal-agent-status');
 const { createTerminalShortcutActions } = await loadRendererModule('terminal-shortcuts');
 
-function createController({ confirm = async () => true, foreground = async () => ({ ok: true, running: false }), restart = async () => ({ ok: true }), query = () => null } = {}) {
+function createController({ confirm = async () => true, foreground = async () => ({ ok: true, running: false }), restart = async () => ({ ok: true }), query = () => null, resume = () => true } = {}) {
   const killed = [];
   const restarted = [];
   const toasts = [];
@@ -28,6 +30,9 @@ function createController({ confirm = async () => true, foreground = async () =>
     confirmDialog: confirm,
     createTerminalShortcutActions,
     toast: (...args) => toasts.push(args),
+    agentResumeLast: resume,
+    resolveAgentLaunch,
+    createTerminalAgentStatus,
     updateWatches: noop,
   }, {
     get(target, key) { return key in target ? target[key] : noop; },
@@ -113,19 +118,17 @@ test('界面状态仍为 busy 但 Shell 没有前台任务时直接关闭', asyn
   } finally { dom.cleanup(); }
 });
 
-test('桌面新建、启动 Codex、新建 Codex 会话、重启与关闭事件各绑定一次', () => {
+test('桌面新建、Codex/Pi 启动、重启与关闭事件各绑定一次', () => {
   const dom = installDom();
   try {
     let subscribed = 0;
     let newHandler;
-    let codexHandler;
-    let newCodexHandler;
+    let agentHandler;
     let restartHandler;
     let closeHandler;
     window.madoWin = {
       onNewTerminal(cb) { subscribed++; newHandler = cb; return () => {}; },
-      onLaunchCodex(cb) { subscribed++; codexHandler = cb; return () => {}; },
-      onLaunchNewCodex(cb) { subscribed++; newCodexHandler = cb; return () => {}; },
+      onLaunchAgent(cb) { subscribed++; agentHandler = cb; return () => {}; },
       onRestartActiveCommand(cb) { subscribed++; restartHandler = cb; return () => {}; },
       onCloseActiveTerminal(cb) { subscribed++; closeHandler = cb; return () => {}; },
     };
@@ -135,21 +138,26 @@ test('桌面新建、启动 Codex、新建 Codex 会话、重启与关闭事件�
     let closed = 0;
     let restarted = 0;
     term.newTerminal = () => { created++; };
-    term.launchCodex = (options) => { launches.push(options); };
+    term.launchAgent = (agent, options) => { launches.push([agent, options]); };
     term.closeActive = () => { closed++; };
     term.restartActive = () => { restarted++; };
 
     term.bindDesktopEvents();
     term.bindDesktopEvents();
     newHandler();
-    codexHandler();
-    newCodexHandler();
+    agentHandler({ agent: 'codex', action: 'preferred' });
+    agentHandler({ agent: 'codex', action: 'new' });
+    agentHandler({ agent: 'pi', action: 'preferred' });
+    agentHandler({ agent: 'pi', action: 'new' });
     restartHandler();
     closeHandler();
 
-    assert.equal(subscribed, 5);
+    assert.equal(subscribed, 4);
     assert.equal(created, 1);
-    assert.deepEqual(launches, [undefined, { resume: false }]);
+    assert.deepEqual(launches, [
+      ['codex', undefined], ['codex', { action: 'new' }],
+      ['pi', undefined], ['pi', { action: 'new' }],
+    ]);
     assert.equal(closed, 1);
     assert.equal(restarted, 1);
   } finally { dom.cleanup(); }
@@ -196,7 +204,7 @@ test('没有活动终端时不会调用 PTY 重启', async () => {
   } finally { dom.cleanup(); }
 });
 
-test('新建 Codex 会话快捷键只执行不带参数的 codex', async () => {
+test('Codex 与 Pi 只执行固定的继续和新建命令', async () => {
   const dom = installDom();
   try {
     const { term } = createController();
@@ -206,10 +214,40 @@ test('新建 Codex 会话快捷键只执行不带参数的 codex', async () => {
     term.openInDir = async () => ({ id: 'fresh', dead: false, xterm: { focus: () => { focused++; } } });
     term.input = (id, data) => writes.push([id, data]);
 
-    await term.launchCodex({ resume: false });
+    await term.launchAgent('codex', { action: 'continue' });
+    await term.launchAgent('codex', { action: 'new' });
+    await term.launchAgent('pi', { action: 'continue' });
+    await term.launchAgent('pi', { action: 'new' });
 
-    assert.deepEqual(writes, [['fresh', 'codex\r']]);
-    assert.equal(focused, 1);
+    assert.deepEqual(writes, [
+      ['fresh', 'codex resume --last\r'], ['fresh', 'codex\r'],
+      ['fresh', 'pi -c\r'], ['fresh', 'pi\r'],
+    ]);
+    assert.equal(focused, 4);
+  } finally { dom.cleanup(); }
+});
+
+test('通用继续设置按所选 Agent 自动添加最近会话参数', async () => {
+  const dom = installDom();
+  try {
+    const continuing = createController({ resume: () => true }).term;
+    const fresh = createController({ resume: () => false }).term;
+    const writes = [];
+    for (const term of [continuing, fresh]) {
+      term.available = () => true;
+      term.openInDir = async () => ({ id: 'agent', dead: false, xterm: { focus() {} } });
+      term.input = (id, data) => writes.push([id, data]);
+    }
+
+    await continuing.launchAgent('codex');
+    await continuing.launchAgent('pi');
+    await fresh.launchAgent('codex');
+    await fresh.launchAgent('pi');
+
+    assert.deepEqual(writes, [
+      ['agent', 'codex resume --last\r'], ['agent', 'pi -c\r'],
+      ['agent', 'codex\r'], ['agent', 'pi\r'],
+    ]);
   } finally { dom.cleanup(); }
 });
 
