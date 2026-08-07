@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 happy-dom、文件浏览控制器与命令面板控制器
+ * [INPUT]: 依赖 happy-dom、共享名称排序、文件浏览控制器与命令面板控制器
  * [OUTPUT]: 验证目录排序过滤、文件选择、编辑器快捷打开和预览导航
  * [POS]: tests/frontend 的核心导航行为回归测试
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
@@ -10,6 +10,7 @@ import { installDom, loadRendererModule } from './dom-environment.mjs';
 
 const { createCommandPalette } = await loadRendererModule('command-palette');
 const { createFileBrowserController } = await loadRendererModule('file-browser');
+const { compareNames } = await loadRendererModule('name-sort');
 
 const noop = () => {};
 
@@ -20,6 +21,7 @@ function browserDeps(state) {
     term: { sessions: [] },
     $: (selector) => document.querySelector(selector),
     guardDirty: async () => true,
+    compareNames,
   }, {
     get(target, key) { return key in target ? target[key] : noop; },
   });

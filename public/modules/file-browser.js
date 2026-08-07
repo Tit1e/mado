@@ -1,11 +1,11 @@
 /**
- * [INPUT]: 依赖文件/Git API、共享 state、Svelte 文件列表、终端、Git 状态与预览动作代理
+ * [INPUT]: 依赖文件/Git API、共享名称排序、Svelte 文件列表、终端、Git 状态与预览动作代理
  * [OUTPUT]: 对外提供 createFileBrowserController，管理导航、文件视图模型、Git 在上数量在下的双行状态栏、选择、拖放和键盘移动
  * [POS]: public/modules 的文件浏览领域控制器，被侧边栏、预览、终端和应用入口消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createFileBrowserController(deps) {
-  const { $, guardDirty, follow, restoreFileAreaIfHidden, api, toast, state, renderRootsActive, renderProjectRunActions, term, openPreview, setFileFollow, recordRecent, toggleFav, escapeHtml, openWith, showContextMenu, baseOf, ic, refresh, kindFromName, setPreviewMax, loadGitStatus, renderGitStatus, fileList } = deps;
+  const { $, guardDirty, follow, restoreFileAreaIfHidden, api, toast, state, renderRootsActive, renderProjectRunActions, term, openPreview, setFileFollow, recordRecent, toggleFav, escapeHtml, openWith, showContextMenu, baseOf, ic, refresh, kindFromName, setPreviewMax, loadGitStatus, renderGitStatus, compareNames, fileList } = deps;
 // ---------- 导航 ----------
 async function navigate(p, pushHistory = true) {
   if (!await guardDirty()) return;
@@ -90,7 +90,7 @@ function visibleEntries() {
   const dirFirst = (a, b) => (a.isDir !== b.isDir ? (a.isDir ? -1 : 1) : 0);
   if (state.sort === 'mtime') list.sort((a, b) => dirFirst(a, b) || b.mtime - a.mtime);
   else if (state.sort === 'size') list.sort((a, b) => dirFirst(a, b) || b.size - a.size);
-  else list.sort((a, b) => dirFirst(a, b) || a.name.localeCompare(b.name, 'zh', { numeric: true }));
+  else list.sort((a, b) => dirFirst(a, b) || compareNames(a.name, b.name));
   return list;
 }
 // 底部状态条：当前文件夹的基础信息小字常驻，Git 状态由 Git 面板接管

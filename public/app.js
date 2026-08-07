@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 index.html DOM、generated/ui.mjs Svelte 界面岛、HTTP/Git API、xterm/Monaco/Milkdown 和 Electron PTY/恢复桥与快捷动作
+ * [INPUT]: 依赖 index.html DOM、generated/ui.mjs Svelte 界面岛、共享名称排序、HTTP/Git API、编辑终端库和 Electron 桥接
  * [OUTPUT]: 对外提供文件管理、目录选择与右键添加手动项目、Git 查看、预览编辑、Codex/Pi 内嵌终端、选择性命令恢复、命令重启和全局交互
  * [POS]: public 模块的渲染层主入口，集中编排页面状态、视图和桌面能力
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
@@ -14,6 +14,7 @@ import { createTerminalController } from './modules/terminal.js';
 import { resolveAgentLaunch } from './modules/agent-launcher.js';
 import { createTerminalAgentStatus } from './modules/terminal-agent-status.js';
 import { createTerminalShortcutActions } from './modules/terminal-shortcuts.js';
+import { compareNames } from './modules/name-sort.js';
 import { createFileFollowController } from './modules/file-follow.js';
 import { createImageEditor } from './modules/image-editor.js';
 import { createProjectRunController } from './modules/project-run.js';
@@ -245,7 +246,7 @@ function setupControllers() {
     openPreview: (...args) => openPreview(...args), setFileFollow: (...args) => setFileFollow(...args),
     recordRecent, toggleFav, iconSvg, fmtTime, isFav, escapeHtml, openWith,
     showContextMenu, baseOf, ic, svgWrap, SVG, refresh,
-    kindFromName, setPreviewMax: (...args) => setPreviewMax(...args), fileList: fileListService,
+    kindFromName, compareNames, setPreviewMax: (...args) => setPreviewMax(...args), fileList: fileListService,
     loadGitStatus: (...args) => gitPanel?.load(...args),
     renderGitStatus: (...args) => gitPanel?.render(...args),
   }));

@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 happy-dom 与 public/generated/ui.mjs 中的 Svelte 手动项目列表服务
- * [OUTPUT]: 验证项目渲染、不可用状态、活动高亮、目录展开、导航与菜单转发
+ * [OUTPUT]: 验证项目自然排序、不可用状态、活动高亮、目录展开、导航与菜单转发
  * [POS]: tests/frontend 的 Svelte ProjectsList 回归测试，保护侧边栏项目交互
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -27,12 +27,19 @@ test('手动项目列表支持可用状态、展开、导航和菜单', async ()
       onUnavailable: (project) => calls.push(['unavailable', project.path]),
       folderIcon: '<svg data-folder></svg>',
     });
-    service.render([
-      { name: 'Repo', path: '/repo', available: true },
+    const projectData = [
+      { name: 'Repo10', path: '/repo', available: true },
       { name: 'Offline', path: '/offline', available: false },
-    ], '/repo');
+      { name: 'Repo2', path: '/repo2', available: true },
+    ];
+    service.render(projectData, '/repo');
     await settle();
 
+    assert.deepEqual(
+      [...document.querySelectorAll('#projects-list > li')].map((item) => item.dataset.path),
+      ['/offline', '/repo2', '/repo'],
+    );
+    assert.deepEqual(projectData.map((item) => item.path), ['/repo', '/offline', '/repo2']);
     const project = document.querySelector('li[data-path="/repo"]');
     assert.equal(project.classList.contains('active'), true);
     project.querySelector('.twirl').click();

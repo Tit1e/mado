@@ -6,7 +6,7 @@ agent-controls.test.mjs: Codex/Pi 图标入口、无右键动作、通用继续�
 agent-launcher.test.mjs: Codex/Pi 继续与新建命令白名单测试，拒绝未知 Agent、动作和 Pi 历史选择
 controller-contracts.test.mjs: 渲染层控制器与终端快捷动作工厂的公开接口契约测试
 context-menu-service.test.mjs: Svelte 上下文菜单测试，覆盖视口定位、危险项、动作执行与关闭路径
-projects-list.test.mjs: Svelte 手动项目列表测试，覆盖可用状态、活动高亮、目录展开、导航与菜单转发
+projects-list.test.mjs: Svelte 手动项目列表测试，覆盖数字感知名称排序、可用状态、活动高亮、目录展开、导航与菜单转发
 dialog-service.test.mjs: Svelte 通用弹窗测试，覆盖输入、确认、终端恢复选择、焦点、键盘与请求串行
 dom-environment.mjs: happy-dom 全局环境安装与清理辅助工具，覆盖原生控制器和 Svelte 运行时 DOM 构造器
 editor-guard.test.mjs: 自动保存、未保存确认、预览关闭与编辑器资源释放测试

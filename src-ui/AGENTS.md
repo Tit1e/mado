@@ -5,7 +5,7 @@
 GitPanel.svelte: Svelte 5 Git 状态界面岛，常驻渲染分支名、按需显示变更汇总，并通过 body portal 定位文件弹层
 DialogHost.svelte: Svelte 5 通用弹窗宿主，串行处理输入、确认和终端恢复选择请求、键盘与焦点
 ContextMenu.svelte: Svelte 5 上下文菜单宿主，管理动作列表、视口定位、外部点击、窗口失焦与 Escape 关闭
-ProjectsList.svelte: Svelte 5 手动项目列表界面岛，管理项目可用状态、活动目录与顶层运行服务状态
+ProjectsList.svelte: Svelte 5 手动项目列表界面岛，复用文件区自然名称排序并管理可用状态、活动目录与顶层运行服务状态
 ProjectDirectory.svelte: 项目、快速入口和收藏共用的递归目录节点，懒加载子目录并提供导航、拖拽、状态与菜单交互
 projects-service.js: 手动项目列表适配入口，连接目录 API、侧边栏动作、不可用反馈、运行服务状态与 Svelte 组件
 FavoritesList.svelte: Svelte 5 收藏列表界面岛，渲染目录/文件收藏并复用递归目录节点
