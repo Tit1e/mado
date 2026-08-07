@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 happy-dom、public/generated/ui.mjs、图标工厂与基础主题样式
- * [OUTPUT]: 验证唯一列表视图、选择游标、媒体缩略图回退、索引主题对比度、收藏和文件动作转发
+ * [OUTPUT]: 验证唯一列表视图、双行底部状态栏、选择游标、媒体缩略图回退、索引主题对比度、收藏和文件动作转发
  * [POS]: tests/frontend 的 Svelte FileList 回归测试，保护主工作区文件列表交互
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -114,6 +114,15 @@ test('文件列表支持空目录状态和同一组件内导航重渲染', async
       ic: () => '<svg data-root></svg>',
     }, { get(target, key) { return key in target ? target[key] : noop; } }));
     controller.renderFiles();
+    const statusbar = document.querySelector('#statusbar');
+    assert.equal(statusbar.children[0].className, 'sb-links');
+    assert.equal(statusbar.children[1].className, 'sb-count');
+    assert.equal(statusbar.querySelector('.sb-count').textContent, '1 项 · 1 文件夹');
+    const previewCss = await readFile(new URL('../../public/styles/preview.css', import.meta.url), 'utf8');
+    assert.match(previewCss, /#statusbar\s*\{[^}]*flex-direction:\s*column/s);
+    assert.match(previewCss, /#statusbar \.sb-count\s*\{[^}]*white-space:\s*nowrap/s);
+    assert.match(previewCss, /#git-status-slot\s*\{[^}]*flex:\s*1 1 auto/s);
+    assert.doesNotMatch(previewCss, /#statusbar > span:first-child\s*\{\s*display:\s*none/);
     document.querySelector('[data-path="/root/child"]').click();
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(state.cwd, '/root/child');

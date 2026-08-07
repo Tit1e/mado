@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖文件/Git API、共享 state、Svelte 文件列表、终端、Git 状态与预览动作代理
- * [OUTPUT]: 对外提供 createFileBrowserController，管理导航、文件视图模型、Git 状态、选择、拖放和键盘移动
+ * [OUTPUT]: 对外提供 createFileBrowserController，管理导航、文件视图模型、Git 在上数量在下的双行状态栏、选择、拖放和键盘移动
  * [POS]: public/modules 的文件浏览领域控制器，被侧边栏、预览、终端和应用入口消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -101,7 +101,7 @@ function renderStatusbar() {
   const dirs = list.filter((e) => e.isDir).length;
   const files = list.length - dirs;
   sb.classList.remove('hidden');
-  sb.innerHTML = `<span>${list.length} 项${dirs ? ` · ${dirs} 文件夹` : ''}${files ? ` · ${files} 文件` : ''}</span><span class="sb-links"><span id="git-status-slot"></span></span>`;
+  sb.innerHTML = `<span class="sb-links"><span id="git-status-slot"></span></span><span class="sb-count">${list.length} 项${dirs ? ` · ${dirs} 文件夹` : ''}${files ? ` · ${files} 文件` : ''}</span>`;
   renderGitStatus();
 }
 function renderFiles() {
