@@ -1,11 +1,11 @@
 /**
- * [INPUT]: 依赖终端控制器、文件变化桥接、共享 state/follow、预览与导航回调
+ * [INPUT]: 依赖终端控制器、文件变化桥接、共享 state/follow、预览导航与合并式变化反馈回调
  * [OUTPUT]: 对外提供 createFileFollowController，管理 Agent 文件跟随、实时渲染和变化反馈
  * [POS]: public/modules 的文件跟随领域控制器，被终端状态和文件监听事件消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 export function createFileFollowController(deps) {
-  const { $, state, follow, term, api, openPreview, navigate, renderFiles, refresh, applySelection, renderPreviewFoot, renderPreviewActions, showPreviewPanel, fsUrl, escapeHtml, iconSvg, fmtSize, baseOf, dirOf, toast, mona, crepe, playChime, rippleFileArea, kindFromName, isNoisyChange, runtime, selfOpened, isMdName, openWith } = deps;
+  const { $, state, follow, term, api, openPreview, navigate, renderFiles, refresh, applySelection, renderPreviewFoot, renderPreviewActions, showPreviewPanel, fsUrl, escapeHtml, iconSvg, fmtSize, baseOf, dirOf, toast, mona, crepe, playChime, rippleFileArea, rippleFileRow, kindFromName, isNoisyChange, runtime, selfOpened, isMdName, openWith } = deps;
 // ---------- 文件跟随（agent 改哪个文件，文件区 + 预览就跟到哪）----------
 // 代码文件实时滚动到刚写入的行并高亮；html 边写边出实时网页（双缓冲换页不白闪）；
 // md 边写边渲染。任何手动浏览/编辑 = 接管，跟随立即自动停，想跟再点按钮。
@@ -339,23 +339,6 @@ function liveHtml(e, first) {
   wrap.appendChild(next);
 }
 
-// WOW4 环境感知：完成时文件区荡开一圈大涟漪 + 极轻提示音（Web Audio 当场合成，无需音频文件）
-// WOW1 活的仪表盘：每次写入，让对应文件行当场荡开涟漪 + 高亮 + 按热度发光，agent 写到哪光走到哪。
-function igniteRow(top, count) {
-  const area = $('#file-area');
-  if (!area || !state.cwd) return;
-  const path = state.cwd.replace(/\/$/, '') + state.sep + top;
-  const el = area.querySelector(`[data-path="${CSS.escape(path)}"]`);
-  if (!el) return; // 文件行还没渲染（新文件首次出现），等 refresh 后由 renderFiles 接管发光
-  el.style.setProperty('--heat', Math.min(1, 0.4 + count * 0.12).toFixed(2));
-  el.classList.remove('live-edit'); void el.offsetWidth; el.classList.add('live-edit'); // 重新触发弹跳
-  const host = el.querySelector('.icon') || el;
-  const ripple = document.createElement('span');
-  ripple.className = 'edit-ripple';
-  host.appendChild(ripple);
-  ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
-}
-
 // pty 数据回流（全局一次）
 if (window.madoPty) {
   window.madoPty.onData(({ id, data }) => { const s = term.sessions.find((x) => x.id === id); if (s) { s.xterm.write(data); term.markBusy(s); } });
@@ -419,7 +402,7 @@ if (window.madoFs) {
       rec.count++; rec.ts = Date.now();
       if (rec.files.size < 8 && sub !== top) rec.files.add(sub);
       scheduleSweep();
-      igniteRow(top, rec.count); // 当场点亮这一行，不等 250ms 刷新。
+      rippleFileRow(top, rec.count); // 当场点亮这一行；高频事件由效果层合并，不等 250ms 刷新。
     }
     clearTimeout(rt);
     rt = setTimeout(async () => {

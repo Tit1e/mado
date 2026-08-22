@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖共享 state.muted 与文件区 DOM
- * [OUTPUT]: 对外提供 createEffects，返回文件变化过滤、类型推断、涟漪和提示音能力
+ * [OUTPUT]: 对外提供 createEffects，返回文件变化过滤、类型推断、合并式文件变化涟漪和提示音能力
  * [POS]: public/modules 的变化反馈叶子模块，被文件浏览、终端与文件跟随控制器消费
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -24,6 +24,37 @@ function kindFromName(p) {
   if (['mp4', 'webm', 'mov', 'm4v'].includes(e)) return 'video';
   if (e === 'pdf') return 'pdf';
   return 'text';
+}
+
+// 高频 fs.watch 事件只保留每行一个动画，避免强制同步布局和涟漪节点无上限堆积。
+function rippleFileRow(top, count) {
+  const area = $('#file-area');
+  if (!area || !state.cwd) return;
+  const path = state.cwd.replace(/[\\/]+$/, '') + state.sep + top;
+  const el = area.querySelector(`[data-path="${CSS.escape(path)}"]`);
+  if (!el) return;
+  el.style.setProperty('--heat', Math.min(1, 0.4 + count * 0.12).toFixed(2));
+
+  if (!el.classList.contains('live-edit')) {
+    const clearLiveEdit = (event) => {
+      if (event.target !== el || event.animationName !== 'liveZapRow') return;
+      el.classList.remove('live-edit');
+      el.removeEventListener('animationend', clearLiveEdit);
+      el.removeEventListener('animationcancel', clearLiveEdit);
+    };
+    el.classList.add('live-edit');
+    el.addEventListener('animationend', clearLiveEdit);
+    el.addEventListener('animationcancel', clearLiveEdit);
+  }
+
+  const host = el.querySelector('.icon') || el;
+  if (host.querySelector('.edit-ripple')) return;
+  const ripple = document.createElement('span');
+  const removeRipple = () => ripple.remove();
+  ripple.className = 'edit-ripple';
+  host.appendChild(ripple);
+  ripple.addEventListener('animationend', removeRipple, { once: true });
+  ripple.addEventListener('animationcancel', removeRipple, { once: true });
 }
 
 function rippleFileArea() {
@@ -58,5 +89,5 @@ function playChime(type) {
   } catch { /* 音频不可用就算了 */ }
 }
 
-  return { isNoisyChange, kindFromName, rippleFileArea, playChime };
+  return { isNoisyChange, kindFromName, rippleFileRow, rippleFileArea, playChime };
 }

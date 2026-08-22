@@ -10,6 +10,7 @@ projects-list.test.mjs: Svelte 手动项目列表测试，覆盖数字感知名�
 dialog-service.test.mjs: Svelte 通用弹窗测试，覆盖输入、确认、终端恢复选择、焦点、键盘与请求串行
 dom-environment.mjs: happy-dom 全局环境安装与清理辅助工具，覆盖原生控制器和 Svelte 运行时 DOM 构造器
 editor-guard.test.mjs: 自动保存、未保存确认、预览关闭与编辑器资源释放测试
+effects.test.mjs: 高频文件变化反馈性能回归测试，约束同一文件行最多保留一个涟漪动画节点
 file-follow.test.mjs: 文件跟随启停、终端绑定与手动导航接管测试
 favorites-list.test.mjs: Svelte 收藏列表测试，覆盖空态、目录/文件渲染、活动高亮、预览与移除动作
 file-area-drop.test.mjs: 文件区与项目入口交互测试，覆盖空白/文件夹右键添加项目、普通文件排除、拖放与键盘移动

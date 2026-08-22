@@ -6,8 +6,8 @@ agent-launcher.js: Codex/Pi 第一方启动命令唯一真源，只接受继续�
 command-palette.js: 全局命令面板控制器，提供文件名模糊搜索、内容搜索和结果导航
 edit-session.js: 编辑会话安全守卫，统一处理自动保存、未保存确认和状态清理
 editors.js: Monaco 与 Milkdown Crepe 编辑器适配工厂，集中处理加载、主题、语言和资源释放
-effects.js: 文件变更噪声过滤、项目类型识别、涟漪反馈与 Agent 提示音效果
-file-follow.js: Agent 文件跟随控制器，管理目标选择、实时代码/Markdown/HTML 渲染和变化反馈
+effects.js: 文件变更噪声过滤、项目类型识别、高频合并式涟漪反馈与 Agent 提示音效果
+file-follow.js: Agent 文件跟随控制器，管理目标选择、实时代码/Markdown/HTML 渲染并把文件变化交给效果层合并反馈
 file-browser.js: 文件浏览控制器，管理目录导航、共享自然名称排序、文件视图模型、双行状态栏、选择、拖放与键盘移动
 file-actions.js: 文件动作控制器，管理文本编辑、文件变更、文件夹添加项目和开发工具面板，输入、确认与上下文菜单复用 Svelte 服务
 icons.js: 文件类型与界面 SVG 图标工厂，提供富图标、通用图标和终端文件链接规则

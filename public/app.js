@@ -145,7 +145,7 @@ let undoImage;
 
 
 let setFileFollow, rememberFollowChange, followChange;
-const { isNoisyChange, kindFromName, rippleFileArea, playChime } = createEffects(state, $);
+const { isNoisyChange, kindFromName, rippleFileRow, rippleFileArea, playChime } = createEffects(state, $);
 const dialogService = createDialogService();
 const { recoveryDialog } = dialogService;
 const contextMenuService = createContextMenuService();
@@ -275,7 +275,7 @@ function setupControllers() {
   ({ setFileFollow, rememberFollowChange, followChange } = createFileFollowController({
     $, state, follow, term, api, openPreview, navigate, renderFiles, refresh, applySelection,
     renderPreviewFoot, renderPreviewActions, showPreviewPanel, fsUrl, escapeHtml, iconSvg, fmtSize,
-    baseOf, dirOf, toast, mona, crepe, playChime, rippleFileArea, kindFromName, isNoisyChange,
+    baseOf, dirOf, toast, mona, crepe, playChime, rippleFileArea, rippleFileRow, kindFromName, isNoisyChange,
     runtime, selfOpened, isMdName, openWith,
   }));
   ({ enterImageEdit, undoImage } = createImageEditor({
