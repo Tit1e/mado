@@ -18,7 +18,7 @@ SegmentedControl.svelte: Svelte 5 通用受控按钮组，统一等宽布局、�
 segmented-control-service.js: 通用按钮组适配入口，按原生目标容器挂载 Svelte 组件
 context-menu-service.js: 上下文菜单适配入口，向原生控制器保留 popupMenu/closeContextMenu 接口
 dialog-service.js: 通用弹窗适配入口，向原生控制器暴露输入、确认和终端恢复 Promise 接口
-git-panel.js: Git 面板适配入口，连接 HTTP/Diff 能力与 Svelte 生命周期，提供静默刷新和同目录并发保护
+git-panel.js: Git 面板适配入口，连接 HTTP/Diff 能力与 Svelte 生命周期，提供静默轮询、同目录尾随刷新和跨目录竞态保护
 index.js: Svelte 界面统一构建入口，导出全部界面岛服务并共享运行时
 
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md

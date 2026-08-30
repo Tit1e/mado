@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 happy-dom 与 public/generated/ui.mjs Svelte 构建产物
- * [OUTPUT]: 验证常驻分支名、按需变更汇总、静默刷新并发保护、非仓库提示和 Diff 跳转
+ * [OUTPUT]: 验证常驻分支名、按需变更汇总、尾随刷新、静默轮询并发保护、跨目录竞态、非仓库提示和 Diff 跳转
  * [POS]: tests/frontend 的 Git 状态栏与弹层交互回归测试
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -100,7 +100,7 @@ test('干净仓库始终显示分支但隐藏零值变更汇总', async () => {
   }
 });
 
-test('同目录静默刷新未完成时不会发起重叠请求', async () => {
+test('同目录静默轮询未完成时不会发起重叠或尾随请求', async () => {
   const dom = installDom('<div id="git-status-slot"></div>');
   try {
     let calls = 0;
@@ -112,6 +112,110 @@ test('同目录静默刷新未完成时不会发起重叠请求', async () => {
     assert.equal(calls, 1);
     resolveRequest({ available: true, isRepo: false });
     await Promise.all([first, second]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(calls, 1);
+  } finally {
+    dom.cleanup();
+  }
+});
+
+test('请求期间的同目录加载会合并为一次尾随刷新', async () => {
+  const dom = installDom('<div id="git-status-slot"></div>');
+  try {
+    const requests = [];
+    const panel = await setup(() => new Promise((resolve) => requests.push(resolve)));
+    const first = panel.refresh('/repo');
+    const queued = [panel.load('/repo'), panel.load('/repo'), panel.load('/repo')];
+    assert.equal(requests.length, 1);
+
+    requests[0]({
+      available: true,
+      isRepo: true,
+      branch: 'stale',
+      detached: false,
+      summary: { files: 0, additions: 0, deletions: 0, binary: 0 },
+      files: [],
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(requests.length, 2);
+
+    requests[1]({
+      available: true,
+      isRepo: true,
+      branch: 'fresh',
+      detached: false,
+      summary: { files: 1, additions: 2, deletions: 0, binary: 0 },
+      files: [],
+    });
+    await Promise.all([first, ...queued]);
+    assert.equal(requests.length, 2);
+    assert.match(document.querySelector('#git-summary').textContent, /fresh · 1 个文件 \+2/);
+  } finally {
+    dom.cleanup();
+  }
+});
+
+test('同目录重新加载保留已有状态直到新结果返回', async () => {
+  const dom = installDom('<div id="git-status-slot"></div>');
+  try {
+    let resolveReload;
+    let calls = 0;
+    const panel = await setup(() => {
+      calls++;
+      if (calls === 1) return Promise.resolve({
+        available: true,
+        isRepo: true,
+        branch: 'main',
+        detached: false,
+        summary: { files: 1, additions: 1, deletions: 0, binary: 0 },
+        files: [],
+      });
+      return new Promise((resolve) => { resolveReload = resolve; });
+    });
+    await panel.load('/repo');
+    const reload = panel.load('/repo');
+    assert.match(document.querySelector('#git-summary').textContent, /main · 1 个文件 \+1/);
+    resolveReload({
+      available: true,
+      isRepo: true,
+      branch: 'main',
+      detached: false,
+      summary: { files: 2, additions: 3, deletions: 1, binary: 0 },
+      files: [],
+    });
+    await reload;
+    assert.match(document.querySelector('#git-summary').textContent, /main · 2 个文件 \+3 −1/);
+  } finally {
+    dom.cleanup();
+  }
+});
+
+test('旧目录请求晚返回不会覆盖当前目录', async () => {
+  const dom = installDom('<div id="git-status-slot"></div>');
+  try {
+    const requests = new Map();
+    const panel = await setup((url) => new Promise((resolve) => requests.set(new URL(url, 'http://mado.local').searchParams.get('path'), resolve)));
+    const oldLoad = panel.load('/repo-a');
+    const currentLoad = panel.load('/repo-b');
+    requests.get('/repo-b')({
+      available: true,
+      isRepo: true,
+      branch: 'repo-b',
+      detached: false,
+      summary: { files: 1, additions: 1, deletions: 0, binary: 0 },
+      files: [],
+    });
+    await currentLoad;
+    requests.get('/repo-a')({
+      available: true,
+      isRepo: true,
+      branch: 'repo-a',
+      detached: false,
+      summary: { files: 4, additions: 4, deletions: 0, binary: 0 },
+      files: [],
+    });
+    await oldLoad;
+    assert.match(document.querySelector('#git-summary').textContent, /repo-b · 1 个文件/);
   } finally {
     dom.cleanup();
   }

@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 happy-dom 测试环境、public/index.html 与 public/modules/ui-controller.js
- * [OUTPUT]: 验证左上角 Logo 的原始分辨率与 36px 显示尺寸、Icon Composer 图标、历史备份、指南与事件链
+ * [OUTPUT]: 验证左上角 Logo 的原始分辨率与 48px 显示尺寸、Icon Composer 图标、历史备份、指南与事件链
  * [POS]: tests/frontend 的使用指南回归测试，保证首次状态与常驻帮助入口互不干扰
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -23,7 +23,7 @@ function createController() {
   return createUiController(deps);
 }
 
-test('左上角 Logo 保留原始分辨率并显示为 36px，网页与指南使用 Icon Composer 图标', async () => {
+test('左上角 Logo 保留原始分辨率并显示为 48px，网页与指南使用 Icon Composer 图标', async () => {
   const root = new URL('../../', import.meta.url);
   const [index, controller, icons, sidebarCss, publicIcon, publicLogo, buildIcon, dockIcon, icns, ...backups] = await Promise.all([
     readFile(new URL('public/index.html', root), 'utf8'),
@@ -50,7 +50,7 @@ test('左上角 Logo 保留原始分辨率并显示为 36px，网页与指南使
   assert.match(index, /rel="icon"[^>]+mado-icon\.png/);
   assert.match(index, /class="logo"><img src="\/assets\/mado-logo\.png" alt=""/);
   assert.match(controller, /class="guide-logo"><img src="\/assets\/mado-icon\.png" alt=""/);
-  assert.match(sidebarCss, /\.brand \.logo \{ width: 36px; height: 36px;[^}]+flex: 0 0 36px;/);
+  assert.match(sidebarCss, /\.brand \.logo \{ width: 48px; height: 48px;[^}]+flex: 0 0 48px;/);
   assert.doesNotMatch(icons, /\bbox:\s*'<path/);
   assert.equal(publicIcon.compare(buildIcon), 0);
   assert.equal(sourceConfig.fill.solid.startsWith('display-p3:'), true);

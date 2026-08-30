@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 Svelte mount/unmount、GitPanel.svelte、Git HTTP API 与现有 Diff 打开能力
- * [OUTPUT]: 对外提供 createGitPanel，维持 Git 前台加载、静默刷新、并发保护和文件动作边界
+ * [OUTPUT]: 对外提供 createGitPanel，维持 Git 前台加载、静默轮询、同目录尾随刷新、跨目录竞态保护和文件动作边界
  * [POS]: src-ui 的 Git 面板适配器，连接现有原生控制器体系与 Svelte 界面岛
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -9,9 +9,12 @@ import GitPanel from './GitPanel.svelte';
 
 export function createGitPanel({ $, api, ic, kindFromName, showDiff, toast }) {
   let data = null;
+  let dataDirectory = null;
   let loading = false;
   let requestId = 0;
   let pendingDirectory = null;
+  let activePromise = null;
+  let reloadQueued = false;
   let component = null;
   let mountedTarget = null;
 
@@ -55,24 +58,54 @@ export function createGitPanel({ $, api, ic, kindFromName, showDiff, toast }) {
   function open() { ensureMounted()?.open(); }
   function close() { component?.close(); }
 
-  async function load(directory, { silent = false } = {}) {
-    if (!directory || (loading && pendingDirectory === directory)) return;
+  async function load(directory, { queueIfBusy = true } = {}) {
+    if (!directory) return;
+    if (loading && pendingDirectory === directory) {
+      if (queueIfBusy) reloadQueued = true;
+      return activePromise;
+    }
+
     const id = ++requestId;
     pendingDirectory = directory;
+    reloadQueued = false;
     loading = true;
-    if (!silent) { data = null; close(); }
+    if (dataDirectory !== directory) { data = null; close(); }
     render();
-    try {
-      const result = await api('/api/git?path=' + encodeURIComponent(directory));
-      if (id !== requestId) return;
-      data = result;
-    } catch {
-      if (id !== requestId) return;
-      data = { available: false, isRepo: false };
-    } finally {
-      if (id === requestId) { loading = false; pendingDirectory = null; render(); }
-    }
+
+    activePromise = (async () => {
+      try {
+        while (id === requestId) {
+          reloadQueued = false;
+          let result;
+          try {
+            result = await api('/api/git?path=' + encodeURIComponent(directory));
+          } catch {
+            result = { available: false, isRepo: false };
+          }
+          if (id !== requestId) return;
+          if (reloadQueued) continue;
+          data = result;
+          dataDirectory = directory;
+          return;
+        }
+      } finally {
+        if (id === requestId) {
+          loading = false;
+          pendingDirectory = null;
+          activePromise = null;
+          render();
+        }
+      }
+    })();
+    return activePromise;
   }
 
-  return { load, refresh: (directory) => load(directory, { silent: true }), render, open, close, current: () => data };
+  return {
+    load,
+    refresh: (directory) => load(directory, { queueIfBusy: false }),
+    render,
+    open,
+    close,
+    current: () => data,
+  };
 }

@@ -15,7 +15,7 @@ file-follow.test.mjs: 文件跟随启停、终端绑定与手动导航接管测�
 favorites-list.test.mjs: Svelte 收藏列表测试，覆盖空态、目录/文件渲染、活动高亮、预览与移除动作
 file-area-drop.test.mjs: 文件区与项目入口交互测试，覆盖空白/文件夹右键添加项目、普通文件排除、拖放与键盘移动
 file-list.test.mjs: Svelte 主文件列表测试，覆盖唯一列表视图、Git 在上数量在下的双行状态栏、媒体缩略图回退、选择、变更标记与交互转发
-git-panel.test.mjs: Svelte Git 常驻分支、按需汇总、静默刷新并发保护、非仓库提示与 Diff 跳转测试
+git-panel.test.mjs: Svelte Git 常驻分支、按需汇总、尾随刷新、静默轮询并发保护、跨目录竞态、非仓库提示与 Diff 跳转测试
 i18n.test.mjs: 国际化原地双向切换、动态界面翻译、终端内容隔离与原生菜单同步测试
 navigation.test.mjs: 文件浏览排序过滤与命令面板导航测试
 project-run.test.mjs: 项目运行命令顶栏、继承规则与删除配置回归测试
@@ -26,6 +26,6 @@ segmented-control.test.mjs: Svelte 通用按钮组测试，覆盖受控值、点
 terminal-agent-status.test.mjs: Agent 状态子控制器测试，覆盖输出摘要过滤和隐藏服务未读隔离
 terminal-close.test.mjs: 终端快捷键与关闭测试，覆盖 Codex/Pi 固定启动命令、通用继续设置、命令重启、前台进程关闭确认和桌面事件绑定
 topbar-controls.test.mjs: 顶栏控件测试，覆盖隐藏文件复选框的原生语义、键盘焦点和三套主题视觉契约
-ui-guide.test.mjs: 品牌与使用指南测试，覆盖左上角 Logo 原始分辨率与 36px 显示、Icon Composer 图标、历史备份和事件链
+ui-guide.test.mjs: 品牌与使用指南测试，覆盖左上角 Logo 原始分辨率与 48px 显示、Icon Composer 图标、历史备份和事件链
 
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
