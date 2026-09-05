@@ -21,6 +21,7 @@ navigation.test.mjs: 文件浏览排序过滤与命令面板导航测试
 project-run.test.mjs: 项目运行命令顶栏、继承规则与删除配置回归测试
 resizer-style.test.mjs: 侧边栏、文件预览与终端分割线样式契约测试，覆盖命中区、方向映射与 1px 悬停线
 roots-list.test.mjs: Svelte 快速入口测试，覆盖根目录渲染、活动高亮、目录展开与导航
+sidebar-layout.test.mjs: 侧栏布局样式契约测试，覆盖固定区域、项目区剩余高度分配与列表独立滚动，不代替实际尺寸验收
 sidebar.test.mjs: 手动项目读取、目录选择/右键路径添加、重复与并发保护、浏览器降级和安全移除业务测试
 segmented-control.test.mjs: Svelte 通用按钮组测试，覆盖受控值、点击切换、方向键与无障碍状态
 terminal-agent-status.test.mjs: Agent 状态子控制器测试，覆盖输出摘要过滤和隐藏服务未读隔离

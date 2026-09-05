@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 index.html 的 DOM 结构与 base.css 定义的主题变量
- * [OUTPUT]: 对外提供 48px 品牌图标、侧边栏、1px 高亮分割线、目录树与手动项目列表样式
+ * [OUTPUT]: 对外提供 48px 品牌图标、侧边栏、1px 高亮分割线、目录树与占满剩余高度且独立滚动的手动项目列表样式
  * [POS]: public/styles 的侧边栏、目录树与项目列表样式分片，按 index.html 声明顺序参与级联
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -11,7 +11,24 @@
   display: flex;
   flex-direction: column;
   padding: 16px 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+#sidebar > * { flex-shrink: 0; }
+/* 项目区承接剩余高度，标题固定，仅列表内部滚动。 */
+#sidebar > .projects-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+.projects-section > .nav-title { flex-shrink: 0; }
+#projects-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
 /* 侧栏右缘拖拽条：6px 命中区保持易抓取，视觉线固定为居中的 1px */
 #sidebar-resizer {

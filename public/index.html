@@ -1,6 +1,6 @@
 <!--
   [INPUT]: 依赖 styles/、assets/mado-icon.png、assets/mado-logo.png、app.js、i18n.js 和本地 vendor
-  [OUTPUT]: 对外提供带无背景左上角 Logo 的 Mado 单页应用、项目、文件、Agent、指南、终端与弹层骨架
+  [OUTPUT]: 对外提供带无背景左上角 Logo 的 Mado 单页应用、独立滚动项目列表、文件、Agent、指南、终端与弹层骨架
   [POS]: public 模块的页面入口，定义渲染层组件挂载点与脚本加载顺序
   [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
 -->
@@ -48,7 +48,7 @@
         <ul id="favs-list" class="nav-list"></ul>
       </nav>
 
-      <nav class="nav-section">
+      <nav class="nav-section projects-section">
         <div class="nav-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v10H3z"/><path d="M3 7V5h7l2 2"/></svg><span>项目</span><button id="project-add" type="button" title="添加项目" aria-label="添加项目">＋</button></div>
         <ul id="projects-list" class="nav-list"></ul>
       </nav>
