@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 Node.js child_process、文件/路径能力与 Pi 官方 JSONL RPC（0.85.1 接口）
- * [OUTPUT]: 对外提供 createPiRpcSession，提供新进程启动、单轮对话、最终文本事件和受控停止
+ * [OUTPUT]: 对外提供 createPiRpcSession，提供新进程启动、单轮对话、过程增量事件、最终文本事件和受控停止
  * [POS]: electron 的 Discord 专用 Pi CLI 适配器，与桌面 PTY 独立；不链接 SDK、不读取 Pi 私有文件
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -93,6 +93,14 @@ function createPiRpcSession({ cwd, piPath, sessionId, sessionFile = '', sessionD
     }
     if (event.type === 'extension_error') diagnostics.error('PI_EXTENSION_ERROR', new Error(String(event.error || '扩展错误')), context);
     if (!busy) return;
+    if (event.type === 'agent_start') onEvent({ type: 'progress', kind: 'agent_start' });
+    if (event.type === 'message_update' && event.assistantMessageEvent?.type === 'text_delta') {
+      const delta = String(event.assistantMessageEvent.delta || '');
+      if (delta) onEvent({ type: 'progress', kind: 'assistant_delta', text: delta.slice(0, 4000) });
+    }
+    if (event.type === 'tool_execution_start') onEvent({ type: 'progress', kind: 'tool_start', toolName: String(event.toolName || '').slice(0, 80) });
+    if (event.type === 'tool_execution_end') onEvent({ type: 'progress', kind: 'tool_end', toolName: String(event.toolName || '').slice(0, 80), isError: !!event.isError });
+    if (event.type === 'auto_retry_start') onEvent({ type: 'progress', kind: 'retry', attempt: event.attempt });
     if (event.type === 'message_end' && event.message?.role === 'assistant') {
       const message = event.message;
       const text = Array.isArray(message.content) ? message.content.filter((part) => part.type === 'text').map((part) => part.text || '').join('\n') : '';

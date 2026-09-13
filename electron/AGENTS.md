@@ -12,9 +12,9 @@ pty-service.js: PTY 领域服务，管理终端与带规则标识的隐藏服务
 discord-config.js: Discord 启用开关、ID、pi 绝对路径与私有 Bot Token 的主进程配置校验
 discord-diagnostics.js: Discord 连接与 Pi 任务的脱敏错误编号、轮转 JSONL 事件日志和本地诊断报告
 discord-service.js: 单用户 Discord Gateway 入口，管理 /new、/status、/result、/stop 与 Thread 消息路由及持久绑定懒恢复
-pi-rpc-service.js: Pi 官方 RPC 子进程适配器，管理新建/恢复会话、结构化最终回复、超时、交互拒绝和进程销毁
+pi-rpc-service.js: Pi 官方 RPC 子进程适配器，管理新建/恢复会话、过程增量、结构化最终回复、超时、交互拒绝和进程销毁
 discord-session-store.js: Discord Thread 到项目与 Pi sessionFile 的原子持久化、校验和进程锁
-discord-progress.js: Pi RPC 关键阶段与工具次数聚合，按节流间隔生成无 Emoji 的 Discord 进度文本
+discord-progress.js: Pi RPC 关键阶段、正文增量与工具次数聚合，按节流间隔生成无 Emoji 的 Discord 进度文本
 quit-service.js: 应用退出守卫，以 PTY 真实前台任务快照决定退出确认，并在确认后保存可恢复命令
 shell-integration.js: zsh 隔离启动配置与 OSC 标记解析，安全继承嵌套 Mado 的原始 ZDOTDIR 并追踪顶层命令生命周期
 terminal-recovery-store.js: 终端恢复 JSON 仓储，保留隐藏服务规则标识并提供安全校验、去重、目录检查、一次性取出与清空

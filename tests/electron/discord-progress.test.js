@@ -13,6 +13,7 @@ test('进度只输出关键阶段和工具计数，不包含 Emoji 或原始参�
   const output = [];
   const progress = createDiscordProgress({ onUpdate: (value) => output.push(value) });
   progress.event({ type: 'agent_start' });
+  progress.event({ type: 'progress', kind: 'assistant_delta', text: '正在检查项目结构。' });
   progress.event({ type: 'tool_execution_start', toolName: 'read', args: { path: '/private/file' } });
   progress.event({ type: 'tool_execution_start', toolName: 'edit', args: { content: 'secret' } });
   progress.flush();

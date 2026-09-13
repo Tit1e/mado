@@ -96,7 +96,7 @@ RPC 最终消息使用 `message_end` 的 assistant 文本，使用会话级 `age
 
 ## 进度输出
 
-Pi RPC 的 `agent_start`、`tool_execution_start`、重试和上下文整理事件会被转换为简短阶段：分析项目、读取文件、搜索代码、修改代码、运行项目命令、重试请求或整理上下文。只统计工具次数，不显示思考、工具参数、命令输出或文件内容。Discord 进度消息使用编辑更新，避免大量消息和 API 限流；最终 assistant 总结仍在任务结束后单独发送。
+Pi RPC 的 `agent_start`、`message_update` 文本增量、`tool_execution_start`、重试事件会被转换为简短阶段和当前正文。只显示普通 assistant 正文的最新增量，不显示思考、工具参数、命令输出或文件内容。Discord 进度消息使用编辑更新并按约 1.8 秒节流，避免大量消息和 API 限流；最终 assistant 总结仍在任务结束后单独发送。
 
 ## Discord 附件
 

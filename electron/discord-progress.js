@@ -12,6 +12,7 @@ const TOOL_LABELS = Object.freeze({
 function createDiscordProgress({ onUpdate, intervalMs = 1800, setTimer = setTimeout, clearTimer = clearTimeout }) {
   const counts = { read: 0, search: 0, edit: 0, command: 0, other: 0 };
   let stage = '准备开始';
+  let assistantText = '';
   let pendingTimer = null;
   let stopped = false;
   function category(tool) {
@@ -22,7 +23,9 @@ function createDiscordProgress({ onUpdate, intervalMs = 1800, setTimer = setTime
     return 'other';
   }
   function text() {
-    return `Pi 正在处理任务\n\n当前阶段：${stage}\n读取：${counts.read} 次\n搜索：${counts.search} 次\n修改：${counts.edit} 次\n命令：${counts.command} 次`;
+    const header = `Pi 正在处理任务\n\n当前阶段：${stage}\n读取：${counts.read} 次\n搜索：${counts.search} 次\n修改：${counts.edit} 次\n命令：${counts.command} 次`;
+    const body = assistantText.trim();
+    return body ? `${header}\n\n当前正文：\n${body}` : header;
   }
   function flush() {
     pendingTimer = null;
@@ -37,6 +40,12 @@ function createDiscordProgress({ onUpdate, intervalMs = 1800, setTimer = setTime
     if (event.type === 'agent_start') { stage = '分析项目'; schedule(); return; }
     if (event.type === 'compaction_start') { stage = '整理上下文'; schedule(); return; }
     if (event.type === 'auto_retry_start') { stage = '重试请求'; schedule(); return; }
+    if (event.kind === 'assistant_delta') { assistantText = (assistantText + String(event.text || '')).slice(-12000); schedule(); return; }
+    if (event.kind === 'tool_start') {
+      const tool = String(event.toolName || '').toLowerCase();
+      const key = category(tool); counts[key] += 1; stage = TOOL_LABELS[tool] || '执行 Agent 工具'; schedule(); return;
+    }
+    if (event.kind === 'retry') { stage = '重试请求'; schedule(); return; }
     if (event.type === 'tool_execution_start') {
       const tool = String(event.toolName || '').toLowerCase();
       const key = category(tool);
