@@ -23,6 +23,7 @@ Discord Thread → Electron 主进程 → pi --mode rpc → 指定项目目录
 - 项目只能来自 Mado 的 `~/.mado/config.json` 项目列表，Discord 不能传本机路径。
 - 普通消息直接发送给当前 Thread 的 Pi；同一会话上一轮未结束时拒绝新消息。
 - 只发送启动、处理中、完成、失败等关键消息，不发送思考、工具调用、完整终端输出或文件内容。
+- 处理中使用一条无 Emoji 的进度消息，按约 1.8 秒节流更新阶段和工具计数；最终总结单独发送。
 - Discord 附件不按扩展名做业务白名单；附件会安全下载到 `~/.mado/discord-attachments/<sessionId>/`，再把本地路径交给 Pi，由 Pi 自己判断能否读取。
 - Pi 通过官方 `--mode rpc` JSONL 协议运行；不使用 Pi SDK，不读取 `~/.pi/agent/`。
 - 使用 Pi 的原有权限和项目安全设置，不传 `--approve`，不提供远程 Shell 或远程批准。
@@ -92,6 +93,10 @@ pi --mode rpc --session-dir ~/.mado/discord-sessions --append-system-prompt <远
 ```
 
 RPC 最终消息使用 `message_end` 的 assistant 文本，使用会话级 `agent_settled` 判断本轮结束；不依赖终端提示符、ANSI 输出或关键词。思考内容、工具开始/过程和工具参数不转发。Pi 扩展如果要求 `confirm/select/input/editor`，第一版不支持远程交互，会终止会话并报告错误编号。
+
+## 进度输出
+
+Pi RPC 的 `agent_start`、`tool_execution_start`、重试和上下文整理事件会被转换为简短阶段：分析项目、读取文件、搜索代码、修改代码、运行项目命令、重试请求或整理上下文。只统计工具次数，不显示思考、工具参数、命令输出或文件内容。Discord 进度消息使用编辑更新，避免大量消息和 API 限流；最终 assistant 总结仍在任务结束后单独发送。
 
 ## Discord 附件
 

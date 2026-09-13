@@ -11,6 +11,7 @@ const { randomUUID } = require('crypto');
 const { Client, GatewayIntentBits, Events, REST, Routes, PermissionFlagsBits } = require('discord.js');
 const { createPiRpcSession } = require('./pi-rpc-service');
 const { createDiscordSessionStore } = require('./discord-session-store');
+const { createDiscordProgress } = require('./discord-progress');
 const COMMANDS = [
   { name: 'new', description: '在指定的 Mado 项目中创建新的 Pi 会话', options: [
     { type: 3, name: 'project', description: '选择 Mado 中已登记的项目', required: true, autocomplete: true },
@@ -86,14 +87,23 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     await session.lock?.release();
     session.lock = null;
   }
+  async function updateProgress(session, content) {
+    if (!session.thread) return;
+    try {
+      const payload = { content: safe(content), allowedMentions: { parse: [] } };
+      if (session.progressMessage) await session.progressMessage.edit(payload);
+      else session.progressMessage = await session.thread.send(payload);
+    } catch (error) { diagnostics.error('DISCORD_PROGRESS_FAILED', error, { sessionId: session.id }); }
+  }
   function failSession(session, event) {
+    session.progress?.stop();
     session.status = 'failed';
     if (event.errorId) session.errorId = event.errorId;
     session.lastError = event.errorId ? `错误编号：${event.errorId}` : 'Pi 任务失败';
-    if (session.thread) void sendThread(session.thread, `❌ Pi 任务失败\n${session.lastError}`, session);
+    if (session.thread) void sendThread(session.thread, `Pi 任务失败\n${session.lastError}`, session);
   }
   function makeSession(record, thread) {
-    const session = { ...record, id: record.sessionId, thread, lastResult: '', errorId: '', lastError: '', busy: false, status: record.status || 'bound' };
+    const session = { ...record, id: record.sessionId, thread, lastResult: '', errorId: '', lastError: '', busy: false, status: record.status || 'bound', progressMessage: null, progress: null };
     sessions.set(record.threadId, session);
     return session;
   }
@@ -101,9 +111,11 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     if (session.pi && session.status !== 'stopped' && session.status !== 'failed') return session;
     if (session.pi) await stopSession(session);
     session.status = 'starting';
+    session.progress = createDiscordProgress({ onUpdate: (content) => updateProgress(session, content) });
     const pi = makePiSession({ cwd: session.projectPath, piPath: config.piPath, sessionId: session.id, sessionFile: session.sessionFile, expectedSessionId: session.piSessionId, sessionDir: session.sessionFile ? '' : sessionDir, diagnostics, onEvent: (event) => {
+      session.progress.event(event);
       if (event.type === 'failed') failSession(session, event);
-      if (event.type === 'completed') { session.status = 'idle'; session.busy = false; session.lastResult = event.text; void sessionStore.patch(session.threadId, { status: 'idle' }).catch((error) => diagnostics.error('DISCORD_SESSION_SAVE_FAILED', error, { sessionId: session.id })); void sendThread(session.thread, `✅ Pi 任务完成\n\n${event.text}`, session); }
+      if (event.type === 'completed') { session.progress?.stop(); session.status = 'idle'; session.busy = false; session.lastResult = event.text; void sessionStore.patch(session.threadId, { status: 'idle' }).catch((error) => diagnostics.error('DISCORD_SESSION_SAVE_FAILED', error, { sessionId: session.id })); void sendThread(session.thread, `Pi 任务完成\n\n${event.text}`, session); }
     }});
     session.pi = pi;
     try {
@@ -120,14 +132,14 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
         session.status = 'idle';
         await sessionStore.patch(session.threadId, { status: 'idle' });
       }
-      if (announce) await sendThread(session.thread, `🟢 Pi 已就绪\n项目：${session.projectName}\n发送任务即可开始。`, session);
+      if (announce) await sendThread(session.thread, `Pi 已就绪\n项目：${session.projectName}\n发送任务即可开始。`, session);
     } catch (error) {
       await stopSession(session);
       session.status = 'failed';
       const errorId = diagnostics.error('DISCORD_SESSION_START_FAILED', error, { sessionId: session.id, project: session.projectName });
       session.errorId = errorId;
       await sessionStore.patch(session.threadId, { status: 'failed' }).catch(() => {});
-      await sendThread(session.thread, `❌ Pi 启动失败\n错误编号：${errorId}`, session);
+      await sendThread(session.thread, `Pi 启动失败\n错误编号：${errorId}`, session);
     }
     return session;
   }
@@ -227,12 +239,12 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
       if (session.status === 'failed') return;
     }
     session.busy = true; session.status = 'running';
-    await sendThread(message.channel, '⏳ Pi 正在处理任务，完成后会发送最终总结。', session);
+    await sendThread(message.channel, 'Pi 正在处理任务，完成后会发送最终总结。', session);
     try {
       const files = await downloadAttachments(message, session);
       const prompt = `${text || '请处理我上传的附件。'}${files.length ? `\n\nDiscord 附件已下载到以下本地路径，请按需要读取或处理：\n${files.map((file) => `- ${file}`).join('\n')}` : ''}`;
       await session.pi.prompt(prompt);
-    } catch (error) { session.busy = false; session.status = 'failed'; const errorId = diagnostics.error('DISCORD_PROMPT_FAILED', error, { sessionId: session.id }); session.errorId = errorId; await sendThread(message.channel, `❌ 任务发送失败\n错误编号：${errorId}`, session); }
+    } catch (error) { session.busy = false; session.status = 'failed'; const errorId = diagnostics.error('DISCORD_PROMPT_FAILED', error, { sessionId: session.id }); session.errorId = errorId; await sendThread(message.channel, `任务发送失败\n错误编号：${errorId}`, session); }
   }
   async function registerCommands() {
     const rest = new RestClass({ version: '10' }).setToken(config.token);
