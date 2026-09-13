@@ -5,8 +5,10 @@
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 'use strict';
+const path = require('path');
 const { Client, GatewayIntentBits, Events, REST, Routes, PermissionFlagsBits } = require('discord.js');
 const { createPiRpcSession } = require('./pi-rpc-service');
+const { createDiscordSessionStore } = require('./discord-session-store');
 const COMMANDS = [
   { name: 'new', description: '在指定的 Mado 项目中创建新的 Pi 会话', options: [{ type: 3, name: 'project', description: 'Mado 中已登记的项目名称', required: true }] },
   { name: 'status', description: '查看当前远程 Pi 会话状态' },
@@ -16,10 +18,12 @@ const COMMANDS = [
 const MAX_PROMPT = 12000;
 const MAX_REPLY = 1900;
 
-function createDiscordService({ config, listProjects, diagnostics, makePiSession = createPiRpcSession, ClientClass = Client, RestClass = REST, RoutesApi = Routes }) {
+function createDiscordService({ config, listProjects, diagnostics, sessionStore = createDiscordSessionStore(), makePiSession = createPiRpcSession, ClientClass = Client, RestClass = REST, RoutesApi = Routes }) {
   const sessions = new Map();
+  const sessionDir = path.join(path.dirname(sessionStore.file), 'discord-sessions');
   let client = null;
   let started = false;
+  let bridgeLock = null;
   function owner(interaction) {
     return interaction.guildId === config.guildId && interaction.user?.id === config.ownerUserId && (!config.channelId || interaction.channelId === config.channelId || interaction.channel?.parentId === config.channelId);
   }
@@ -36,32 +40,62 @@ function createDiscordService({ config, listProjects, diagnostics, makePiSession
     catch (error) { diagnostics.error('DISCORD_SEND_FAILED', error, { sessionId: session?.id, threadId: thread?.id }); return null; }
   }
   function find(threadId) { return sessions.get(threadId); }
+  async function stopSession(session) {
+    const pi = session.pi;
+    await pi?.stop();
+    if (session.pi === pi) session.pi = null;
+    await session.lock?.release();
+    session.lock = null;
+  }
   function failSession(session, event) {
     session.status = 'failed';
     if (event.errorId) session.errorId = event.errorId;
     session.lastError = event.errorId ? `错误编号：${event.errorId}` : 'Pi 任务失败';
     if (session.thread) void sendThread(session.thread, `❌ Pi 任务失败\n${session.lastError}`, session);
   }
-  async function startSession(project, thread) {
-    const id = `discord-${thread.id}`;
-    const session = { id, threadId: thread.id, projectName: project.name, projectPath: project.path, status: 'starting', thread, lastResult: '', errorId: '', lastError: '', createdAt: Date.now(), busy: false };
-    sessions.set(thread.id, session);
-    const pi = makePiSession({ cwd: project.path, piPath: config.piPath, diagnostics, sessionId: id, onEvent: (event) => {
+  function makeSession(record, thread) {
+    const session = { ...record, id: record.sessionId, thread, lastResult: '', errorId: '', lastError: '', busy: false, status: record.status || 'bound' };
+    sessions.set(record.threadId, session);
+    return session;
+  }
+  async function startPi(session, { announce = true } = {}) {
+    if (session.pi && session.status !== 'stopped' && session.status !== 'failed') return session;
+    if (session.pi) await stopSession(session);
+    session.status = 'starting';
+    const pi = makePiSession({ cwd: session.projectPath, piPath: config.piPath, sessionId: session.id, sessionFile: session.sessionFile, expectedSessionId: session.piSessionId, sessionDir: session.sessionFile ? '' : sessionDir, diagnostics, onEvent: (event) => {
       if (event.type === 'failed') failSession(session, event);
-      if (event.type === 'completed') { session.status = 'completed'; session.busy = false; session.lastResult = event.text; void sendThread(thread, `✅ Pi 任务完成\n\n${event.text}`, session); }
+      if (event.type === 'completed') { session.status = 'idle'; session.busy = false; session.lastResult = event.text; void sessionStore.patch(session.threadId, { status: 'idle' }).catch((error) => diagnostics.error('DISCORD_SESSION_SAVE_FAILED', error, { sessionId: session.id })); void sendThread(session.thread, `✅ Pi 任务完成\n\n${event.text}`, session); }
     }});
     session.pi = pi;
     try {
+      session.lock = await sessionStore.lock(session.threadId);
       await pi.start();
+      await session.lock.child(pi.pid());
+      const state = pi.state();
       session.status = 'idle';
-      await sendThread(thread, `🟢 Pi 已就绪\n项目：${project.name}\n发送任务即可开始。`, session);
+      if (!session.sessionFile && state?.sessionFile) {
+        session.sessionFile = state.sessionFile;
+        session.piSessionId = state.sessionId || '';
+        await sessionStore.patch(session.threadId, { sessionFile: session.sessionFile, piSessionId: session.piSessionId, status: 'idle' });
+      } else {
+        session.status = 'idle';
+        await sessionStore.patch(session.threadId, { status: 'idle' });
+      }
+      if (announce) await sendThread(session.thread, `🟢 Pi 已就绪\n项目：${session.projectName}\n发送任务即可开始。`, session);
     } catch (error) {
+      await stopSession(session);
       session.status = 'failed';
-      const errorId = diagnostics.error('DISCORD_SESSION_START_FAILED', error, { sessionId: id, project: project.name });
+      const errorId = diagnostics.error('DISCORD_SESSION_START_FAILED', error, { sessionId: session.id, project: session.projectName });
       session.errorId = errorId;
-      await sendThread(thread, `❌ Pi 启动失败\n错误编号：${errorId}`, session);
+      await sessionStore.patch(session.threadId, { status: 'failed' }).catch(() => {});
+      await sendThread(session.thread, `❌ Pi 启动失败\n错误编号：${errorId}`, session);
     }
     return session;
+  }
+  async function createSession(project, thread) {
+    const record = { threadId: thread.id, sessionId: `discord-${thread.id}`, projectName: project.name, projectPath: project.path, sessionFile: '', piSessionId: '', status: 'bound', createdAt: Date.now() };
+    await sessionStore.put(record);
+    return makeSession(record, thread);
   }
   async function projectByName(name) {
     const result = await listProjects();
@@ -69,13 +103,15 @@ function createDiscordService({ config, listProjects, diagnostics, makePiSession
     return result.projects.find((project) => project.available && project.name === name);
   }
   async function handleNew(interaction) {
+    if (interaction.channelId !== config.channelId) return reply(interaction, '请回到主频道使用 /new 创建新的子区。');
     const name = interaction.options.getString('project', true);
     const project = await projectByName(name);
     if (!project) return reply(interaction, `找不到可用项目「${name}」。请先在 Mado 中添加项目。`);
     const channel = interaction.channel;
     if (!channel?.isTextBased?.() || !channel.threads?.create) return reply(interaction, '当前频道不支持创建任务 Thread。');
     const thread = await channel.threads.create({ name: `pi-${project.name}-${new Date().toISOString().slice(11, 16).replace(':', '')}`, autoArchiveDuration: 1440, reason: 'Mado remote Pi session' });
-    const session = await startSession(project, thread);
+    const session = await createSession(project, thread);
+    await startPi(session);
     return reply(interaction, `已创建新的 Pi 会话：${thread}\n项目：${project.name}\n状态：${session.status}`);
   }
   async function handleInteraction(interaction) {
@@ -84,13 +120,22 @@ function createDiscordService({ config, listProjects, diagnostics, makePiSession
       if (!interaction.isChatInputCommand()) return;
       const isNew = interaction.commandName === 'new';
       const session = find(interaction.channelId);
+      if (session) session.thread = interaction.channel;
       // 主频道没有会话时直接回复，不能先 defer 后再走无会话分支，否则部分 Discord 客户端会显示「应用程序未响应」。
       if (!isNew && !session) return reply(interaction, '当前频道没有 Mado 会话，请进入 Bot 创建的子区后再使用此命令。');
       if (!interaction.replied && !interaction.deferred) await interaction.deferReply();
       if (isNew) return handleNew(interaction);
       if (interaction.commandName === 'status') return reply(interaction, `项目：${session.projectName}\nAgent：Pi\n状态：${session.status}${session.errorId ? `\n错误编号：${session.errorId}` : ''}`);
-      if (interaction.commandName === 'result') return reply(interaction, session.lastResult ? `最后总结：\n\n${session.lastResult}` : '当前会话还没有执行总结。');
-      if (interaction.commandName === 'stop') { await session.pi.stop(); session.status = 'stopped'; session.busy = false; return reply(interaction, '已停止当前 Pi 会话。'); }
+      if (interaction.commandName === 'result') {
+        if (session.busy || session.status === 'starting') return reply(interaction, 'Pi 正在处理任务，请等待本轮结束。');
+        if (!session.lastResult) {
+          await startPi(session, { announce: false });
+          if (session.status === 'failed') return reply(interaction, `无法恢复原会话。错误编号：${session.errorId}`);
+          session.lastResult = await session.pi.lastText();
+        }
+        return reply(interaction, session.lastResult ? `最后总结：\n\n${session.lastResult}` : '当前会话还没有执行总结。');
+      }
+      if (interaction.commandName === 'stop') { await stopSession(session); session.status = 'stopped'; session.busy = false; await sessionStore.patch(session.threadId, { status: 'stopped' }); return reply(interaction, '已停止当前 Pi 会话；会话绑定仍保留，之后发送消息可恢复原上下文。'); }
     } catch (error) {
       const errorId = diagnostics.error('DISCORD_COMMAND_FAILED', error, { command: interaction.commandName });
       return reply(interaction, `操作失败。错误编号：${errorId}`);
@@ -102,9 +147,13 @@ function createDiscordService({ config, listProjects, diagnostics, makePiSession
     if (!session) return;
     const text = String(message.content || '').trim();
     if (!text || text.startsWith('/') || text.length > MAX_PROMPT) { if (text.length > MAX_PROMPT) await sendThread(message.channel, '任务太长，请控制在 12000 字符以内。', session); return; }
+    session.thread = message.channel;
     if (session.status === 'starting') return sendThread(message.channel, 'Pi 还在启动，请稍后再发送。', session);
-    if (session.status === 'failed' || session.status === 'stopped') return sendThread(message.channel, '当前会话已经结束，请重新使用 /new。', session);
     if (session.busy) return sendThread(message.channel, 'Pi 正在处理上一条任务，请等待最终总结后再发送。', session);
+    if (!session.pi || session.status === 'failed' || session.status === 'stopped' || session.status === 'bound') {
+      await startPi(session, { announce: false });
+      if (session.status === 'failed') return;
+    }
     session.busy = true; session.status = 'running';
     await sendThread(message.channel, '⏳ Pi 正在处理任务，完成后会发送最终总结。', session);
     try { await session.pi.prompt(text); }
@@ -118,6 +167,8 @@ function createDiscordService({ config, listProjects, diagnostics, makePiSession
     if (started) return { ok: true };
     started = true;
     try {
+      bridgeLock = await sessionStore.lock('bridge');
+      for (const record of await sessionStore.list()) makeSession({ ...record, status: 'bound' }, null);
       client = new ClientClass({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
       client.on(Events.InteractionCreate, (interaction) => void handleInteraction(interaction));
       client.on(Events.MessageCreate, (message) => void handleMessage(message));
@@ -132,6 +183,7 @@ function createDiscordService({ config, listProjects, diagnostics, makePiSession
       return { ok: true };
     } catch (error) {
       started = false;
+      await bridgeLock?.release(); bridgeLock = null;
       const errorId = diagnostics.error('DISCORD_START_FAILED', error);
       try { await client?.destroy(); } catch { /* 登录失败时无需阻断应用退出 */ }
       client = null;
@@ -139,7 +191,8 @@ function createDiscordService({ config, listProjects, diagnostics, makePiSession
     }
   }
   async function stop() {
-    for (const session of sessions.values()) { try { await session.pi.stop(); } catch { /* */ } session.status = 'stopped'; }
+    await Promise.all([...sessions.values()].map(async (session) => { await stopSession(session); session.status = 'stopped'; await sessionStore.patch(session.threadId, { status: 'stopped' }).catch(() => {}); }));
+    await bridgeLock?.release(); bridgeLock = null;
     sessions.clear();
     if (client) await client.destroy();
     client = null; started = false;

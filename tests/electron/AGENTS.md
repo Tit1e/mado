@@ -14,5 +14,6 @@ shell-integration.test.js: 临时目录中的 zsh 隔离配置生成、嵌套启
 terminal-recovery-store.test.js: 临时目录中的恢复记录去重、隐私过滤、服务规则标识、目录状态与一次性取出测试
 system-file-service.test.js: 临时目录中的拖入落盘、同名避让、目录边界和图片剪贴板测试
 discord-remote.test.js: Discord 配置默认关闭、pi 路径校验、错误编号和诊断脱敏测试
+discord-session-store.test.js: Discord 子区项目/Pi Session 持久绑定、原子写入和锁测试
 
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md

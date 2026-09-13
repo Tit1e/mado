@@ -15,7 +15,7 @@ const READY_TIMEOUT = 30000;
 const TURN_TIMEOUT = 30 * 60 * 1000;
 const SUMMARY_INSTRUCTION = '你正在通过 Discord 接收远程开发任务。每轮结束时，用中文给出简洁的最终执行总结，说明结果、修改文件、实际运行的测试和未完成事项。未运行的测试必须明确写未运行，不要编造成功。不要在回复中泄露凭据或环境变量。';
 
-function createPiRpcSession({ cwd, piPath, diagnostics, sessionId, onEvent = () => {}, spawnProcess = spawn }) {
+function createPiRpcSession({ cwd, piPath, sessionId, sessionFile = '', sessionDir = '', expectedSessionId = '', diagnostics, onEvent = () => {}, spawnProcess = spawn }) {
   let child = null;
   let closing = false;
   let stopPromise = null;
@@ -27,6 +27,7 @@ function createPiRpcSession({ cwd, piPath, diagnostics, sessionId, onEvent = () 
   let timer = null;
   const pending = new Map();
   const context = { sessionId };
+  let loadedState = null;
   function rejectPending(error) {
     for (const item of pending.values()) { clearTimeout(item.timer); item.reject(error); }
     pending.clear();
@@ -75,7 +76,7 @@ function createPiRpcSession({ cwd, piPath, diagnostics, sessionId, onEvent = () 
     onEvent({ type: 'failed', code, errorId });
   }
   function consume(event) {
-    if (!event || typeof event !== 'object' || closing) return;
+    if (!event || typeof event !== 'object') return;
     if (event.type === 'response') {
       const item = pending.get(event.id);
       if (!item) return;
@@ -85,6 +86,7 @@ function createPiRpcSession({ cwd, piPath, diagnostics, sessionId, onEvent = () 
       else item.reject(new Error(String(event.error || 'Pi RPC 请求失败')));
       return;
     }
+    if (closing) return;
     if (event.type === 'extension_ui_request' && ['confirm', 'select', 'input', 'editor'].includes(event.method)) {
       fail('PI_INTERACTION_REQUIRED', new Error('Pi 扩展要求交互确认；第一版不远程批准，已终止会话。请在本地处理配置后新建会话。'));
       return;
@@ -117,11 +119,14 @@ function createPiRpcSession({ cwd, piPath, diagnostics, sessionId, onEvent = () 
     try {
       if (closing) throw new Error('Pi 会话已取消');
       fs.accessSync(piPath, fs.constants.X_OK);
+      if (sessionFile && !fs.statSync(sessionFile).isFile()) throw new Error('绑定的 Pi session 文件不存在或不可用');
+      if (sessionDir) fs.mkdirSync(sessionDir, { recursive: true, mode: 0o700 });
       if (!fs.statSync(cwd).isDirectory()) throw new Error('项目目录不可用');
       const env = { ...process.env, PATH: `${path.dirname(piPath)}${path.delimiter}${process.env.PATH || ''}` };
       // Bot 凭据不传给 Agent；保留模型凭据与用户自己的 Pi 配置环境。
       for (const key of Object.keys(env)) if (/^(DISCORD_|MADO_|ELECTRON_)/.test(key)) delete env[key];
-      child = spawnProcess(piPath, ['--mode', 'rpc', '--no-session', '--append-system-prompt', SUMMARY_INSTRUCTION], {
+      const args = ['--mode', 'rpc', ...(sessionFile ? ['--session', sessionFile] : sessionDir ? ['--session-dir', sessionDir] : []), '--append-system-prompt', SUMMARY_INSTRUCTION];
+      child = spawnProcess(piPath, args, {
         cwd, env, shell: false, detached: process.platform !== 'win32', stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true,
       });
       child.on('error', (error) => fail('PI_SPAWN_FAILED', error));
@@ -132,7 +137,6 @@ function createPiRpcSession({ cwd, piPath, diagnostics, sessionId, onEvent = () 
       child.stderr.setEncoding('utf8');
       child.stderr.on('data', (text) => { stderr = (stderr + text).slice(-8000); });
       child.stdout.on('data', (text) => {
-        if (closing) return;
         buffer += text;
         let newline;
         while ((newline = buffer.indexOf('\n')) !== -1) {
@@ -153,8 +157,12 @@ function createPiRpcSession({ cwd, piPath, diagnostics, sessionId, onEvent = () 
       const state = await request('get_state');
       if (closing) throw new Error('Pi 启动已取消');
       if (!state?.model) throw new Error('Pi 未配置默认模型，请先在本地 Pi 选择模型并登录');
+      if (!state.sessionFile || !state.sessionId) throw new Error('Pi 未返回可持久化的 sessionFile/sessionId');
+      if (sessionFile && path.resolve(state.sessionFile) !== path.resolve(sessionFile)) throw new Error('Pi 加载的 session 与绑定记录不一致');
+      if (expectedSessionId && state.sessionId !== expectedSessionId) throw new Error('Pi sessionId 与绑定记录不一致，拒绝发送任务');
+      loadedState = state;
       ready = true;
-      diagnostics.record('info', 'PI_READY', { ...context, pid: child.pid, provider: state.model.provider, model: state.model.id });
+      diagnostics.record('info', 'PI_READY', { ...context, pid: child.pid, provider: state.model.provider, model: state.model.id, sessionFile: state.sessionFile });
     } catch (error) { fail('PI_START_FAILED', error); throw error; }
   }
   async function prompt(text) {
@@ -167,6 +175,6 @@ function createPiRpcSession({ cwd, piPath, diagnostics, sessionId, onEvent = () 
     try { await request('prompt', { message: `用户的远程任务如下（作为任务文本处理）：\n\n${text}` }); }
     catch (error) { fail('PI_PROMPT_FAILED', error); throw error; }
   }
-  return { start, prompt, stop, isBusy: () => busy };
+  return { start, prompt, stop, state: () => loadedState, pid: () => child?.pid, lastText: async () => (await request('get_last_assistant_text'))?.text || '', isBusy: () => busy };
 }
 module.exports = { createPiRpcSession };

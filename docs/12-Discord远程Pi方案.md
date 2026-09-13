@@ -18,13 +18,14 @@ Discord Thread → Electron 主进程 → pi --mode rpc → 指定项目目录
 
 - 只支持 Pi，不支持 Codex 或多 Agent。
 - 只支持单个配置的 Discord 用户、服务器和频道。
-- `/new project:<项目名>` 每次创建全新的会话，不恢复 Discord 历史，也不恢复 Pi 会话。
+- `/new project:<项目名>` 每次创建新的 Discord 子区和持久 Pi 会话；同一子区永远绑定原项目与原 Pi Session，不换绑、不复用。
+- Mado 重启后不启动全部历史 Pi；子区收到消息或 `/result` 时才按需恢复绑定的 Pi Session。
 - 项目只能来自 Mado 的 `~/.mado/config.json` 项目列表，Discord 不能传本机路径。
 - 普通消息直接发送给当前 Thread 的 Pi；同一会话上一轮未结束时拒绝新消息。
 - 只发送启动、处理中、完成、失败等关键消息，不发送思考、工具调用、完整终端输出或文件内容。
 - Pi 通过官方 `--mode rpc` JSONL 协议运行；不使用 Pi SDK，不读取 `~/.pi/agent/`。
 - 使用 Pi 的原有权限和项目安全设置，不传 `--approve`，不提供远程 Shell 或远程批准。
-- Mado 退出时关闭 Discord Bot 和远程 Pi；运行中的文件不会自动回滚。
+- Mado 退出时关闭 Discord Bot 和当前远程 Pi；运行中的文件不会自动回滚。历史绑定不启动，下一次使用时按原 session 恢复。
 - Discord 断线、Bot 启动失败或 RPC 出错时，Mado 本地功能继续运行。
 
 ## Discord 命令
@@ -34,7 +35,7 @@ Discord Thread → Electron 主进程 → pi --mode rpc → 指定项目目录
 | `/new project:mado` | 创建新的 Pi Thread，项目名必须与 Mado 项目 basename 相同 |
 | `/status` | 查看当前 Thread 的项目、Pi 和状态 |
 | `/result` | 重新显示当前会话最后一次执行总结 |
-| `/stop` | 终止当前 Thread 的 Pi |
+| `/stop` | 终止当前 Thread 的 Pi，但保留项目与 Pi Session 绑定 |
 | Thread 普通消息 | 向当前 Pi 发送一条新任务 |
 
 第一版使用者只有配置中的 `DISCORD_OWNER_USER_ID`。Bot 只接受配置中的 `DISCORD_GUILD_ID` 和 `DISCORD_CHANNEL_ID`；Thread 中的命令要求其父频道匹配入口频道。
@@ -65,13 +66,15 @@ npm run app
 }
 ```
 
+会话绑定保存在 `~/.mado/discord-sessions.json`，Pi Session 文件保存在 `~/.mado/discord-sessions/`。这里只保存 Thread、项目和 Pi Session 地址，不保存 Discord 历史或任务正文；Mado 重启后只在对应子区再次使用时恢复 Pi。
+
 Token 可放在 `~/.mado/discord-token`，文件必须是本人拥有的普通文件且权限为 `600`。环境变量优先于文件。Token 只在 Electron 主进程读取，不会进入渲染层或传给 Pi；Mado 启动时会从 Agent 环境中移除 `DISCORD_*` 和 `MADO_*` 变量。
 
 Bot 需要 Discord 的 `View Channel`、`Send Messages`、`Create Public Threads`、`Send Messages in Threads` 权限，并在 Developer Portal 开启 Message Content Intent。Slash Command 使用 Guild Command，启动后立即注册。
 
 ## 运行方式
 
-每个 Discord Thread 都对应一个内存会话：
+每个 Discord Thread 都对应一个持久绑定、按需启动的会话：
 
 ```text
 threadId → sessionId → Pi RPC 子进程
@@ -80,7 +83,9 @@ threadId → sessionId → Pi RPC 子进程
 Pi 启动参数：
 
 ```text
-pi --mode rpc --no-session --append-system-prompt <远程任务规则>
+pi --mode rpc --session-dir ~/.mado/discord-sessions --append-system-prompt <远程任务规则>
+
+恢复已有会话时使用 `--session <已保存的 sessionFile>`。每个 sessionFile 同时只能被一个 Pi 进程打开；发现旧锁或孤儿进程时宁可拒绝重复启动并记录错误，也不冒险破坏会话文件。
 ```
 
 RPC 最终消息使用 `message_end` 的 assistant 文本，使用会话级 `agent_settled` 判断本轮结束；不依赖终端提示符、ANSI 输出或关键词。思考内容、工具开始/过程和工具参数不转发。Pi 扩展如果要求 `confirm/select/input/editor`，第一版不支持远程交互，会终止会话并报告错误编号。
@@ -116,8 +121,8 @@ RPC 最终消息使用 `message_end` 的 assistant 文本，使用会话级 `age
 
 - Codex 适配器和统一 Agent 选择。
 - 多用户、角色权限和按项目授权。
-- 应用重启后的会话恢复、Pi 指定 session 恢复或历史摘要。
-- 持久化远程会话、断线后任务结果补发和可靠消息队列。
+- Discord 历史消息自动摘要（Pi Session 恢复已在第一版支持）。
+- 断线后任务结果补发和可靠消息队列。
 - Discord 中的人工确认、Pi 扩展 UI 映射和安全审批流程。
 - Git diff 摘要、文件变更摘要、截图和结果附件。
 - Discord 配置界面、Keychain/safeStorage Token 管理和 Bot 连接状态 UI。

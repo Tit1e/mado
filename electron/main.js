@@ -516,9 +516,14 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 // 退出兜底：无论怎么退（⌘Q、崩溃前的正常退出），都恢复系统休眠，绝不留禁休眠的烂摊子
-app.on('will-quit', () => {
+let discordShutdown = false;
+app.on('will-quit', (event) => {
   lidGuard.shutdown();
-  if (discordService) void discordService.stop();
+  if (discordService && !discordShutdown) {
+    event.preventDefault();
+    discordShutdown = true;
+    discordService.stop().catch((error) => discordDiagnostics.error('DISCORD_SHUTDOWN_FAILED', error)).finally(() => app.quit());
+  }
 });
 
 // ---------- 领域服务 IPC ----------
