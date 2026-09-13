@@ -45,7 +45,7 @@ function createDiscordSessionStore({ file = path.join(os.homedir(), '.mado', 'di
     if (!valid(record)) throw new Error('Discord 会话绑定记录无效');
     return write((current) => {
       const previous = current.sessions[record.threadId];
-      if (previous && (previous.projectPath !== record.projectPath || (previous.sessionFile && previous.sessionFile !== record.sessionFile))) throw new Error('子区已有固定绑定，不允许换项目或换 Pi Session');
+      if (previous && (previous.projectName !== record.projectName || previous.projectPath !== record.projectPath || (previous.sessionFile && previous.sessionFile !== record.sessionFile))) throw new Error('子区已有固定绑定，不允许换项目或换 Pi Session');
       current.sessions[record.threadId] = { ...record, updatedAt: Date.now() };
 
     });
