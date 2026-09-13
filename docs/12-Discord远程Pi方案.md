@@ -34,13 +34,14 @@ Discord Thread → Electron 主进程 → pi --mode rpc → 指定项目目录
 
 | 命令 | 作用 |
 | --- | --- |
-| `/new project:mado` | 创建新的 Pi Thread；`project` 输入框会动态自动补全当前可用项目 |
+| `/new project:mado name:生成新skill` | 创建 `mado-生成新skill` 子区；`project` 输入框会动态自动补全当前可用项目 |
+| `/new project:mado` | 创建 `mado-YYMMDDHHmm` 子区，时间使用本机本地时间 |
 | `/status` | 查看当前 Thread 的项目、Pi 和状态 |
 | `/result` | 重新显示当前会话最后一次执行总结 |
 | `/stop` | 终止当前 Thread 的 Pi，但保留项目与 Pi Session 绑定 |
 | Thread 普通消息 | 向当前 Pi 发送一条新任务 |
 
-`/new` 的 `project` 参数使用动态自动补全：从当前 Mado 项目列表筛选可用目录，按输入关键词过滤，最多返回 25 项；提交时仍再次从本地项目列表校验，不信任 Discord 提交的值。第一版使用者只有配置中的 `DISCORD_OWNER_USER_ID`。Bot 只接受配置中的 `DISCORD_GUILD_ID` 和 `DISCORD_CHANNEL_ID`；Thread 中的命令要求其父频道匹配入口频道。
+`/new` 的 `project` 参数使用动态自动补全：从当前 Mado 项目列表筛选可用目录，按输入关键词过滤，最多返回 25 项；提交时仍再次从本地项目列表校验，不信任 Discord 提交的值。可选的 `name` 参数会作为任务名后缀；未填写时使用 `YYMMDDHHmm` 本机本地时间。子区名称最多 100 个字符，名称只影响显示，不影响 Thread、项目与 Pi Session 绑定。第一版使用者只有配置中的 `DISCORD_OWNER_USER_ID`。Bot 只接受配置中的 `DISCORD_GUILD_ID` 和 `DISCORD_CHANNEL_ID`；Thread 中的命令要求其父频道匹配入口频道。
 
 ## 配置
 

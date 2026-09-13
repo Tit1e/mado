@@ -12,7 +12,10 @@ const { Client, GatewayIntentBits, Events, REST, Routes, PermissionFlagsBits } =
 const { createPiRpcSession } = require('./pi-rpc-service');
 const { createDiscordSessionStore } = require('./discord-session-store');
 const COMMANDS = [
-  { name: 'new', description: '在指定的 Mado 项目中创建新的 Pi 会话', options: [{ type: 3, name: 'project', description: '选择 Mado 中已登记的项目', required: true, autocomplete: true }] },
+  { name: 'new', description: '在指定的 Mado 项目中创建新的 Pi 会话', options: [
+    { type: 3, name: 'project', description: '选择 Mado 中已登记的项目', required: true, autocomplete: true },
+    { type: 3, name: 'name', description: '可选的任务名称，例如生成新 skill', required: false },
+  ] },
   { name: 'status', description: '查看当前远程 Pi 会话状态' },
   { name: 'stop', description: '停止当前 Thread 的 Pi 会话' },
   { name: 'result', description: '重新查看当前 Thread 的最后总结' },
@@ -21,6 +24,7 @@ const MAX_PROMPT = 12000;
 const MAX_REPLY = 1900;
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
 const MAX_ATTACHMENTS = 5;
+const MAX_THREAD_NAME = 100;
 
 function createDiscordService({ config, listProjects, diagnostics, sessionStore = createDiscordSessionStore(), makePiSession = createPiRpcSession, ClientClass = Client, RestClass = REST, RoutesApi = Routes }) {
   const sessions = new Map();
@@ -157,14 +161,25 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
       try { return await interaction.respond([]); } catch { return null; }
     }
   }
+  function localTimestamp(date = new Date()) {
+    const parts = new Intl.DateTimeFormat('en-CA', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+    return `${values.year}${values.month}${values.day}${values.hour}${values.minute}`;
+  }
+  function threadName(projectName, customName) {
+    const suffix = String(customName || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim();
+    const full = `${projectName}-${suffix || localTimestamp()}`;
+    return full.slice(0, MAX_THREAD_NAME).replace(/[-\s]+$/u, '').trim() || `project-${localTimestamp()}`;
+  }
   async function handleNew(interaction) {
     if (interaction.channelId !== config.channelId) return reply(interaction, '请回到主频道使用 /new 创建新的子区。');
     const name = interaction.options.getString('project', true);
+    const customName = interaction.options.getString('name') || '';
     const project = await projectByName(name);
     if (!project) return reply(interaction, `找不到可用项目「${name}」。请先在 Mado 中添加项目。`);
     const channel = interaction.channel;
     if (!channel?.isTextBased?.() || !channel.threads?.create) return reply(interaction, '当前频道不支持创建任务 Thread。');
-    const thread = await channel.threads.create({ name: `pi-${project.name}-${new Date().toISOString().slice(11, 16).replace(':', '')}`, autoArchiveDuration: 1440, reason: 'Mado remote Pi session' });
+    const thread = await channel.threads.create({ name: threadName(project.name, customName), autoArchiveDuration: 1440, reason: 'Mado remote Pi session' });
     const session = await createSession(project, thread);
     await startPi(session);
     return reply(interaction, `已创建新的 Pi 会话：${thread}\n项目：${project.name}\n状态：${session.status}`);
