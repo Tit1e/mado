@@ -1,22 +1,26 @@
 /**
  * [INPUT]: 依赖 discord.js 客户端、Mado 已登记项目、Pi RPC 会话、诊断服务与 Discord 配置
- * [OUTPUT]: 对外提供 createDiscordService，提供单用户 /new、/status、/stop、/result 与 Thread 内自然语言对话
- * [POS]: electron 的 Discord 远程入口编排器；一个 Thread 只绑定一个全新的 Pi 会话
+ * [OUTPUT]: 对外提供 createDiscordService，提供单用户 /new、/status、/stop、/result 与 Thread 内自然语言对话、项目自动补全
+ * [POS]: electron 的 Discord 远程入口编排器；一个 Thread 永久绑定一个项目与可持久恢复的 Pi 会话
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 'use strict';
 const path = require('path');
+const fsp = require('fs/promises');
+const { randomUUID } = require('crypto');
 const { Client, GatewayIntentBits, Events, REST, Routes, PermissionFlagsBits } = require('discord.js');
 const { createPiRpcSession } = require('./pi-rpc-service');
 const { createDiscordSessionStore } = require('./discord-session-store');
 const COMMANDS = [
-  { name: 'new', description: '在指定的 Mado 项目中创建新的 Pi 会话', options: [{ type: 3, name: 'project', description: 'Mado 中已登记的项目名称', required: true }] },
+  { name: 'new', description: '在指定的 Mado 项目中创建新的 Pi 会话', options: [{ type: 3, name: 'project', description: '选择 Mado 中已登记的项目', required: true, autocomplete: true }] },
   { name: 'status', description: '查看当前远程 Pi 会话状态' },
   { name: 'stop', description: '停止当前 Thread 的 Pi 会话' },
   { name: 'result', description: '重新查看当前 Thread 的最后总结' },
 ];
 const MAX_PROMPT = 12000;
 const MAX_REPLY = 1900;
+const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+const MAX_ATTACHMENTS = 5;
 
 function createDiscordService({ config, listProjects, diagnostics, sessionStore = createDiscordSessionStore(), makePiSession = createPiRpcSession, ClientClass = Client, RestClass = REST, RoutesApi = Routes }) {
   const sessions = new Map();
@@ -28,6 +32,37 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     return interaction.guildId === config.guildId && interaction.user?.id === config.ownerUserId && (!config.channelId || interaction.channelId === config.channelId || interaction.channel?.parentId === config.channelId);
   }
   function safe(text) { return diagnostics.redact(String(text || '')).slice(0, MAX_REPLY); }
+  function attachmentsOf(message) { return [...(message.attachments?.values?.() || [])]; }
+  async function downloadAttachments(message, session) {
+    const attachments = attachmentsOf(message);
+    if (attachments.length > MAX_ATTACHMENTS) throw new Error(`一条消息最多支持 ${MAX_ATTACHMENTS} 个附件`);
+    const directory = path.join(path.dirname(sessionStore.file), 'discord-attachments', session.id);
+    await fsp.mkdir(directory, { recursive: true, mode: 0o700 });
+    const paths = [];
+    for (const attachment of attachments) {
+      let url;
+      try { url = new URL(String(attachment.url)); } catch { throw new Error('Discord 附件地址无效'); }
+      if (url.protocol !== 'https:' || !['cdn.discordapp.com', 'media.discordapp.net'].includes(url.hostname)) throw new Error('只允许下载 Discord CDN 附件');
+      const declared = Number(attachment.size) || 0;
+      if (declared > MAX_ATTACHMENT_BYTES) throw new Error('单个附件超过 25 MiB');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60000);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok || !response.body) throw new Error(`下载附件失败（HTTP ${response.status}）`);
+        const length = Number(response.headers.get('content-length')) || declared;
+        if (length > MAX_ATTACHMENT_BYTES) throw new Error('单个附件超过 25 MiB');
+        const bytes = Buffer.from(await response.arrayBuffer());
+        if (bytes.length > MAX_ATTACHMENT_BYTES) throw new Error('单个附件超过 25 MiB');
+        const original = path.basename(String(attachment.name || 'attachment'));
+        const extension = path.extname(original).replace(/[^a-zA-Z0-9.]/g, '').slice(0, 12);
+        const target = path.join(directory, `${randomUUID()}${extension}`);
+        await fsp.writeFile(target, bytes, { mode: 0o600 });
+        paths.push(target);
+      } finally { clearTimeout(timeout); }
+    }
+    return paths;
+  }
   async function reply(target, content) {
     const payload = typeof content === 'string' ? { content: safe(content), allowedMentions: { parse: [] } } : { ...content, allowedMentions: { parse: [] } };
     try {
@@ -97,10 +132,30 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     await sessionStore.put(record);
     return makeSession(record, thread);
   }
-  async function projectByName(name) {
+  async function availableProjects() {
     const result = await listProjects();
     if (!result?.ok) throw new Error('无法读取 Mado 项目列表');
-    return result.projects.find((project) => project.available && project.name === name);
+    return (Array.isArray(result.projects) ? result.projects : []).filter((project) => project && project.available && typeof project.name === 'string');
+  }
+  async function projectByName(name) {
+    return (await availableProjects()).find((project) => project.name === name);
+  }
+  async function handleAutocomplete(interaction) {
+    try {
+      if (interaction.commandName !== 'new' || !owner(interaction)) return interaction.respond([]);
+      const query = String(interaction.options.getFocused() || '').trim().toLocaleLowerCase();
+      const projects = await availableProjects();
+      const seen = new Set();
+      const choices = projects.filter((project) => {
+        const key = project.name.toLocaleLowerCase();
+        if (seen.has(key) || (query && !key.includes(query))) return false;
+        seen.add(key); return true;
+      }).slice(0, 25).map((project) => ({ name: project.name.slice(0, 100), value: project.name }));
+      return interaction.respond(choices);
+    } catch (error) {
+      diagnostics.error('DISCORD_AUTOCOMPLETE_FAILED', error);
+      try { return await interaction.respond([]); } catch { return null; }
+    }
   }
   async function handleNew(interaction) {
     if (interaction.channelId !== config.channelId) return reply(interaction, '请回到主频道使用 /new 创建新的子区。');
@@ -115,6 +170,7 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     return reply(interaction, `已创建新的 Pi 会话：${thread}\n项目：${project.name}\n状态：${session.status}`);
   }
   async function handleInteraction(interaction) {
+    if (interaction.isAutocomplete?.()) return handleAutocomplete(interaction);
     if (!owner(interaction)) return reply(interaction, '没有权限使用 Mado Discord Bot。');
     try {
       if (!interaction.isChatInputCommand()) return;
@@ -146,7 +202,8 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     const session = find(message.channelId);
     if (!session) return;
     const text = String(message.content || '').trim();
-    if (!text || text.startsWith('/') || text.length > MAX_PROMPT) { if (text.length > MAX_PROMPT) await sendThread(message.channel, '任务太长，请控制在 12000 字符以内。', session); return; }
+    const attachments = attachmentsOf(message);
+    if ((!text && !attachments.length) || text.startsWith('/') || text.length > MAX_PROMPT) { if (text.length > MAX_PROMPT) await sendThread(message.channel, '任务太长，请控制在 12000 字符以内。', session); return; }
     session.thread = message.channel;
     if (session.status === 'starting') return sendThread(message.channel, 'Pi 还在启动，请稍后再发送。', session);
     if (session.busy) return sendThread(message.channel, 'Pi 正在处理上一条任务，请等待最终总结后再发送。', session);
@@ -156,8 +213,11 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     }
     session.busy = true; session.status = 'running';
     await sendThread(message.channel, '⏳ Pi 正在处理任务，完成后会发送最终总结。', session);
-    try { await session.pi.prompt(text); }
-    catch (error) { session.busy = false; session.status = 'failed'; const errorId = diagnostics.error('DISCORD_PROMPT_FAILED', error, { sessionId: session.id }); session.errorId = errorId; await sendThread(message.channel, `❌ 任务发送失败\n错误编号：${errorId}`, session); }
+    try {
+      const files = await downloadAttachments(message, session);
+      const prompt = `${text || '请处理我上传的附件。'}${files.length ? `\n\nDiscord 附件已下载到以下本地路径，请按需要读取或处理：\n${files.map((file) => `- ${file}`).join('\n')}` : ''}`;
+      await session.pi.prompt(prompt);
+    } catch (error) { session.busy = false; session.status = 'failed'; const errorId = diagnostics.error('DISCORD_PROMPT_FAILED', error, { sessionId: session.id }); session.errorId = errorId; await sendThread(message.channel, `❌ 任务发送失败\n错误编号：${errorId}`, session); }
   }
   async function registerCommands() {
     const rest = new RestClass({ version: '10' }).setToken(config.token);

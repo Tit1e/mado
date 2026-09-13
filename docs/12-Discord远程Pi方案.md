@@ -23,22 +23,24 @@ Discord Thread → Electron 主进程 → pi --mode rpc → 指定项目目录
 - 项目只能来自 Mado 的 `~/.mado/config.json` 项目列表，Discord 不能传本机路径。
 - 普通消息直接发送给当前 Thread 的 Pi；同一会话上一轮未结束时拒绝新消息。
 - 只发送启动、处理中、完成、失败等关键消息，不发送思考、工具调用、完整终端输出或文件内容。
+- Discord 附件不按扩展名做业务白名单；附件会安全下载到 `~/.mado/discord-attachments/<sessionId>/`，再把本地路径交给 Pi，由 Pi 自己判断能否读取。
 - Pi 通过官方 `--mode rpc` JSONL 协议运行；不使用 Pi SDK，不读取 `~/.pi/agent/`。
 - 使用 Pi 的原有权限和项目安全设置，不传 `--approve`，不提供远程 Shell 或远程批准。
 - Mado 退出时关闭 Discord Bot 和当前远程 Pi；运行中的文件不会自动回滚。历史绑定不启动，下一次使用时按原 session 恢复。
+- 单条消息最多 5 个附件，每个最多 25 MiB，下载超时 60 秒；不自动执行附件。
 - Discord 断线、Bot 启动失败或 RPC 出错时，Mado 本地功能继续运行。
 
 ## Discord 命令
 
 | 命令 | 作用 |
 | --- | --- |
-| `/new project:mado` | 创建新的 Pi Thread，项目名必须与 Mado 项目 basename 相同 |
+| `/new project:mado` | 创建新的 Pi Thread；`project` 输入框会动态自动补全当前可用项目 |
 | `/status` | 查看当前 Thread 的项目、Pi 和状态 |
 | `/result` | 重新显示当前会话最后一次执行总结 |
 | `/stop` | 终止当前 Thread 的 Pi，但保留项目与 Pi Session 绑定 |
 | Thread 普通消息 | 向当前 Pi 发送一条新任务 |
 
-第一版使用者只有配置中的 `DISCORD_OWNER_USER_ID`。Bot 只接受配置中的 `DISCORD_GUILD_ID` 和 `DISCORD_CHANNEL_ID`；Thread 中的命令要求其父频道匹配入口频道。
+`/new` 的 `project` 参数使用动态自动补全：从当前 Mado 项目列表筛选可用目录，按输入关键词过滤，最多返回 25 项；提交时仍再次从本地项目列表校验，不信任 Discord 提交的值。第一版使用者只有配置中的 `DISCORD_OWNER_USER_ID`。Bot 只接受配置中的 `DISCORD_GUILD_ID` 和 `DISCORD_CHANNEL_ID`；Thread 中的命令要求其父频道匹配入口频道。
 
 ## 配置
 
@@ -89,6 +91,17 @@ pi --mode rpc --session-dir ~/.mado/discord-sessions --append-system-prompt <远
 ```
 
 RPC 最终消息使用 `message_end` 的 assistant 文本，使用会话级 `agent_settled` 判断本轮结束；不依赖终端提示符、ANSI 输出或关键词。思考内容、工具开始/过程和工具参数不转发。Pi 扩展如果要求 `confirm/select/input/editor`，第一版不支持远程交互，会终止会话并报告错误编号。
+
+## Discord 附件
+
+附件下载只接受 Discord CDN 的 HTTPS 地址，文件使用随机名称和 `600` 权限保存。原始文件名只保留安全扩展名，不参与路径拼接；下载内容不解析、不执行。Pi 收到的是本地绝对路径，例如：
+
+```text
+Discord 附件已下载到以下本地路径，请按需要读取或处理：
+- ~/.mado/discord-attachments/discord-xxx/a-random-id.pdf
+```
+
+附件目录不会自动清理，后续可手动删除；若以后增加自动清理，必须按会话和精确路径删除，不能使用宽泛通配符。
 
 ## 错误收集
 
