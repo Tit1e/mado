@@ -9,6 +9,10 @@ main.js: Electron 主进程编排入口，装配窗口、项目目录选择、�
 preload.js: contextBridge 安全桥接层，向渲染进程暴露项目目录选择、终端、Codex/Pi 继续/新建启动、当前命令重启、恢复、文件、剪贴板、拖拽、截图、更新、菜单语言与窗口事件的受控接口
 power-service.js: 合盖运行状态服务，以用户意图和终端数量驱动系统休眠开关并处理失败回退
 pty-service.js: PTY 领域服务，管理终端与带规则标识的隐藏服务会话、顶层命令追踪、安全重启、前台进程检测、运行任务快照与销毁
+discord-config.js: Discord 启用开关、ID、pi 绝对路径与私有 Bot Token 的主进程配置校验
+discord-diagnostics.js: Discord 连接与 Pi 任务的脱敏错误编号、轮转 JSONL 事件日志和本地诊断报告
+discord-service.js: 单用户 Discord Gateway 入口，管理 /new、/status、/result、/stop 与 Thread 消息路由
+pi-rpc-service.js: Pi 官方 RPC 子进程适配器，管理新会话、结构化最终回复、超时、交互拒绝和进程销毁
 quit-service.js: 应用退出守卫，以 PTY 真实前台任务快照决定退出确认，并在确认后保存可恢复命令
 shell-integration.js: zsh 隔离启动配置与 OSC 标记解析，安全继承嵌套 Mado 的原始 ZDOTDIR 并追踪顶层命令生命周期
 terminal-recovery-store.js: 终端恢复 JSON 仓储，保留隐藏服务规则标识并提供安全校验、去重、目录检查、一次性取出与清空

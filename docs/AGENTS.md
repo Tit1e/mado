@@ -10,6 +10,7 @@
 06-vendor补丁.md: vendor 补丁档案，记录已退役的 xterm CapsLock 补丁、守卫和退场条件
 10-跨平台移植评估-Windows-Intel-Mac.md: 平台兼容性评估，记录 Intel 构建现状与 Windows 剩余适配清单
 11-Agent集成边界.md: Codex/Pi 第一方 Agent 边界，约束固定启动动作、手动项目归属、文件联动、Pi 信任和旧偏好兼容策略
+12-Discord远程Pi方案.md: 第一版单用户 Discord 远程 Pi 方案、RPC 会话边界、配置方法、错误收集和待实现路线
 Spotlight索引问题排查记录.md: macOS Spotlight 与启动台排障记录，保存验证证据和系统级处理过程
 
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * [INPUT]: 依赖 Node.js 内置模块、server/ 领域服务、~/.mado 配置、port-config.js 端口配置和 public 静态资源
- * [OUTPUT]: 对外提供文件与手动项目 HTTP API、静态页面、隔离预览服务与 mado CLI 入口
+ * [OUTPUT]: 对外提供文件与手动项目 HTTP API、静态页面、隔离预览服务、mado CLI 入口及可供 Electron 复用的项目领域服务
  * [POS]: 根模块的本地服务核心，被直接命令、npm start 和 Electron 主进程复用
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
@@ -93,3 +93,6 @@ server.listen(PORT, '127.0.0.1', () => {
     exec(`${opener} ${link}`, () => {});
   }
 });
+
+// Electron 主进程复用同一份已校验的项目领域服务；直接执行 server.js 时也不改变 HTTP 行为。
+module.exports = services;

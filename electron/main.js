@@ -21,6 +21,9 @@ const { createQuitGuard } = require('./quit-service');
 const { createZshIntegration } = require('./shell-integration');
 const { createTerminalRecoveryStore } = require('./terminal-recovery-store');
 const { createDevReloadService } = require('./dev-reload-service');
+const { loadDiscordConfig } = require('./discord-config');
+const { createDiscordDiagnostics } = require('./discord-diagnostics');
+const { createDiscordService } = require('./discord-service');
 
 const APP_NAME = 'Mado';
 app.setName(APP_NAME);
@@ -31,7 +34,7 @@ app.setPath('userData', path.join(app.getPath('appData'), app.isPackaged ? 'Mado
 process.env.MADO_NO_OPEN = '1';
 const PORT = resolvePort({ dev: !app.isPackaged });
 process.env.MADO_PORT = String(PORT);
-require('../server.js');
+const madoServices = require('../server.js');
 
 // node-pty 是原生模块，需 electron-rebuild 编译过；未就绪时终端能力降级但 app 仍可用
 let pty = null;
@@ -54,6 +57,27 @@ const recoveryStore = createTerminalRecoveryStore(app.getPath('userData'));
 const ptyService = createPtyService({ pty, send, zshIntegration, onCountChange: (count) => { terminalCount = count; lidGuard.refresh(count); } });
 const watchService = createFileWatchService({ send });
 const systemFileService = createSystemFileService({ app, nativeImage, clipboard });
+
+// Discord 默认关闭；开启后只在主进程连接 Gateway，渲染层永远拿不到 Bot Token。
+let discordService = null;
+const discordDiagnostics = createDiscordDiagnostics({
+  directory: path.join(app.getPath('userData'), 'discord-logs'),
+  versions: { mado: app.getVersion(), electron: process.versions.electron, node: process.versions.node },
+});
+try {
+  const discordConfig = loadDiscordConfig();
+  if (discordConfig.enabled) {
+    discordDiagnostics.addSecret(discordConfig.token);
+    discordService = createDiscordService({ config: discordConfig, listProjects: madoServices.listProjects, diagnostics: discordDiagnostics });
+    discordService.start().then((result) => {
+      if (!result.ok) console.error(`[mado][discord] 启动失败（错误编号 ${result.errorId}）：${result.error}`);
+    });
+  }
+} catch (error) {
+  // 配置错误不阻断本地 Mado；错误同时落入脱敏诊断日志，方便用户只提供错误编号。
+  const errorId = discordDiagnostics.error('DISCORD_CONFIG_INVALID', error);
+  console.error(`[mado][discord] 配置无效（错误编号 ${errorId}）：`, error.message);
+}
 
 // ---------- 窗口尺寸/位置记忆 ----------
 const stateFile = () => path.join(app.getPath('userData'), 'window-state.json');
@@ -492,7 +516,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 // 退出兜底：无论怎么退（⌘Q、崩溃前的正常退出），都恢复系统休眠，绝不留禁休眠的烂摊子
-app.on('will-quit', () => lidGuard.shutdown());
+app.on('will-quit', () => {
+  lidGuard.shutdown();
+  if (discordService) void discordService.stop();
+});
 
 // ---------- 领域服务 IPC ----------
 ipcMain.handle('pty:spawn', (event, payload) => ptyService.spawn(payload));
