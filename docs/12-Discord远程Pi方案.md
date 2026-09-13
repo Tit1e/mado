@@ -29,7 +29,7 @@ Discord Thread → Electron 主进程 → pi --mode rpc → 指定项目目录
 - 使用 Pi 的原有权限和项目安全设置，不传 `--approve`，不提供远程 Shell 或远程批准。
 - Mado 退出时关闭 Discord Bot 和当前远程 Pi；运行中的文件不会自动回滚。历史绑定不启动，下一次使用时按原 session 恢复。
 - 单条消息最多 5 个附件，每个最多 25 MiB，下载超时 60 秒；不自动执行附件。
-- Discord 断线、Bot 启动失败或 RPC 出错时，Mado 本地功能继续运行。
+- Discord 断线、Bot 启动失败或 RPC 出错时，Mado 本地功能继续运行；Gateway 握手超时记录诊断并由 Discord 客户端重连，不弹出阻塞主进程的异常窗口。
 
 ## Discord 命令
 

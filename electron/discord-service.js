@@ -33,6 +33,11 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
   let client = null;
   let started = false;
   let bridgeLock = null;
+  let stopping = false;
+  function onUncaughtException(error) {
+    if (stopping || !isGatewayHandshakeError(error)) return;
+    diagnostics.error('DISCORD_GATEWAY_UNCAUGHT', error);
+  }
   function owner(interaction) {
     return interaction.guildId === config.guildId && interaction.user?.id === config.ownerUserId && (!config.channelId || interaction.channelId === config.channelId || interaction.channel?.parentId === config.channelId);
   }
@@ -246,6 +251,13 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
       await session.pi.prompt(prompt);
     } catch (error) { session.busy = false; session.status = 'failed'; const errorId = diagnostics.error('DISCORD_PROMPT_FAILED', error, { sessionId: session.id }); session.errorId = errorId; await sendThread(message.channel, `任务发送失败\n错误编号：${errorId}`, session); }
   }
+  function isGatewayHandshakeError(error) {
+    return /opening handshake has timed out|websocket|tls socket/i.test(`${error?.message || ''}\n${error?.stack || ''}`);
+  }
+  function handleGatewayError(error, shardId, code = 'DISCORD_GATEWAY_ERROR') {
+    if (stopping) return;
+    diagnostics.error(code, error, { shardId, state: started ? 'running' : 'starting' });
+  }
   async function registerCommands() {
     const rest = new RestClass({ version: '10' }).setToken(config.token);
     await rest.put(RoutesApi.applicationGuildCommands(client.user.id, config.guildId), { body: COMMANDS });
@@ -253,13 +265,19 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
   async function start() {
     if (started) return { ok: true };
     started = true;
+    stopping = false;
     try {
       bridgeLock = await sessionStore.lock('bridge');
       for (const record of await sessionStore.list()) makeSession({ ...record, status: 'bound' }, null);
+      process.on('uncaughtException', onUncaughtException);
       client = new ClientClass({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
       client.on(Events.InteractionCreate, (interaction) => void handleInteraction(interaction));
       client.on(Events.MessageCreate, (message) => void handleMessage(message));
-      client.on(Events.Error, (error) => diagnostics.error('DISCORD_CLIENT_ERROR', error));
+      client.on(Events.Error, (error) => handleGatewayError(error, null, 'DISCORD_CLIENT_ERROR'));
+      client.on(Events.ShardError, (error, shardId) => handleGatewayError(error, shardId, 'DISCORD_SHARD_ERROR'));
+      client.on(Events.ShardDisconnect, (event, shardId) => diagnostics.record('warn', 'DISCORD_SHARD_DISCONNECT', { shardId, code: event?.code }));
+      client.on(Events.ShardReconnecting, (shardId) => diagnostics.record('warn', 'DISCORD_SHARD_RECONNECTING', { shardId }));
+      client.on(Events.ShardReady, (shardId) => diagnostics.record('info', 'DISCORD_SHARD_READY', { shardId }));
       const ready = new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('Discord Gateway 连接超时')), 30000);
         client.once(Events.ClientReady, () => { clearTimeout(timer); diagnostics.record('info', 'DISCORD_READY', { userId: client.user.id, guildId: config.guildId }); resolve(); });
@@ -273,15 +291,18 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
       await bridgeLock?.release(); bridgeLock = null;
       const errorId = diagnostics.error('DISCORD_START_FAILED', error);
       try { await client?.destroy(); } catch { /* 登录失败时无需阻断应用退出 */ }
+      process.off('uncaughtException', onUncaughtException);
       client = null;
       return { ok: false, error: error.message, errorId };
     }
   }
   async function stop() {
+    stopping = true;
     await Promise.all([...sessions.values()].map(async (session) => { await stopSession(session); session.status = 'stopped'; await sessionStore.patch(session.threadId, { status: 'stopped' }).catch(() => {}); }));
     await bridgeLock?.release(); bridgeLock = null;
     sessions.clear();
     if (client) await client.destroy();
+    process.off('uncaughtException', onUncaughtException);
     client = null; started = false;
   }
   function snapshot() { return [...sessions.values()].map(({ pi, thread, lastResult, ...item }) => ({ ...item, hasResult: !!lastResult })); }
