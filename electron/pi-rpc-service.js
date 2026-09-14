@@ -98,9 +98,10 @@ function createPiRpcSession({ cwd, piPath, sessionId, sessionFile = '', sessionD
       const delta = String(event.assistantMessageEvent.delta || '');
       if (delta) onEvent({ type: 'progress', kind: 'assistant_delta', text: delta.slice(0, 4000) });
     }
-    if (event.type === 'tool_execution_start') onEvent({ type: 'progress', kind: 'tool_start', toolName: String(event.toolName || '').slice(0, 80) });
+    if (event.type === 'tool_execution_start') onEvent({ type: 'progress', kind: 'tool_start', toolName: String(event.toolName || '').slice(0, 80), args: event.args });
     if (event.type === 'tool_execution_end') onEvent({ type: 'progress', kind: 'tool_end', toolName: String(event.toolName || '').slice(0, 80), isError: !!event.isError });
     if (event.type === 'auto_retry_start') onEvent({ type: 'progress', kind: 'retry', attempt: event.attempt });
+    if (event.type === 'compaction_start') onEvent({ type: 'progress', kind: 'compaction' });
     if (event.type === 'message_end' && event.message?.role === 'assistant') {
       const message = event.message;
       const text = Array.isArray(message.content) ? message.content.filter((part) => part.type === 'text').map((part) => part.text || '').join('\n') : '';

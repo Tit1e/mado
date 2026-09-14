@@ -120,7 +120,7 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     const pi = makePiSession({ cwd: session.projectPath, piPath: config.piPath, sessionId: session.id, sessionFile: session.sessionFile, expectedSessionId: session.piSessionId, sessionDir: session.sessionFile ? '' : sessionDir, diagnostics, onEvent: (event) => {
       session.progress.event(event);
       if (event.type === 'failed') failSession(session, event);
-      if (event.type === 'completed') { session.progress?.stop(); session.status = 'idle'; session.busy = false; session.lastResult = event.text; void sessionStore.patch(session.threadId, { status: 'idle' }).catch((error) => diagnostics.error('DISCORD_SESSION_SAVE_FAILED', error, { sessionId: session.id })); void sendThread(session.thread, `Pi 任务完成\n\n${event.text}`, session); }
+      if (event.type === 'completed') { session.progress?.stop(); session.status = 'idle'; session.busy = false; session.lastResult = event.text; void sessionStore.patch(session.threadId, { status: 'idle' }).catch((error) => diagnostics.error('DISCORD_SESSION_SAVE_FAILED', error, { sessionId: session.id })); void sendThread(session.thread, event.text, session); }
     }});
     session.pi = pi;
     try {
@@ -137,7 +137,7 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
         session.status = 'idle';
         await sessionStore.patch(session.threadId, { status: 'idle' });
       }
-      if (announce) await sendThread(session.thread, `Pi 已就绪\n项目：${session.projectName}\n发送任务即可开始。`, session);
+      if (announce) await sendThread(session.thread, `项目：${session.projectName}\n发送任务即可开始。`, session);
     } catch (error) {
       await stopSession(session);
       session.status = 'failed';
@@ -244,7 +244,6 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
       if (session.status === 'failed') return;
     }
     session.busy = true; session.status = 'running';
-    await sendThread(message.channel, 'Pi 正在处理任务，完成后会发送最终总结。', session);
     try {
       const files = await downloadAttachments(message, session);
       const prompt = `${text || '请处理我上传的附件。'}${files.length ? `\n\nDiscord 附件已下载到以下本地路径，请按需要读取或处理：\n${files.map((file) => `- ${file}`).join('\n')}` : ''}`;

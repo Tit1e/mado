@@ -18,9 +18,7 @@ test('进度只输出关键阶段和工具计数，不包含 Emoji 或原始参�
   progress.event({ type: 'tool_execution_start', toolName: 'edit', args: { content: 'secret' } });
   progress.flush();
   assert.equal(output.length, 1);
-  assert.match(output[0], /当前阶段：修改代码/);
-  assert.match(output[0], /读取：1 次/);
-  assert.match(output[0], /修改：1 次/);
+  assert.equal(output[0], '正在检查项目结构。');
   assert.doesNotMatch(output[0], /private|secret|[\u{1F300}-\u{1FAFF}]/u);
 });
 
@@ -28,8 +26,8 @@ test('连续事件只安排一次节流刷新', () => {
   const timers = [];
   let updates = 0;
   const progress = createDiscordProgress({ onUpdate: () => { updates += 1; }, setTimer: (fn) => { timers.push(fn); return timers.length; }, clearTimer: () => {} });
-  progress.event({ type: 'tool_execution_start', toolName: 'bash' });
-  progress.event({ type: 'tool_execution_start', toolName: 'bash' });
+  progress.event({ type: 'progress', kind: 'tool_start', toolName: 'bash', args: {} });
+  progress.event({ type: 'progress', kind: 'tool_start', toolName: 'bash', args: {} });
   assert.equal(timers.length, 1);
   timers[0]();
   assert.equal(updates, 1);

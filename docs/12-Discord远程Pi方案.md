@@ -23,7 +23,7 @@ Discord Thread → Electron 主进程 → pi --mode rpc → 指定项目目录
 - 项目只能来自 Mado 的 `~/.mado/config.json` 项目列表，Discord 不能传本机路径。
 - 普通消息直接发送给当前 Thread 的 Pi；同一会话上一轮未结束时拒绝新消息。
 - 只发送启动、处理中、完成、失败等关键消息，不发送思考、工具调用、完整终端输出或文件内容。
-- 处理中使用一条无 Emoji 的进度消息，按约 1.8 秒节流更新阶段和工具计数；最终总结单独发送。
+- 处理中只转发 Pi 返回的正文增量和工具节点的最小翻译，使用一条无 Emoji 的进度消息按约 1.8 秒节流更新；不添加开始、完成或统计文案。最终总结直接发送 Pi 返回的最终文本。
 - Discord 附件不按扩展名做业务白名单；附件会安全下载到 `~/.mado/discord-attachments/<sessionId>/`，再把本地路径交给 Pi，由 Pi 自己判断能否读取。
 - Pi 通过官方 `--mode rpc` JSONL 协议运行；不使用 Pi SDK，不读取 `~/.pi/agent/`。
 - 使用 Pi 的原有权限和项目安全设置，不传 `--approve`，不提供远程 Shell 或远程批准。
@@ -96,7 +96,7 @@ RPC 最终消息使用 `message_end` 的 assistant 文本，使用会话级 `age
 
 ## 进度输出
 
-Pi RPC 的 `agent_start`、`message_update` 文本增量、`tool_execution_start`、重试事件会被转换为简短阶段和当前正文。只显示普通 assistant 正文的最新增量，不显示思考、工具参数、命令输出或文件内容。Discord 进度消息使用编辑更新并按约 1.8 秒节流，避免大量消息和 API 限流；最终 assistant 总结仍在任务结束后单独发送。
+只转发 Pi RPC 的普通 assistant `message_update` 文本增量，以及 `tool_execution_start`、重试和上下文整理节点的最小翻译。工具节点只提取工具类型和安全的文件名，不显示工具参数、命令输出或文件内容；不显示思考。Discord 进度消息使用编辑更新并按约 1.8 秒节流，避免大量消息和 API 限流；最终 assistant 总结直接使用 Pi 的最终文本单独发送。
 
 ## Discord 附件
 
