@@ -34,6 +34,17 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
   let started = false;
   let bridgeLock = null;
   let stopping = false;
+  function stopTyping(session, turnId = null) {
+    if (!session?.typing || (turnId && session.typing.turnId !== turnId)) return;
+    if (session.typing.timer) clearInterval(session.typing.timer);
+    session.typing = { timer: null, turnId: null, active: false, channel: null };
+  }
+  function startTyping(session, channel, turnId) {
+    stopTyping(session);
+    const send = () => { try { return Promise.resolve(channel?.sendTyping?.()).catch((error) => diagnostics.error('DISCORD_TYPING_FAILED', error, { sessionId: session.id, turnId })); } catch (error) { diagnostics.error('DISCORD_TYPING_FAILED', error, { sessionId: session.id, turnId }); return null; } };
+    session.typing = { timer: setInterval(send, 7000), turnId, active: true, channel };
+    void send();
+  }
   function onUncaughtException(error) {
     if (stopping || !isGatewayHandshakeError(error)) return;
     diagnostics.error('DISCORD_GATEWAY_UNCAUGHT', error);
@@ -86,6 +97,7 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
   }
   function find(threadId) { return sessions.get(threadId); }
   async function stopSession(session) {
+    stopTyping(session);
     const pi = session.pi;
     await pi?.stop();
     if (session.pi === pi) session.pi = null;
@@ -101,6 +113,7 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     } catch (error) { diagnostics.error('DISCORD_PROGRESS_FAILED', error, { sessionId: session.id }); }
   }
   function failSession(session, event) {
+    stopTyping(session);
     session.progress?.stop();
     session.status = 'failed';
     if (event.errorId) session.errorId = event.errorId;
@@ -108,7 +121,7 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     if (session.thread) void sendThread(session.thread, `Pi 任务失败\n${session.lastError}`, session);
   }
   function makeSession(record, thread) {
-    const session = { ...record, id: record.sessionId, thread, lastResult: '', errorId: '', lastError: '', busy: false, status: record.status || 'bound', progressMessage: null, progress: null };
+    const session = { ...record, id: record.sessionId, thread, lastResult: '', errorId: '', lastError: '', busy: false, status: record.status || 'bound', progressMessage: null, progress: null, typing: { timer: null, turnId: null, active: false, channel: null }, turnId: 0 };
     sessions.set(record.threadId, session);
     return session;
   }
@@ -120,7 +133,7 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
     const pi = makePiSession({ cwd: session.projectPath, piPath: config.piPath, sessionId: session.id, sessionFile: session.sessionFile, expectedSessionId: session.piSessionId, sessionDir: session.sessionFile ? '' : sessionDir, diagnostics, onEvent: (event) => {
       session.progress.event(event);
       if (event.type === 'failed') failSession(session, event);
-      if (event.type === 'completed') { session.progress?.stop(); session.status = 'idle'; session.busy = false; session.lastResult = event.text; void sessionStore.patch(session.threadId, { status: 'idle' }).catch((error) => diagnostics.error('DISCORD_SESSION_SAVE_FAILED', error, { sessionId: session.id })); void sendThread(session.thread, event.text, session); }
+      if (event.type === 'completed') { stopTyping(session, session.turnId); session.progress?.stop(); session.status = 'idle'; session.busy = false; session.lastResult = event.text; void sessionStore.patch(session.threadId, { status: 'idle' }).catch((error) => diagnostics.error('DISCORD_SESSION_SAVE_FAILED', error, { sessionId: session.id })); void sendThread(session.thread, event.text, session); }
     }});
     session.pi = pi;
     try {
@@ -244,11 +257,13 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
       if (session.status === 'failed') return;
     }
     session.busy = true; session.status = 'running';
+    const turnId = ++session.turnId;
+    startTyping(session, message.channel, turnId);
     try {
       const files = await downloadAttachments(message, session);
       const prompt = `${text || '请处理我上传的附件。'}${files.length ? `\n\nDiscord 附件已下载到以下本地路径，请按需要读取或处理：\n${files.map((file) => `- ${file}`).join('\n')}` : ''}`;
       await session.pi.prompt(prompt);
-    } catch (error) { session.busy = false; session.status = 'failed'; const errorId = diagnostics.error('DISCORD_PROMPT_FAILED', error, { sessionId: session.id }); session.errorId = errorId; await sendThread(message.channel, `任务发送失败\n错误编号：${errorId}`, session); }
+    } catch (error) { stopTyping(session, turnId); session.busy = false; session.status = 'failed'; const errorId = diagnostics.error('DISCORD_PROMPT_FAILED', error, { sessionId: session.id }); session.errorId = errorId; await sendThread(message.channel, `任务发送失败\n错误编号：${errorId}`, session); }
   }
   function isGatewayHandshakeError(error) {
     return /opening handshake has timed out|websocket|tls socket/i.test(`${error?.message || ''}\n${error?.stack || ''}`);
@@ -274,7 +289,7 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
       client.on(Events.MessageCreate, (message) => void handleMessage(message));
       client.on(Events.Error, (error) => handleGatewayError(error, null, 'DISCORD_CLIENT_ERROR'));
       client.on(Events.ShardError, (error, shardId) => handleGatewayError(error, shardId, 'DISCORD_SHARD_ERROR'));
-      client.on(Events.ShardDisconnect, (event, shardId) => diagnostics.record('warn', 'DISCORD_SHARD_DISCONNECT', { shardId, code: event?.code }));
+      client.on(Events.ShardDisconnect, (event, shardId) => { for (const session of sessions.values()) stopTyping(session); diagnostics.record('warn', 'DISCORD_SHARD_DISCONNECT', { shardId, code: event?.code }); });
       client.on(Events.ShardReconnecting, (shardId) => diagnostics.record('warn', 'DISCORD_SHARD_RECONNECTING', { shardId }));
       client.on(Events.ShardReady, (shardId) => diagnostics.record('info', 'DISCORD_SHARD_READY', { shardId }));
       const ready = new Promise((resolve, reject) => {
