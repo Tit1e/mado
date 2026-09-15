@@ -224,7 +224,9 @@ test('一轮结束后下一轮使用新的进度消息，不被上一轮停掉�
     pi.emit({ type: 'completed', text: '第一轮完成' });
     await flush();
     assert.equal(session.status, 'idle');
+    assert.equal(thread.messages.at(-1), firstProgressMessage, '最终结果应复用本轮进度消息');
     assert.equal(thread.messages.at(-1).content, '第一轮完成');
+    assert.equal(thread.messages.filter((message) => message.content === '第一轮完成').length, 1, '完成后不应额外发送重复结果消息');
 
     await harness.service.handleMessage(userMessage(thread, '第二轮'));
     assert.equal(harness.pi.created.length, 1, '正常完成不重启 Pi 会话');

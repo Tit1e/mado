@@ -174,7 +174,12 @@ function createDiscordService({ config, listProjects, diagnostics, sessionStore 
       if (session.pi !== pi) return;
       session.progress?.event(event);
       if (event.type === 'failed') failSession(session, event);
-      if (event.type === 'completed') { endTurn(session, 'idle'); session.lastResult = event.text; void sendThread(session.thread, event.text, session); }
+      if (event.type === 'completed') {
+        endTurn(session, 'idle');
+        session.lastResult = event.text;
+        // 最终结果覆盖本轮进度消息，避免同一轮在 Thread 中留下两条重复回执。
+        void updateProgress(session, event.text);
+      }
     }});
     session.pi = pi;
     try {

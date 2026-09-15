@@ -174,6 +174,19 @@ function createPiRpcSession({ cwd, piPath, sessionId, sessionFile = '', sessionD
       diagnostics.record('info', 'PI_READY', { ...context, pid: child.pid, provider: state.model.provider, model: state.model.id, sessionFile: state.sessionFile });
     } catch (error) { fail('PI_START_FAILED', error); throw error; }
   }
+  async function availableModels() {
+    if (!ready || closing) throw new Error('Pi 尚未就绪或已停止');
+    return request('get_available_models');
+  }
+  async function setModel(provider, modelId) {
+    if (!ready || closing) throw new Error('Pi 尚未就绪或已停止');
+    if (busy) throw new Error('Pi 正在处理任务，暂时不能切换模型');
+    await request('set_model', { provider, modelId });
+    const state = await request('get_state');
+    if (state?.model?.provider !== provider || state?.model?.id !== modelId) throw new Error('Pi 返回的当前模型与目标模型不一致');
+    loadedState = state;
+    return state;
+  }
   async function prompt(text) {
     if (!ready || closing) throw new Error('Pi 尚未就绪或已停止');
     if (busy) throw new Error('Pi 正在处理上一条消息，请等待总结后再发送');
@@ -184,6 +197,6 @@ function createPiRpcSession({ cwd, piPath, sessionId, sessionFile = '', sessionD
     try { await request('prompt', { message: `用户的远程任务如下（作为任务文本处理）：\n\n${text}` }); }
     catch (error) { fail('PI_PROMPT_FAILED', error); throw error; }
   }
-  return { start, prompt, stop, state: () => loadedState, pid: () => child?.pid, lastText: async () => (await request('get_last_assistant_text'))?.text || '', isBusy: () => busy };
+  return { start, prompt, stop, state: () => loadedState, availableModels, setModel, pid: () => child?.pid, lastText: async () => (await request('get_last_assistant_text'))?.text || '', isBusy: () => busy };
 }
 module.exports = { createPiRpcSession };
