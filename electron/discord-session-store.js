@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 依赖 Node.js 异步文件能力与 ~/.mado 中的 Discord 会话映射文件
- * [OUTPUT]: 对外提供 createDiscordSessionStore，原子保存 Thread、项目与 Pi sessionFile 绑定，并提供进程锁
- * [POS]: electron 的 Discord 持久化边界；不保存任务正文、不解析或改写 Pi JSONL session
+ * [OUTPUT]: 对外提供 createDiscordSessionStore，原子保存 Thread、项目、Pi sessionFile、轮次与错误状态，并提供进程锁
+ * [POS]: electron 的 Discord 持久化边界；串行合并会话状态更新，不保存任务正文、不解析或改写 Pi JSONL session
  * [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md
  */
 'use strict';
@@ -39,18 +39,31 @@ function createDiscordSessionStore({ file = path.join(os.homedir(), '.mado', 'di
   function valid(record) {
     return record && typeof record === 'object' && /^\d{17,20}$/.test(record.threadId) && typeof record.projectName === 'string' && record.projectName.length < 200 && typeof record.projectPath === 'string' && path.isAbsolute(record.projectPath) && typeof record.sessionFile === 'string' && (record.sessionFile === '' || path.isAbsolute(record.sessionFile)) && path.basename(record.sessionFile).length < 200;
   }
+  function assertCompatible(previous, next) {
+    if (!previous) return;
+    if (previous.projectName !== next.projectName || previous.projectPath !== next.projectPath || (previous.sessionFile && previous.sessionFile !== next.sessionFile)) throw new Error('子区已有固定绑定，不允许换项目或换 Pi Session');
+  }
   async function list() { const current = await load(); return Object.values(current.sessions).filter(valid).map((item) => ({ ...item })); }
   async function get(threadId) { const current = await load(); const item = current.sessions[threadId]; return valid(item) ? { ...item } : null; }
   async function put(record) {
     if (!valid(record)) throw new Error('Discord 会话绑定记录无效');
     return write((current) => {
       const previous = current.sessions[record.threadId];
-      if (previous && (previous.projectName !== record.projectName || previous.projectPath !== record.projectPath || (previous.sessionFile && previous.sessionFile !== record.sessionFile))) throw new Error('子区已有固定绑定，不允许换项目或换 Pi Session');
+      assertCompatible(previous, record);
       current.sessions[record.threadId] = { ...record, updatedAt: Date.now() };
 
     });
   }
-  async function patch(threadId, patch) { const current = await get(threadId); if (!current) throw new Error('Discord 会话绑定不存在'); return put({ ...current, ...patch, threadId }); }
+  // 读改写必须在同一条写入链里完成：状态、错误编号与轮次要各写各的，先读后写会互相覆盖。
+  async function patch(threadId, patch) {
+    return write((current) => {
+      const previous = current.sessions[threadId];
+      if (!valid(previous)) throw new Error('Discord 会话绑定不存在');
+      const next = { ...previous, ...patch, threadId, updatedAt: Date.now() };
+      assertCompatible(previous, next);
+      current.sessions[threadId] = next;
+    });
+  }
   async function lock(threadId) {
     await load();
     const lockFile = `${file}.${crypto.createHash('sha256').update(threadId).digest('hex').slice(0, 24)}.lock`;

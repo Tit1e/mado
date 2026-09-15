@@ -13,8 +13,8 @@ quit-service.test.js: 注入应用、弹窗、PTY 快照与恢复仓储验证空
 shell-integration.test.js: 临时目录中的 zsh 隔离配置生成、嵌套启动防递归、用户配置复用与分片命令标记解析测试
 terminal-recovery-store.test.js: 临时目录中的恢复记录去重、隐私过滤、服务规则标识、目录状态与一次性取出测试
 system-file-service.test.js: 临时目录中的拖入落盘、同名避让、目录边界和图片剪贴板测试
-discord-remote.test.js: Discord 配置默认关闭、pi 路径校验、错误编号和诊断脱敏测试
-discord-session-store.test.js: Discord 子区项目/Pi Session 持久绑定、原子写入和锁测试
+discord-remote.test.js: Discord 配置默认关闭、pi 路径校验、错误编号、诊断脱敏、轮次状态机与重启恢复测试
+discord-session-store.test.js: Discord 子区项目/Pi Session 持久绑定、并发原子写入和锁测试
 discord-progress.test.js: Discord 进度阶段、工具计数、节流和纯文字输出测试
 
 [PROTOCOL]: 变更时更新此头部，然后检查 AGENTS.md

@@ -34,3 +34,18 @@ test('同一绑定不能同时取得两个锁', async () => {
   const second = await store.lock(record().threadId);
   await second.release();
 });
+test('并发 patch 各自保留自己的字段，不互相覆盖', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mado-session-'));
+  const store = createDiscordSessionStore({ file: path.join(dir, 'sessions.json') });
+  await store.put({ ...record(), sessionFile: '' });
+  await Promise.all([
+    store.patch(record().threadId, { status: 'failed', errorId: 'deadbeef', turnId: 3 }),
+    store.patch(record().threadId, { sessionFile: '/tmp/session.jsonl', piSessionId: 'pi-1' }),
+  ]);
+  const after = await store.get(record().threadId);
+  assert.equal(after.status, 'failed');
+  assert.equal(after.errorId, 'deadbeef');
+  assert.equal(after.turnId, 3);
+  assert.equal(after.sessionFile, '/tmp/session.jsonl');
+  assert.equal(after.piSessionId, 'pi-1');
+});

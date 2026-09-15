@@ -21,9 +21,9 @@ Discord Thread → Electron 主进程 → pi --mode rpc → 指定项目目录
 - `/new project:<项目名>` 每次创建新的 Discord 子区和持久 Pi 会话；同一子区永远绑定原项目与原 Pi Session，不换绑、不复用。
 - Mado 重启后不启动全部历史 Pi；子区收到消息或 `/result` 时才按需恢复绑定的 Pi Session。
 - 项目只能来自 Mado 的 `~/.mado/config.json` 项目列表，Discord 不能传本机路径。
-- 普通消息直接发送给当前 Thread 的 Pi；同一会话上一轮未结束时拒绝新消息。
+- 普通消息直接发送给当前 Thread 的 Pi；只有 `running` 状态才视为“上一轮未结束”并拒绝新消息。本轮完成或失败都会立即结束轮次，失败后重发消息即开始新一轮，不需要 `/stop` 解锁。
 - 只发送启动、处理中、完成、失败等关键消息，不发送思考、工具调用、完整终端输出或文件内容。
-- 处理中只转发 Pi 返回的正文增量和工具节点的最小翻译，使用一条无 Emoji 的进度消息按约 1.8 秒节流更新；不添加开始、完成或统计文案。最终总结直接发送 Pi 返回的最终文本。
+- 处理中只转发 Pi 返回的正文增量和工具节点的最小翻译，每轮使用一条自己的无 Emoji 进度消息按约 1.8 秒节流更新；不添加开始、完成或统计文案。最终总结直接发送 Pi 返回的最终文本。
 - 普通任务通过校验后立即调用 Discord 原生 typing，并每 7 秒续期；任务完成、失败、停止、断线或应用退出时清理。typing 失败只记录日志，不影响 Pi 任务；临时状态不持久化。
 - Discord 附件不按扩展名做业务白名单；附件会安全下载到 `~/.mado/discord-attachments/<sessionId>/`，再把本地路径交给 Pi，由 Pi 自己判断能否读取。
 - Pi 通过官方 `--mode rpc` JSONL 协议运行；不使用 Pi SDK，不读取 `~/.pi/agent/`。
@@ -38,7 +38,9 @@ Discord Thread → Electron 主进程 → pi --mode rpc → 指定项目目录
 | --- | --- |
 | `/new project:mado name:生成新skill` | 创建 `mado-生成新skill` 子区；`project` 输入框会动态自动补全当前可用项目 |
 | `/new project:mado` | 创建 `mado-YYMMDDHHmm` 子区，时间使用本机本地时间 |
-| `/status` | 查看当前 Thread 的项目、Pi 和状态 |
+| `/status` | 查看当前 Thread 的项目、Pi、模型、状态、当前轮次和失败错误编号 |
+| `/models` | 查看当前 Pi 可用模型 |
+| `/model model:provider:model-id` | 在当前空闲 Thread 中切换 Pi 模型 |
 | `/result` | 重新显示当前会话最后一次执行总结 |
 | `/stop` | 终止当前 Thread 的 Pi，但保留项目与 Pi Session 绑定 |
 | Thread 普通消息 | 向当前 Pi 发送一条新任务 |
@@ -71,7 +73,7 @@ npm run app
 }
 ```
 
-会话绑定保存在 `~/.mado/discord-sessions.json`，Pi Session 文件保存在 `~/.mado/discord-sessions/`。这里只保存 Thread、项目和 Pi Session 地址，不保存 Discord 历史或任务正文；Mado 重启后只在对应子区再次使用时恢复 Pi。
+会话绑定保存在 `~/.mado/discord-sessions.json`，Pi Session 文件保存在 `~/.mado/discord-sessions/`。文件同时保存当前轮次、会话终态、错误编号和简短错误说明，不保存 Discord 历史或任务正文；Mado 重启后只在对应子区再次使用时恢复 Pi。`/status` 会显示项目、Pi、状态、轮次；失败状态会附带错误编号。运行中的记录如果因 Mado 异常退出，会在下次启动时恢复为 `failed`，并标记为上次任务中断。
 
 Token 可放在 `~/.mado/discord-token`，文件必须是本人拥有的普通文件且权限为 `600`。环境变量优先于文件。Token 只在 Electron 主进程读取，不会进入渲染层或传给 Pi；Mado 启动时会从 Agent 环境中移除 `DISCORD_*` 和 `MADO_*` 变量。
 
@@ -97,7 +99,7 @@ RPC 最终消息使用 `message_end` 的 assistant 文本，使用会话级 `age
 
 ## 进度输出
 
-只转发 Pi RPC 的普通 assistant `message_update` 文本增量，以及 `tool_execution_start`、重试和上下文整理节点的最小翻译。工具节点只提取工具类型和安全的文件名，不显示工具参数、命令输出或文件内容；不显示思考。Discord 进度消息使用编辑更新并按约 1.8 秒节流，避免大量消息和 API 限流；最终 assistant 总结直接使用 Pi 的最终文本单独发送。
+只转发 Pi RPC 的普通 assistant `message_update` 文本增量，以及 `tool_execution_start`、重试和上下文整理节点的最小翻译。工具节点只提取工具类型和安全的文件名，不显示工具参数、命令输出或文件内容；不显示思考。进度转发器和进度消息都按轮创建：每轮开始时新建一条 Discord 进度消息并用编辑更新、按约 1.8 秒节流，避免大量消息和 API 限流，也不会把新一轮进度写到上一轮的历史消息上；本轮完成、失败或停止时停掉本轮转发器，旧 Pi 进程的迟到事件会被丢弃。最终 assistant 总结直接使用 Pi 的最终文本单独发送。
 
 ## Discord 附件
 
